@@ -1,5 +1,13 @@
 package com.tomhedges.bamboo;
 
+import com.tomhedges.bamboo.R;
+import com.tomhedges.bamboo.R.id;
+import com.tomhedges.bamboo.R.layout;
+import com.tomhedges.bamboo.R.menu;
+import com.tomhedges.bamboo.R.string;
+import com.tomhedges.bamboo.fragments.DummySectionFragment;
+import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
+
 import android.app.ActionBar;
 import android.app.FragmentTransaction;
 import android.content.Context;
@@ -20,95 +28,94 @@ import android.widget.TextView;
 
 public class MainMenu extends FragmentActivity {
 
-    /**
-     * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
-     * sections. We use a {@link android.support.v4.app.FragmentPagerAdapter} derivative, which will
-     * keep every loaded fragment in memory. If this becomes too memory intensive, it may be best
-     * to switch to a {@link android.support.v4.app.FragmentStatePagerAdapter}.
-     */
-    SectionsPagerAdapter mSectionsPagerAdapter;
+	/**
+	 * The {@link android.support.v4.view.PagerAdapter} that will provide fragments for each of the
+	 * sections. We use a {@link android.support.v4.app.FragmentPagerAdapter} derivative, which will
+	 * keep every loaded fragment in memory. If this becomes too memory intensive, it may be best
+	 * to switch to a {@link android.support.v4.app.FragmentStatePagerAdapter}.
+	 */
+	SectionsPagerAdapter mSectionsPagerAdapter;
 
-    /**
-     * The {@link ViewPager} that will host the section contents.
-     */
-    ViewPager mViewPager;
+	/**
+	 * The {@link ViewPager} that will host the section contents.
+	 */
+	ViewPager mViewPager;
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main_menu);
-        // Create the adapter that will return a fragment for each of the three primary sections
-        // of the app.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
-
-
-        // Set up the ViewPager with the sections adapter.
-        mViewPager = (ViewPager) findViewById(R.id.pager);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
-
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.activity_main_menu, menu);
-        return true;
-    }
-
-    
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.activity_main_menu);
+		// Create the adapter that will return a fragment for each of the three primary sections
+		// of the app.
+		mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 
 
-    /**
-     * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
-     * sections of the app.
-     */
-    public class SectionsPagerAdapter extends FragmentPagerAdapter {
+		// Set up the ViewPager with the sections adapter.
+		mViewPager = (ViewPager) findViewById(R.id.pager);
+		mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        public SectionsPagerAdapter(FragmentManager fm) {
-            super(fm);
-        }
+	}
 
-        @Override
-        public Fragment getItem(int i) {
-            Fragment fragment = new DummySectionFragment();
-            Bundle args = new Bundle();
-            args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
-            fragment.setArguments(args);
-            return fragment;
-        }
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main_menu, menu);
+		return true;
+	}
 
-        @Override
-        public int getCount() {
-            return 3;
-        }
 
-        @Override
-        public CharSequence getPageTitle(int position) {
-            switch (position) {
-                case 0: return getString(R.string.title_section1).toUpperCase();
-                case 1: return getString(R.string.title_section2).toUpperCase();
-                case 2: return getString(R.string.title_section3).toUpperCase();
-            }
-            return null;
-        }
-    }
+	/**
+	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
+	 * sections of the app.
+	 */
+	public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-    /**
-     * A dummy fragment representing a section of the app, but that simply displays dummy text.
-     */
-    public static class DummySectionFragment extends Fragment {
-        public DummySectionFragment() {
-        }
+		public SectionsPagerAdapter(FragmentManager fm) {
+			super(fm);
+		}
 
-        public static final String ARG_SECTION_NUMBER = "section_number";
+		@Override
+		public Fragment getItem(int i) {
+			Fragment fragment = null;
+			Bundle args = new Bundle();
+			switch (i) {
+			case 0:
+				fragment = new DummySectionFragment();
+				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "hello");
+				fragment.setArguments(args);
+				break;
+			case 1:
+				fragment = new DummySectionFragment();
+				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "woaim");
+				fragment.setArguments(args);
+				break;
+			case 2:
+				fragment = new DummySectionFragment();
+				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "testing...");
+				fragment.setArguments(args);
+				break;
+			case 3:
+				fragment = new TestDatabaseFragment();
+				break;
+			}
+			//REPLACED
+			//args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
+			return fragment;
+		}
 
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            TextView textView = new TextView(getActivity());
-            textView.setGravity(Gravity.CENTER);
-            Bundle args = getArguments();
-            textView.setText(Integer.toString(args.getInt(ARG_SECTION_NUMBER)));
-            return textView;
-        }
-    }
+		@Override
+		public int getCount() {
+			return 4;
+		}
+
+		@Override
+		public CharSequence getPageTitle(int position) {
+			switch (position) {
+			case 0: return getString(R.string.title_section1).toUpperCase();
+			case 1: return getString(R.string.title_section2).toUpperCase();
+			case 2: return getString(R.string.title_section3).toUpperCase();
+			case 3: return getString(R.string.title_section4).toUpperCase();
+			}
+			return null;
+		}
+	}
 }
