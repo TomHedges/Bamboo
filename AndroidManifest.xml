@@ -7,6 +7,8 @@
         android:minSdkVersion="15"
         android:targetSdkVersion="15" />
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
@@ -19,6 +21,18 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name="com.tomhedges.bamboo.activities.ReadCommentsActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.tomhedges.bamboo.activities.RegisterActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <activity
+            android:name="com.tomhedges.bamboo.activities.AddCommentActivity"
+            android:label="@string/app_name" >
         </activity>
     </application>
 

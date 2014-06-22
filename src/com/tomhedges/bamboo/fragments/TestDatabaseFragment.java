@@ -37,7 +37,7 @@ public class TestDatabaseFragment extends ListFragment implements OnClickListene
 		setListAdapter(adapter);
 
         // Inflate the layout for this fragment
-        View v = inflater.inflate(R.layout.test_db, container, false);
+        View v = inflater.inflate(R.layout.db, container, false);
 
         Button bAdd = (Button) v.findViewById(R.id.add);
         bAdd.setOnClickListener(this);

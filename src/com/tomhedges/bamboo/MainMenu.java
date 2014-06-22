@@ -1,30 +1,17 @@
 package com.tomhedges.bamboo;
 
 import com.tomhedges.bamboo.R;
-import com.tomhedges.bamboo.R.id;
-import com.tomhedges.bamboo.R.layout;
-import com.tomhedges.bamboo.R.menu;
-import com.tomhedges.bamboo.R.string;
 import com.tomhedges.bamboo.fragments.DummySectionFragment;
+import com.tomhedges.bamboo.fragments.LoginFragment;
 import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
 
-import android.app.ActionBar;
-import android.app.FragmentTransaction;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
-import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
 
 public class MainMenu extends FragmentActivity {
 
@@ -96,6 +83,9 @@ public class MainMenu extends FragmentActivity {
 			case 3:
 				fragment = new TestDatabaseFragment();
 				break;
+			case 4:
+				fragment = new LoginFragment();
+				break;
 			}
 			//REPLACED
 			//args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
@@ -104,7 +94,7 @@ public class MainMenu extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			return 4;
+			return 5;
 		}
 
 		@Override
@@ -114,6 +104,7 @@ public class MainMenu extends FragmentActivity {
 			case 1: return getString(R.string.title_section2).toUpperCase();
 			case 2: return getString(R.string.title_section3).toUpperCase();
 			case 3: return getString(R.string.title_section4).toUpperCase();
+			case 4: return getString(R.string.title_section5).toUpperCase();
 			}
 			return null;
 		}
