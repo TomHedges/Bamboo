@@ -12,4 +12,8 @@ public interface Constants {
 	public static final String TAG_POSTS = "posts";
 	public static final String TAG_POST_ID = "post_id";
 	public static final String TAG_USERNAME = "username";
+
+	public static final String WEATHER_URL = "http://api.worldweatheronline.com/free/v1/weather.ashx";
+	public static final String WEATHER_FORMAT = "json";
+	public static final String WEATHER_KEY = "98f9949d95d16e62af30217444c77d9c6d7c44b2";
 }

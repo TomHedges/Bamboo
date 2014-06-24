@@ -4,6 +4,7 @@ import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.fragments.DummySectionFragment;
 import com.tomhedges.bamboo.fragments.LoginFragment;
 import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
+import com.tomhedges.bamboo.fragments.WeatherFragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -76,9 +77,7 @@ public class MainMenu extends FragmentActivity {
 				fragment.setArguments(args);
 				break;
 			case 2:
-				fragment = new DummySectionFragment();
-				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "testing...");
-				fragment.setArguments(args);
+				fragment = new WeatherFragment();
 				break;
 			case 3:
 				fragment = new TestDatabaseFragment();
