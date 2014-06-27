@@ -16,4 +16,7 @@ public interface Constants {
 	public static final String WEATHER_URL = "http://api.worldweatheronline.com/free/v1/weather.ashx";
 	public static final String WEATHER_FORMAT = "json";
 	public static final String WEATHER_KEY = "98f9949d95d16e62af30217444c77d9c6d7c44b2";
+
+	public static final String DOWNLOAD_TEST_REMOTE_PATH = ROOT_URL + "rules.csv";
+	public static final String DOWNLOAD_TEST_LOCAL_PATH = "test_download.csv";
 }

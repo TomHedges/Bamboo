@@ -3,6 +3,7 @@ package com.tomhedges.bamboo;
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.fragments.DummySectionFragment;
 import com.tomhedges.bamboo.fragments.LoginFragment;
+import com.tomhedges.bamboo.fragments.RetrieveOnlineFileFragment;
 import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
 import com.tomhedges.bamboo.fragments.WeatherFragment;
 
@@ -77,12 +78,15 @@ public class MainMenu extends FragmentActivity {
 				fragment.setArguments(args);
 				break;
 			case 2:
-				fragment = new WeatherFragment();
+				fragment = new RetrieveOnlineFileFragment();
 				break;
 			case 3:
-				fragment = new TestDatabaseFragment();
+				fragment = new WeatherFragment();
 				break;
 			case 4:
+				fragment = new TestDatabaseFragment();
+				break;
+			case 5:
 				fragment = new LoginFragment();
 				break;
 			}
@@ -93,7 +97,7 @@ public class MainMenu extends FragmentActivity {
 
 		@Override
 		public int getCount() {
-			return 5;
+			return 6;
 		}
 
 		@Override
@@ -104,6 +108,7 @@ public class MainMenu extends FragmentActivity {
 			case 2: return getString(R.string.title_section3).toUpperCase();
 			case 3: return getString(R.string.title_section4).toUpperCase();
 			case 4: return getString(R.string.title_section5).toUpperCase();
+			case 5: return getString(R.string.title_section6).toUpperCase();
 			}
 			return null;
 		}

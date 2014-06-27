@@ -10,17 +10,16 @@
         android:layout_height="wrap_content" >
 
         <Button
-            android:id="@+id/getWeather"
+            android:id="@+id/getFile"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Get Weather"/>
+            android:text="Get File Content"/>
         
     </LinearLayout>
 
     <TextView
-        android:id="@+id/weatherText"
+        android:id="@+id/fileText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Awaiting content..." />
-
 </LinearLayout>

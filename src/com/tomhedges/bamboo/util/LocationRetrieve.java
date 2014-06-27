@@ -1,3 +1,5 @@
+// Based on code from http://javapapers.com/android/get-current-location-in-android/
+
 package com.tomhedges.bamboo.util;
 
 import com.tomhedges.bamboo.model.LocationObject;
