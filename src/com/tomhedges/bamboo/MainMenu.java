@@ -2,6 +2,7 @@ package com.tomhedges.bamboo;
 
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.fragments.DummySectionFragment;
+import com.tomhedges.bamboo.fragments.LaunchFragment;
 import com.tomhedges.bamboo.fragments.LoginFragment;
 import com.tomhedges.bamboo.fragments.RetrieveOnlineFileFragment;
 import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
@@ -73,9 +74,7 @@ public class MainMenu extends FragmentActivity {
 				fragment.setArguments(args);
 				break;
 			case 1:
-				fragment = new DummySectionFragment();
-				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "woaim");
-				fragment.setArguments(args);
+				fragment = new LaunchFragment();
 				break;
 			case 2:
 				fragment = new RetrieveOnlineFileFragment();

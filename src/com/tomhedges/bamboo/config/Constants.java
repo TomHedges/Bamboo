@@ -19,4 +19,32 @@ public interface Constants {
 
 	public static final String DOWNLOAD_TEST_REMOTE_PATH = ROOT_URL + "rules.csv";
 	public static final String DOWNLOAD_TEST_LOCAL_PATH = "test_download.csv";
+
+	public static final int ITERATION_TIME_DELAY = 1000;
+
+	public static final int PLOT_MATRIX_COLUMNS = 4;
+	public static final int PLOT_MATRIX_ROWS = 3;
+
+	public static final GroundState[] PLOT_PATTERN = {
+		GroundState.WATER,
+		GroundState.MUD,
+		GroundState.SOIL,
+		GroundState.SOIL,
+		GroundState.WATER,
+		GroundState.MUD,
+		GroundState.SOIL,
+		GroundState.SOIL,
+		GroundState.WATER,
+		GroundState.MUD,
+		GroundState.SOIL,
+		GroundState.SOIL
+	};
+
+	public static enum GroundState {
+		SOIL,
+		WATER,
+		GRAVEL,
+		SAND,
+		MUD
+	}
 }
