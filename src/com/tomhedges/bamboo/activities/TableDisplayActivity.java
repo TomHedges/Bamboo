@@ -2,9 +2,23 @@
 
 package com.tomhedges.bamboo.activities;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -20,13 +34,16 @@ import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 import com.tomhedges.bamboo.model.MatrixOfPlots;
 import com.tomhedges.bamboo.model.Plot;
+import com.tomhedges.bamboo.util.JSONParser;
+import com.tomhedges.bamboo.util.dao.ConfigDataSource;
+import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Constants {
 
 	private TableLayout table_layout;
-	private EditText rowno_et, colno_et;
-	private Button build_btn;
-	private int rows, cols = 0;
+	//private EditText rowno_et, colno_et;
+	//private Button build_btn;
+	//private int rows, cols = 0;
 	private MatrixOfPlots mxPlots;
 	private String[] plotInfo;
 
@@ -34,7 +51,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.table_display);
-		
+
 		mxPlots = MatrixOfPlots.getMatrix();
 		plotInfo = new String[PLOT_MATRIX_ROWS * PLOT_MATRIX_COLUMNS];
 
@@ -56,7 +73,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 
 		switch (v.getId()) {
 		//REMOVED as not needed to be dynamic
-/*		case R.id.build_btn_id:
+		/*		case R.id.build_btn_id:
 			String rowstring = rowno_et.getText().toString();
 			String colstring = colno_et.getText().toString();
 
@@ -97,13 +114,13 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 				tv.setLayoutParams(new LayoutParams(100, 100));
 				tv.setBackgroundResource(R.drawable.cell_shape);
 				tv.setPadding(5, 5, 5, 5);
-			    tv.setId(((rowCounter-1) * cols) + colCounter);
-                Log.d("Plot Matrix", "Requesting plot @ pos: " + colCounter + "," + rowCounter);
-                // Full info in cell.
+				tv.setId(((rowCounter-1) * cols) + colCounter);
+				Log.d("Plot Matrix", "Requesting plot @ pos: " + colCounter + "," + rowCounter);
+				// Full info in cell.
 				//tv.setText("R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString());
-                tv.setText(mxPlots.getPlot(colCounter, rowCounter).getGroundState().toString());
-                plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString();
-			    tv.setClickable(true);
+				tv.setText(mxPlots.getPlot(colCounter, rowCounter).getGroundState().toString());
+				plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString();
+				tv.setClickable(true);
 
 				row.addView(tv);
 
@@ -121,4 +138,4 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 			Toast.makeText(TableDisplayActivity.this, "Touched cell - details:\n" + plotInfo[id - 1], Toast.LENGTH_SHORT).show();
 		}
 	}
-} 
+}
