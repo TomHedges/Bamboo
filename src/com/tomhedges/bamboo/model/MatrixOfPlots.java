@@ -2,43 +2,54 @@ package com.tomhedges.bamboo.model;
 
 import android.util.Log;
 
-import com.tomhedges.bamboo.config.Constants;
+public class MatrixOfPlots {
 
-public class MatrixOfPlots implements Constants {
-
-	private static MatrixOfPlots matrix;
+	private static MatrixOfPlots matrix = null;
 	
 	private Plot[][] plotArray;
+	
+	int num_rows;
+	int num_cols;
 
 	// Private constructor
-	private MatrixOfPlots(){
+	private MatrixOfPlots(Plot[][] plotArray){
 		// CONVERT STRING TO ENUM value!!!
+		//strTesting = "WATER";
 		//gsTest = GroundState.valueOf(strTesting);
 
-		plotArray = new Plot[PLOT_MATRIX_ROWS][PLOT_MATRIX_COLUMNS];
-
-		for (int rowCounter = 0; rowCounter<PLOT_MATRIX_ROWS; rowCounter++) {
-			for (int columnCounter = 0; columnCounter<PLOT_MATRIX_COLUMNS; columnCounter++) {
-				plotArray[rowCounter][columnCounter] = new Plot((rowCounter * PLOT_MATRIX_COLUMNS) + columnCounter + 1, rowCounter + 1, columnCounter + 1, PLOT_PATTERN[(rowCounter * PLOT_MATRIX_COLUMNS) + columnCounter], 10, 15, 0);
-			}
-		}
+		this.plotArray = plotArray;
+		num_rows = plotArray.length;
+		num_cols = plotArray[0].length;
 	}
 
 	// Singleton Factory method
-	public static MatrixOfPlots getMatrix() {
+	public static boolean createMatrix(Plot[][] plotArray) {
 		if(matrix == null){
-			matrix = new MatrixOfPlots();
+			matrix = new MatrixOfPlots(plotArray);
 		}
+		return true;
+	}
+
+	// Singleton access method
+	public static MatrixOfPlots getMatrix() {
 		return matrix;
 	}
 	
 	public Plot getPlot(int xPos, int yPos) {
-		if (xPos>=1 && xPos<=PLOT_MATRIX_COLUMNS && yPos>=1 && yPos<=PLOT_MATRIX_ROWS) {
-            Log.d("Plot Matrix", "Request for plot @ pos: " + (xPos-1) + "," + (yPos-1));
+		if (xPos>=1 && xPos<=num_cols && yPos>=1 && yPos<=num_rows) {
+            Log.d(MatrixOfPlots.class.getName(), "Request for plot @ pos: " + (xPos-1) + "," + (yPos-1) + " (0-based array)");
             //Log.d("Plot Matrix", "Result: " + plotArray[yPos-1][xPos-1].toString());
 			return plotArray[yPos-1][xPos-1];
 		} else {
 			return new Plot(0, 0, 0, null, 0, 0, 0);
 		}
+	}
+	
+	public int getNumRows() {
+		return num_rows;
+	}
+	
+	public int getNumCols() {
+		return num_cols;
 	}
 }

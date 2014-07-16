@@ -2,70 +2,90 @@
 
 package com.tomhedges.bamboo.activities;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import android.app.Activity;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.EditText;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
 import android.widget.Toast;
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
-import com.tomhedges.bamboo.config.Constants.GroundState;
+import com.tomhedges.bamboo.config.CoreSettings;
+import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.MatrixOfPlots;
+import com.tomhedges.bamboo.model.PlantCatalogue;
 import com.tomhedges.bamboo.model.Plot;
-import com.tomhedges.bamboo.util.JSONParser;
-import com.tomhedges.bamboo.util.dao.ConfigDataSource;
-import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Constants {
 
 	private TableLayout table_layout;
+	private TextView output;
 	//private EditText rowno_et, colno_et;
 	//private Button build_btn;
 	//private int rows, cols = 0;
 	private MatrixOfPlots mxPlots;
+	private PlantCatalogue plantCatalogue;
+	private Game game;
 	private String[] plotInfo;
+	private int num_rows;
+	private int num_cols;
+	
+	private Handler handler;
+	
+	// Storage for user preferences
+	private CoreSettings coreSettings;
+	private int iteration_time_delay;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.table_display);
 
+		Log.w(TableDisplayActivity.class.getName(), "Retrieving Matrix of plots and building local variables...");
 		mxPlots = MatrixOfPlots.getMatrix();
-		plotInfo = new String[PLOT_MATRIX_ROWS * PLOT_MATRIX_COLUMNS];
+		num_rows = mxPlots.getNumRows();
+		num_cols = mxPlots.getNumCols();
+		plotInfo = new String[num_rows * num_cols];
+		
+		plantCatalogue = PlantCatalogue.getPlantCatalogue();
 
 		//REMOVED as not needed to be dynamic
 		//rowno_et = (EditText) findViewById(R.id.rowno_id);
 		//colno_et = (EditText) findViewById(R.id.colno_id);
 		//build_btn = (Button) findViewById(R.id.build_btn_id);
 		table_layout = (TableLayout) findViewById(R.id.tableLayout1);
-
+		output = (TextView) findViewById(R.id.testText);
+		
 		//build_btn.setOnClickListener(this);
 		table_layout.setOnClickListener(this);
 
 		// sets up intial table
-		BuildTable(PLOT_MATRIX_ROWS, PLOT_MATRIX_COLUMNS);
+		Log.w(TableDisplayActivity.class.getName(), "Building table");
+		BuildTable(num_rows, num_cols);
+		
+		handler = new Handler();
+		coreSettings = CoreSettings.accessCoreSettings();
+		iteration_time_delay = coreSettings.checkIntSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY);
+		game = Game.getGameDetails();
+		updateIterationCountDisplay("Date: " + game.getDateString());
+		startRepeatedActivity();
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+		stopRepeatedActivity();
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		startRepeatedActivity();
 	}
 
 	@Override
@@ -99,7 +119,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 	}
 
 	private void BuildTable(int rows, int cols) {
-
+		Log.w(TableDisplayActivity.class.getName(), "Starting build table");
 		// outer for loop
 		for (int rowCounter = 1; rowCounter <= rows; rowCounter++) {
 
@@ -115,11 +135,12 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 				tv.setBackgroundResource(R.drawable.cell_shape);
 				tv.setPadding(5, 5, 5, 5);
 				tv.setId(((rowCounter-1) * cols) + colCounter);
-				Log.d("Plot Matrix", "Requesting plot @ pos: " + colCounter + "," + rowCounter);
+				Log.d(TableDisplayActivity.class.getName(), "Requesting plot @ pos: " + colCounter + "," + rowCounter + " (1-based array)");
 				// Full info in cell.
 				//tv.setText("R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString());
-				tv.setText(mxPlots.getPlot(colCounter, rowCounter).getGroundState().toString());
-				plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString();
+				Plot localCopy = mxPlots.getPlot(colCounter, rowCounter);
+				tv.setText(localCopy.getGroundState().toString());
+				plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + localCopy.toString();
 				tv.setClickable(true);
 
 				row.addView(tv);
@@ -128,14 +149,43 @@ public class TableDisplayActivity extends Activity implements OnClickListener, C
 
 			}
 
+			Log.w(TableDisplayActivity.class.getName(), "Finishing build table - adding to view");
 			table_layout.addView(row);
+			Log.w(TableDisplayActivity.class.getName(), "Added to view - all set!");
 		}
 	}
 
 	private void CheckForCellTouch(int id) {
-		if (id>0 && id <= (PLOT_MATRIX_ROWS * PLOT_MATRIX_COLUMNS)) {
+		if (id>0 && id <= (num_rows * num_cols)) {
 			//Toast.makeText(TableDisplayActivity.this, "Touched cell id: " + id, Toast.LENGTH_SHORT).show();
 			Toast.makeText(TableDisplayActivity.this, "Touched cell - details:\n" + plotInfo[id - 1], Toast.LENGTH_SHORT).show();
 		}
+	}
+
+	private void startRepeatedActivity() {
+		handler.postDelayed(runnable, iteration_time_delay);
+	}
+
+	private void stopRepeatedActivity() {
+		handler.removeCallbacks(runnable);
+	}
+
+	private Runnable runnable = new Runnable() {
+		@Override
+		public void run() {
+			/* do what you need to do */
+			nextIteration();
+			/* and here comes the "trick" */
+			handler.postDelayed(this, iteration_time_delay);
+		}
+	};
+
+	private void nextIteration() {
+		game.advanceDate();
+		updateIterationCountDisplay("Date: " + game.getDateString());
+	}
+	
+	private void updateIterationCountDisplay(String forDisplay) {
+		output.setText(forDisplay);
 	}
 }

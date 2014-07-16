@@ -2,6 +2,7 @@ package com.tomhedges.bamboo.util;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 public class DateConverter {
@@ -18,6 +19,12 @@ public class DateConverter {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	public Date reduceDateByMinutes(Date dateOrigDate, int minutesToReduceBy) {
+		// Reduce date by set number of minutes. Calculation multiplies minutes value to milliseconds
+		Date dateReduced = new Date(dateOrigDate.getTime() - (minutesToReduceBy * 60 * 1000));
+		return dateReduced;
 	}
 
 	public String convertDateToString(Date dateDate) {

@@ -1,28 +1,20 @@
 package com.tomhedges.bamboo.fragments;
 
 import com.tomhedges.bamboo.R;
-import com.tomhedges.bamboo.activities.ReadCommentsActivity;
 import com.tomhedges.bamboo.config.Constants;
-import com.tomhedges.bamboo.fragments.LoginFragment.AttemptLogin;
-import com.tomhedges.bamboo.model.Comment;
+import com.tomhedges.bamboo.model.PlantCatalogue;
+import com.tomhedges.bamboo.model.RemoteSeed;
 import com.tomhedges.bamboo.util.JSONParser;
 import com.tomhedges.bamboo.util.LocationRetrieve;
-import com.tomhedges.bamboo.util.dao.CommentsDataSource;
+import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 import android.app.ProgressDialog;
-import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.ListFragment;
-
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Random;
-
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
@@ -34,9 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -54,6 +44,8 @@ public class WeatherFragment extends Fragment implements OnClickListener, Consta
 
 	// JSON parser class
 	JSONParser jsonParser = new JSONParser();
+
+	private RemoteDBTableRetrieval remoteDataRetriever;
 	
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -155,6 +147,20 @@ public class WeatherFragment extends Fragment implements OnClickListener, Consta
 			    
 			    weatherRawData = "Location: " + q + "\n\nCloud: " + cloud_level + "\nTemp: " + temperature + "\nRain: "  + rainfall;
 			    
+				remoteDataRetriever = new RemoteDBTableRetrieval();
+				PlantCatalogue.createPlantCatalogue(null);
+				PlantCatalogue plantCat = PlantCatalogue.getPlantCatalogue();
+				RemoteSeed[] remoteSeeds = remoteDataRetriever.getSeedingPlants(locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date());
+				plantCat.setRemoteSeedArray(remoteSeeds);
+				remoteSeeds = null;
+				
+				remoteSeeds = plantCat.getRemoteSeedArray();
+				String strTest = "";
+				for (RemoteSeed remSeed : remoteSeeds) {
+					strTest = strTest + "\n" + remSeed.toString();
+				}
+				weatherRawData = "Got data for " + remoteSeeds.length + " plants..." + strTest;
+				
 				getActivity().runOnUiThread(new Runnable()
 				{
 					public void run()

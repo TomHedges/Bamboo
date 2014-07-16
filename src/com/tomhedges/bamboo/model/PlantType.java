@@ -2,7 +2,7 @@ package com.tomhedges.bamboo.model;
 
 import com.tomhedges.bamboo.config.Constants;
 
-public class PlantType implements Constants {
+public class PlantType implements Constants, Comparable<PlantType> {
 	private int plantTypeId;
 	private String type;
 	private int preferredTemp;
@@ -18,7 +18,8 @@ public class PlantType implements Constants {
 	private int fruitsFor;
 
 	public PlantType(int plantTypeId, String type, int preferredTemp, int requiredWater,
-			double preferredPH, GroundState preferredGroundState, int livesFor, int commonnessFactor) {
+			double preferredPH, GroundState preferredGroundState, int livesFor, int commonnessFactor,
+			int maturesAtAge, int floweringTarget, int flowersFor, int fruitingTarget, int fruitsFor) {
 		this.plantTypeId = plantTypeId;
 		this.type = type;
 		this.preferredTemp = preferredTemp;
@@ -27,8 +28,13 @@ public class PlantType implements Constants {
 		this.preferredGroundState = preferredGroundState;
 		this.livesFor = livesFor;
 		this.commonnessFactor = commonnessFactor;
+		this.maturesAtAge = maturesAtAge;
+		this.floweringTarget = floweringTarget;
+		this.flowersFor = flowersFor;
+		this.fruitingTarget = fruitingTarget;
+		this.fruitsFor = fruitsFor;
 	}
-	
+
 	public int getPlantTypeId() {
 		return plantTypeId;
 	}
@@ -56,8 +62,49 @@ public class PlantType implements Constants {
 	public int getLivesFor() {
 		return livesFor;
 	}
-	
+
 	public int getCommonnessFactor() {
 		return commonnessFactor;
+	}
+
+	public void setMaturesAtAge(int maturesAtAge) {
+		this.maturesAtAge = maturesAtAge;
+	}
+
+	public int getMaturesAtAge() {
+		return maturesAtAge;
+	}
+
+	public int getFloweringTarget() {
+		return floweringTarget;
+	}
+
+	public int getFlowersFor() {
+		return flowersFor;
+	}
+
+	public int getFruitingTarget() {
+		return fruitingTarget;
+	}
+
+	public int getFruitsFor() {
+		return fruitsFor;
+	}
+
+	@Override
+	public String toString() {
+		return "PlantType: plantTypeId=" + plantTypeId + ", plantType=" + type;
+	}
+
+	@Override
+	public int compareTo(PlantType another) {
+		final int BEFORE = -1;
+		final int AFTER = 1;
+
+		if (this.type.compareToIgnoreCase(another.type) == BEFORE) {
+			return BEFORE;
+		} else {
+			return AFTER;
+		}
 	}
 }

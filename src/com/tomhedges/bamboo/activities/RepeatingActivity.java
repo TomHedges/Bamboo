@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.model.Plot;
+import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 public class RepeatingActivity extends Activity implements OnClickListener, Constants {
 

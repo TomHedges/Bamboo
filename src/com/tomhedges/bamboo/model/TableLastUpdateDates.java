@@ -26,6 +26,6 @@ public class TableLastUpdateDates {
 
 	@Override
 	public String toString() {
-		return "Config table: " + getConfig() + ", Plants table: " + getPlants();
+		return "ConfigValues table last updated: " + getConfig() + ", Plants table last updated: " + getPlants();
 	}
 }

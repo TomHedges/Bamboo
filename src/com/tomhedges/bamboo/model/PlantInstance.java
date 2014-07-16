@@ -12,6 +12,9 @@ public class PlantInstance implements Constants {
 	private int fruitingTargetCount;
 	private int isFruiting;
 	private int fruitsForCount;
+	private boolean remoteSeededPlant;
+	private String originUsername;
+	private String sponsoredMessage;
 
 	public PlantInstance(PlantType plantType, int plantInstanceId) {
 		this.plantType = plantType;
@@ -57,5 +60,10 @@ public class PlantInstance implements Constants {
 	
 	public int getCommonnessFactor() {
 		return plantType.getCommonnessFactor();
+	}
+
+	@Override
+	public String toString() {
+		return "PlantInstance: instance_id=" + plantInstanceId + ", plantType=" + plantType.toString();
 	}
 }
