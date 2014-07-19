@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Based on original form http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content" >
+
+    <ImageView
+        android:id="@+id/dia_plant_img"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true" />
+
+    <ScrollView
+        android:id="@+id/dia_plant_sv"
+        android:layout_width="fill_parent"
+        android:layout_height="200dp"
+        android:layout_below="@+id/dia_plant_img" >
+
+        <TextView
+            android:id="@+id/dia_plant_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="plant details..." />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/dia_plant_sv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" >
+
+        <Button
+            android:id="@+id/dia_plant_select_plant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Plant me!" />
+        
+        <Button
+            android:id="@+id/dia_plant_plot_details"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Plot details" />
+
+        <Button
+            android:id="@+id/dia_plant_close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close" />
+            <!-- android:layout_toRightOf="@+id/dia_plant_plot_details" -->
+    </LinearLayout>
+
+</RelativeLayout>

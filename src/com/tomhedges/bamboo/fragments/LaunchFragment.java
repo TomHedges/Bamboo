@@ -118,6 +118,10 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 		protected String doInBackground(Void... params) {
 			
 			/// NEED TO MAKE THIS WORK IF NO INTERNET CONNECTION - SHOULD BE EASY AS ALL DATA STORED LOCALLY!!!
+
+			// for testing purposes - change to false for production! Forces all tables to update.
+			boolean forceUpdate = false;
+			
 			
 			Log.w(LaunchFragment.class.getName(), "Creating core settings preferences");
 			CoreSettings.createCoreSettings(getActivity());
@@ -138,10 +142,7 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 			Globals globalsRemote = remoteDataRetriever.getGlobals();
 
 			//Log.w(LaunchFragment.class.getName(), "globalsRemote last updated: " + globalsRemote.getLast_updated());
-			//Log.w(LaunchFragment.class.getName(), "globalsLocal last updated: " + globalsLocal.getLast_updated());
-
-			// for testing purposes - change to false for production! Forces all tables to update.
-			boolean forceUpdate = false;
+			//Log.w(LaunchFragment.class.getName(), "globalsLocal last updated: " + globalsLocal.getLast_updated())
 
 			if (forceUpdate || globalsRemote.getLast_updated().after(globalsLocal.getLast_updated())) {
 				publishProgress("Updating local data with updated values!");

@@ -7,7 +7,7 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/testText"
+        android:id="@+id/tvAboveTable"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Awaiting content..." />
@@ -15,7 +15,7 @@
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" >
+        android:layout_height="wrap_content" >
 
         <HorizontalScrollView
             xmlns:android="http://schemas.android.com/apk/res/android"
@@ -75,4 +75,9 @@
         </HorizontalScrollView>
     </ScrollView>
 
+    <TextView
+        android:id="@+id/tvBelowTable"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Awaiting content..." />
 </LinearLayout>

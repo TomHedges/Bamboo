@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import android.util.Log;
+
 public class PlantCatalogue {
 
 	private static PlantCatalogue plantCatalogue = null;
@@ -27,6 +29,7 @@ public class PlantCatalogue {
 				hmPlantType.put(plant.getPlantTypeId(), plant);
 			}
 			test = sortByPlantType(hmPlantType);
+			remoteSeedArray = new RemoteSeed[0];
 		}
 	}
 
@@ -43,14 +46,15 @@ public class PlantCatalogue {
 		return plantCatalogue;
 	}
 
-	public PlantType getPlantType(int id) {
+	public PlantType getPlantTypeByPlantTypeID(int id) {
+		Log.w(PlantCatalogue.class.getName(), "Retrieving plant type with ID: " + id);
 		int loopCounter = 0;
 
 		while (loopCounter < plantArray.length && plantArray[loopCounter].getPlantTypeId() != id) {
 			loopCounter++;
 		}
 
-		if (plantArray[loopCounter].getPlantTypeId() == id) {
+		if (loopCounter != plantArray.length) {
 			return plantArray[loopCounter];
 		} else {
 			return null;
@@ -90,5 +94,17 @@ public class PlantCatalogue {
 		}
 
 		return sortedMap;
+	}
+
+	public Map<java.lang.Integer, com.tomhedges.bamboo.model.PlantType> getPlants() {
+		return test;
+	}
+	
+	public PlantType[] getPlantsSimple() {
+		return plantArray;
+	}
+	
+	public int getPlantTypeCountSimple() {
+		return plantArray.length;
 	}
 }
