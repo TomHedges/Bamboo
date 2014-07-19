@@ -8,8 +8,8 @@ public class MatrixOfPlots {
 	
 	private Plot[][] plotArray;
 	
-	int num_rows;
-	int num_cols;
+	private int num_rows;
+	private int num_cols;
 
 	// Private constructor
 	private MatrixOfPlots(Plot[][] plotArray){
@@ -34,7 +34,7 @@ public class MatrixOfPlots {
 	public static MatrixOfPlots getMatrix() {
 		return matrix;
 	}
-	
+
 	public Plot getPlot(int xPos, int yPos) {
 		if (xPos>=1 && xPos<=num_cols && yPos>=1 && yPos<=num_rows) {
             Log.d(MatrixOfPlots.class.getName(), "Request for plot @ pos: " + (xPos-1) + "," + (yPos-1) + " (0-based array)");

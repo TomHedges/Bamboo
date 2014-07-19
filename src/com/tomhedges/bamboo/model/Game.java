@@ -3,6 +3,7 @@ package com.tomhedges.bamboo.model;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Observable;
 
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
@@ -13,12 +14,13 @@ import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-public class Game {
+public class Game extends Observable {
 
 	private static Game game = null;
 	private CoreSettings coreSettings;
@@ -30,15 +32,53 @@ public class Game {
 	private Calendar gameStartDate;
 	private int numOfDaysPlayed;
 	private String gameDate;
-
+	private GameDate gd2;
 	private LocationRetrieve locator;
+	private Handler handler;
+	private int iteration_time_delay;
+	
+	public class GameDate {
+		String gameDate;
+		
+		public String returnDate() {
+			return gameDate;
+		}
+	}
+	
+	public class GameDetailsText {
+		String gameDetails;
+		
+		public String returnDetails() {
+			return gameDetails;
+		}
+	}
+	
+	public class PlotDetails {
+		int plotID;
+		String plotBasicText;
+		String plotPlotFullDetails;
 
+		public int returnPlotID() {
+			return plotID;
+		}
+
+		public String returnPlotBasicText() {
+			return plotBasicText;
+		}
+		
+		public String returnPlotPlotFullDetails() {
+			return plotPlotFullDetails;
+		}
+	}
+	
+	
 	// Private constructor
 	private Game(Context context){
 		this.context = context;
 		coreSettings = CoreSettings.accessCoreSettings();
 		plantCatalogue = PlantCatalogue.getPlantCatalogue();
 		mxPlots = MatrixOfPlots.getMatrix();
+		handler = new Handler();
 
 		gameStartDate = Calendar.getInstance();
 		numOfDaysPlayed = 0;
@@ -47,6 +87,8 @@ public class Game {
 		weather.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
 		remoteDataRetriever = new RemoteDBTableRetrieval();
 		setDateString();
+		
+		iteration_time_delay = checkIntSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY);
 	}
 
 	// Singleton Factory method
@@ -57,6 +99,49 @@ public class Game {
 		return game;
 	}
 
+	private void UpdateObservers(Object objectUpdated) {
+		setChanged();
+		notifyObservers(objectUpdated);
+	}
+
+	private void startRepeatedActivity() {
+		handler.postDelayed(runnable, iteration_time_delay);
+	}
+
+	private void stopRepeatedActivity() {
+		handler.removeCallbacks(runnable);
+	}
+
+	private Runnable runnable = new Runnable() {
+		@Override
+		public void run() {
+			/* do what you need to do */
+			nextIteration();
+			/* and here comes the "trick" */
+			handler.postDelayed(this, iteration_time_delay);
+		}
+	};
+
+	private void nextIteration() {
+		advanceDate();
+		updateGameDetailsText();
+		sendPlotStateUpdate();
+	}
+
+	public void startGame() {
+		// nothing to do here at present...
+	}
+	
+	public void pauseGame() {
+		stopRepeatedActivity();
+		locator.disconnect();
+	}
+
+	public void resumeGame() {
+		startRepeatedActivity();
+		locator.connect();
+	}
+	
 	public void advanceDate(){
 		numOfDaysPlayed = numOfDaysPlayed + 1;
 		gameStartDate.add(Calendar.DATE, 1);
@@ -71,25 +156,34 @@ public class Game {
 		}
 	}
 
+	private void updateGameDetailsText() {
+		GameDetailsText gdText = new GameDetailsText();
+		gdText.gameDetails = "Local Weather:\nTemperature = " + getRealTemp() + "\u00B0C\nRainfall = " + getRealRainfall() + "mm\nNumber of remote seeds = " + getRemoteSeedCount();
+		UpdateObservers(gdText);
+	}
+
 	private void setDateString() {
 		gameDate = gameStartDate.get(Calendar.DATE) + " " + gameStartDate.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " " + gameStartDate.get(Calendar.YEAR);
+		GameDate gd2 = new GameDate();
+		gd2.gameDate = gameDate;
 		Log.w(Game.class.getName(), "Date is: " + gameDate);
+
+		UpdateObservers(gd2);
+	}
+
+	private void sendPlotStateUpdate() {
+		for (int loopCounter = 1; loopCounter <= (mxPlots.getNumCols() * mxPlots.getNumRows()); loopCounter++) {
+			PlotDetails plotUpdate = new PlotDetails();
+			plotUpdate.plotID = loopCounter;
+			plotUpdate.plotBasicText = getPlotBasicText(loopCounter);
+			plotUpdate.plotPlotFullDetails = getPlotBasicFullPlotDetails(loopCounter);
+			
+			UpdateObservers(plotUpdate);
+		}
 	}
 
 	public String getDateString(){
 		return gameDate;
-	}
-
-	public void startGame() {
-		// nothing to do here at present...
-	}
-
-	public void pauseGame() {
-		locator.disconnect();
-	}
-
-	public void resumeGame() {
-		locator.connect();
 	}
 
 	public int getRealTemp() {
@@ -174,7 +268,7 @@ public class Game {
 	public int getYPosFromID(int plotID) {
 		return ((plotID-1) / getNumPlotCols()) + 1;
 	}
-	
+
 	public Plot getPlotFrom1BasedID(int plotID) {
 		int xPos = ((plotID-1) % getNumPlotCols()) + 1;
 		int yPos = ((plotID-1) / getNumPlotCols()) + 1;
@@ -201,6 +295,6 @@ public class Game {
 		Plot localCopy = game.getPlotFrom1BasedID(plotID);
 		return localCopy.toString();
 	}
-	
-	
+
+
 }

@@ -2,10 +2,12 @@
 
 package com.tomhedges.bamboo.activities;
 
+import java.util.Observable;
+import java.util.Observer;
+
 import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -25,7 +27,7 @@ import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.model.Game;
 
-public class TableDisplayActivity extends Activity implements OnClickListener {
+public class TableDisplayActivity extends Activity implements OnClickListener, Observer {
 
 	private TableLayout table_layout;
 	private TextView aboveTable, belowTable;
@@ -39,15 +41,12 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 
 	private int touchedPlot = 0;
 
-	private Handler handler;
-
-	private int iteration_time_delay;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
 		game = Game.getGameDetails(this);
+		game.addObserver(this);
 
 		setContentView(R.layout.table_display);
 
@@ -68,9 +67,6 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 		// sets up initial table
 		Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
 		BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
-
-		handler = new Handler();
-		iteration_time_delay = game.checkIntSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY);
 		updateAboveTableDisplay("Date: " + game.getDateString());
 	}
 
@@ -81,17 +77,41 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 	}
 
 	@Override
+	protected void onResume() {
+		super.onResume();
+		game.resumeGame();
+	}
+
+	@Override
 	protected void onPause() {
 		super.onPause();
-		stopRepeatedActivity();
 		game.pauseGame();
 	}
 
 	@Override
-	protected void onResume() {
-		super.onResume();
-		startRepeatedActivity();
-		game.resumeGame();
+	public void update(Observable observable, Object data) {
+		if (data!= null) {
+			//Toast.makeText(TableDisplayActivity.this, "Notified of updated: " + data.getClass() + " from: " + observable.toString(), Toast.LENGTH_SHORT).show();
+
+			if (data instanceof Game.GameDate) {
+				Game.GameDate gameDate = (Game.GameDate) data;
+				updateAboveTableDisplay("Date: " + gameDate.returnDate());
+			}
+
+			if (data instanceof Game.GameDetailsText) {
+				Game.GameDetailsText gameDetailsText = (Game.GameDetailsText) data;
+				updateBelowTableDisplay(gameDetailsText.returnDetails());
+			}
+
+			if (data instanceof Game.PlotDetails) {
+				Game.PlotDetails plotDetails = (Game.PlotDetails) data;
+				Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + plotDetails.returnPlotID());
+				TextView tv = (TextView) findViewById(plotDetails.returnPlotID());
+				Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + tv.getId());
+				tv.setText(plotDetails.returnPlotBasicText());
+				plotInfo[tv.getId()-1] = "R: " + game.getYPosFromID(plotDetails.returnPlotID()) + "\nC: " + plotDetails.returnPlotPlotFullDetails();
+			}
+		}
 	}
 
 	@Override
@@ -218,24 +238,24 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 				Log.d(TableDisplayActivity.class.getName(), "Requesting plot @ pos: " + colCounter + "," + rowCounter + " with ID: " + tv.getId() + " (1-based array)");
 				// Full info in cell.
 				//tv.setText("R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString());
-				
+
 
 				tv.setText(game.getPlotBasicText(tv.getId()));
 				plotInfo[tv.getId()-1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + game.getPlotBasicFullPlotDetails(tv.getId());
-				
-				
-				
-//				Plot localCopy = game.getPlot(colCounter, rowCounter);
-//				String plotText = localCopy.getGroundState().toString();
-//				if (localCopy.getPlant() == null) {
-//					plotText = plotText + "\nNo plant";
-//				} else {
-//					plotText = plotText + "\n" + localCopy.getPlant().getType();
-//				}
-//				tv.setText(plotText);
-//				plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + localCopy.toString();
-				
-				
+
+
+
+				//				Plot localCopy = game.getPlot(colCounter, rowCounter);
+				//				String plotText = localCopy.getGroundState().toString();
+				//				if (localCopy.getPlant() == null) {
+				//					plotText = plotText + "\nNo plant";
+				//				} else {
+				//					plotText = plotText + "\n" + localCopy.getPlant().getType();
+				//				}
+				//				tv.setText(plotText);
+				//				plotInfo[(((rowCounter-1) * cols) + colCounter) - 1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + localCopy.toString();
+
+
 				tv.setClickable(true);
 
 				row.addView(tv);
@@ -248,7 +268,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 			Log.w(TableDisplayActivity.class.getName(), "Row " + rowCounter + " completed - adding to view");
 			table_layout.addView(row);
 		}
-		
+
 		Log.w(TableDisplayActivity.class.getName(), "All rows added to view - all set!");
 	}
 
@@ -260,30 +280,6 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 		} else {
 			return false;
 		}
-	}
-
-	private void startRepeatedActivity() {
-		handler.postDelayed(runnable, iteration_time_delay);
-	}
-
-	private void stopRepeatedActivity() {
-		handler.removeCallbacks(runnable);
-	}
-
-	private Runnable runnable = new Runnable() {
-		@Override
-		public void run() {
-			/* do what you need to do */
-			nextIteration();
-			/* and here comes the "trick" */
-			handler.postDelayed(this, iteration_time_delay);
-		}
-	};
-
-	private void nextIteration() {
-		game.advanceDate();
-		updateAboveTableDisplay("Date: " + game.getDateString());
-		updateBelowTableDisplay("Local Weather:\nTemperature = " + game.getRealTemp() + "\u00B0C\nRainfall = " + game.getRealRainfall() + "mm\nNumber of remote seeds = " + game.getRemoteSeedCount());
 	}
 
 	private void updateAboveTableDisplay(String forDisplay) {
@@ -330,13 +326,14 @@ public class TableDisplayActivity extends Activity implements OnClickListener {
 				@Override
 				public void onClick(View v) {
 					dialog.cancel(); //needs to do something!
-					
+
 					game.plantSeed(plantToLinkTo, plotToLinkTo);
 					TextView tv = (TextView) findViewById(plotToLinkTo);
 					tv.setText(game.getPlotBasicText(plotToLinkTo));
 					plotInfo[plotToLinkTo-1] = "R: " + game.getYPosFromID(plotToLinkTo) + "\nC: " + game.getXPosFromID(plotToLinkTo) + "\nCell ID: " + plotToLinkTo + "\nPlot:\n" + game.getPlotBasicFullPlotDetails(plotToLinkTo);
-
-					Toast.makeText(TableDisplayActivity.this, "Planted " + game.getPlotFrom1BasedID(touchedPlot).getPlant().getType(), Toast.LENGTH_SHORT).show();
+					
+					//Toast.makeText(TableDisplayActivity.this, "Planted " + game.getPlotFrom1BasedID(touchedPlot).getPlant().getType(), Toast.LENGTH_SHORT).show();
+					Toast.makeText(TableDisplayActivity.this, "Planted " + game.getPlantTypeByPlantTypeID(plantToLinkTo).getType(), Toast.LENGTH_SHORT).show();
 				}
 			});
 		} else {
