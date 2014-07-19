@@ -2,6 +2,8 @@
 
 package com.tomhedges.bamboo.fragments;
 
+import java.util.Date;
+
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.activities.RepeatingActivity;
 import com.tomhedges.bamboo.activities.TableDisplayActivity;
@@ -27,10 +29,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
-public class LaunchFragment extends Fragment implements OnClickListener, Constants {
+public class LaunchFragment extends Fragment implements OnClickListener {
 
-	private Button btnRepetitonTest, btnTableDisplayTest;
+	private Button btnRepetitonTest, btnTableDisplayTest, btnTestSeedUpload;
+	private EditText etUsername;
 	private Intent i;
 
 	// Progress Dialog
@@ -49,13 +54,17 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 		super.onCreate(savedInstanceState);
 		View v = inflater.inflate(R.layout.launch, container, false);        
 
+		etUsername = (EditText)v.findViewById(R.id.username);
+
 		//setup buttons
 		btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
 		btnTableDisplayTest = (Button)v.findViewById(R.id.launchTableDisplayActivity);
+		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
 
 		//register listeners
 		btnRepetitonTest.setOnClickListener(this);
 		btnTableDisplayTest.setOnClickListener(this);
+		btnTestSeedUpload.setOnClickListener(this);
 
 		return v;
 	}
@@ -75,8 +84,65 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 			//startActivity(i);
 			break;
 
+		case R.id.test_seed_upload:
+			new UploadTest().execute();
+
+			break;
+
 		default:
 			break;
+		}
+	}
+
+	class UploadTest extends AsyncTask<Void, Void, Boolean> {
+
+		/**
+		 * Before starting background thread Show Progress Dialog
+		 * */
+		boolean failure = false;
+
+		protected void onPreExecute() {
+			super.onPreExecute();
+
+			pDialog = new ProgressDialog(getActivity());
+			pDialog.setMessage("Testing seed upload");
+			pDialog.setIndeterminate(false);
+			pDialog.setCancelable(true);
+			pDialog.show();
+
+		}
+
+		@Override
+		protected Boolean doInBackground(Void... params) {
+			Log.w(UploadTest.class.getName(), "Testing seed upload...");
+
+			CoreSettings.createCoreSettings(getActivity());
+			remoteDataRetriever = new RemoteDBTableRetrieval();
+			coreSettings = CoreSettings.accessCoreSettings();
+			coreSettings.addSetting(Constants.TAG_USERNAME, etUsername.getText().toString());
+			coreSettings.addSetting(Constants.ROOT_URL_FIELD_NAME, Constants.ROOT_URL.toString());
+
+			java.util.Random randomGenerator = new java.util.Random();
+			boolean seedUploadStatus = remoteDataRetriever.uploadSeed(new Date(), coreSettings.checkStringSetting(Constants.TAG_USERNAME), randomGenerator.nextDouble(), randomGenerator.nextDouble(), randomGenerator.nextInt(4));
+
+			if (seedUploadStatus) {
+				Log.w(UploadTest.class.getName(), "Upload successful!");
+			} else {
+				Log.e(UploadTest.class.getName(), "Upload NOT successful!");
+			}
+
+			return seedUploadStatus;
+		}
+
+		@Override
+		protected void onPostExecute(Boolean uploadStatus) {
+			pDialog.cancel();
+			
+			if (uploadStatus) {
+				Toast.makeText(getActivity(), "Upload successful!", Toast.LENGTH_LONG).show();
+			} else {
+				Toast.makeText(getActivity(), "Upload NOT successful!", Toast.LENGTH_LONG).show();
+			}
 		}
 	}
 
@@ -116,13 +182,13 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 
 		@Override
 		protected String doInBackground(Void... params) {
-			
+
 			/// NEED TO MAKE THIS WORK IF NO INTERNET CONNECTION - SHOULD BE EASY AS ALL DATA STORED LOCALLY!!!
 
 			// for testing purposes - change to false for production! Forces all tables to update.
 			boolean forceUpdate = false;
-			
-			
+
+
 			Log.w(LaunchFragment.class.getName(), "Creating core settings preferences");
 			CoreSettings.createCoreSettings(getActivity());
 			coreSettings = CoreSettings.accessCoreSettings();
@@ -136,7 +202,7 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 
 			// save URL, etc. to preferences
 			coreSettings.addSetting(Constants.ROOT_URL_FIELD_NAME, globalsLocal.getRootURL());
-			coreSettings.addSetting(Constants.ROOT_URL_FIELD_NAME, globalsLocal.getRootURL());
+			coreSettings.addSetting(Constants.TAG_USERNAME, etUsername.getText().toString());
 
 			remoteDataRetriever = new RemoteDBTableRetrieval();
 			Globals globalsRemote = remoteDataRetriever.getGlobals();
@@ -164,13 +230,13 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 						publishProgress("Updating Configuration data with updated values!");
 						ConfigValues remoteConfigValues = remoteDataRetriever.getConfig();
 
-						if (localDataRetriever.writeConfig(remoteConfigValues) && localDataRetriever.writeTableUpdateDate(TABLES_VALUES_CONFIG, tablesUpdatedRemote.getConfig())) {
+						if (localDataRetriever.writeConfig(remoteConfigValues) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_CONFIG, tablesUpdatedRemote.getConfig())) {
 							Log.w(LaunchFragment.class.getName(), "Updated Config date in Tables table!");
 							Log.w(LaunchFragment.class.getName(), "Updated Config data!");
 							publishProgress("Local Config table data updated");
 
 							Log.w(LaunchFragment.class.getName(), "Creating Plot matrix from remote data...");
-							GroundState[] gsGroundStates = remoteConfigValues.getGroundStates();
+							Constants.GroundState[] gsGroundStates = remoteConfigValues.getGroundStates();
 
 							int num_rows = remoteConfigValues.getPlot_matrix_rows();
 							int num_cols = remoteConfigValues.getPlot_matrix_columns();
@@ -184,7 +250,7 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 							}
 
 							coreSettings.addSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY, remoteConfigValues.getIteration_time_delay());
-							
+
 							if (MatrixOfPlots.createMatrix(plotArray)) {
 								Log.w(LaunchFragment.class.getName(), "Created plot matrix from remote data!");
 							} else {
@@ -202,10 +268,10 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 						publishProgress("Updating Plant Types data with updated values!");
 						PlantType[] remotePlantTypes = remoteDataRetriever.getPlantTypes();
 
-						if (localDataRetriever.writePlantTypes(remotePlantTypes) && localDataRetriever.writeTableUpdateDate(TABLES_VALUES_PLANTTYPES, tablesUpdatedRemote.getPlants())) {
+						if (localDataRetriever.writePlantTypes(remotePlantTypes) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_PLANTTYPES, tablesUpdatedRemote.getPlants())) {
 							Log.w(LaunchFragment.class.getName(), "Updated Plant Types data!");
 							publishProgress("Local Plant Types table data updated");
-							
+
 							if (PlantCatalogue.createPlantCatalogue(remoteDataRetriever.getPlantTypes())) {
 								Log.w(LaunchFragment.class.getName(), "Created plant catalogue!");
 							} else {
@@ -226,16 +292,16 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 			} else {
 				publishProgress("All local data already up to date!");
 			}
-			
+
 			//BUILD FROM LOCAL DATA
-			
+
 			// PLOT MATRIX - only build if empty
 			if (MatrixOfPlots.getMatrix() == null) {
 				publishProgress("Setting up game from local details!");
 				Log.w(LaunchFragment.class.getName(), "Creating Plot matrix from local data...");
-				
+
 				ConfigValues localConfigValues = localDataRetriever.getConfigValues();
-				GroundState[] gsGroundStates = localConfigValues.getGroundStates();
+				Constants.GroundState[] gsGroundStates = localConfigValues.getGroundStates();
 
 				int num_rows = localConfigValues.getPlot_matrix_rows();
 				int num_cols = localConfigValues.getPlot_matrix_columns();
@@ -249,7 +315,7 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 				}
 
 				coreSettings.addSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY, localConfigValues.getIteration_time_delay());
-				
+
 				if (MatrixOfPlots.createMatrix(plotArray)) {
 					Log.w(LaunchFragment.class.getName(), "Created plot matrix from local data!");
 				} else {
@@ -268,7 +334,7 @@ public class LaunchFragment extends Fragment implements OnClickListener, Constan
 					Log.e(LaunchFragment.class.getName(), "Could not create plant catalogue!");
 				}
 			}
-			
+
 			return "Starting game...";
 		}
 

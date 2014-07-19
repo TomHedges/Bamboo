@@ -5,6 +5,23 @@
     android:gravity="center"
     android:orientation="vertical" >
 
+    <TextView
+        android:id="@+id/lbl_username"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Please enter username:" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:singleLine="true"
+        android:text="TomHedges" >
+
+        <requestFocus android:layout_width="wrap_content" />
+
+    </EditText>
+
     <Button
         android:id="@+id/launchRepeatingActivity"
         android:layout_width="250dp"
@@ -17,4 +34,10 @@
         android:layout_height="100dp"
         android:text="Launch Table Display test!" />
 
+    <Button
+        android:id="@+id/test_seed_upload"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Test - upload a seed!" />
+    
 </LinearLayout>

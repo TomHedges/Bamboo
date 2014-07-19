@@ -25,6 +25,7 @@ public interface Constants {
 	//public static final String TABLE_DATA_URL = ROOT_URL + "gettabledata.php";
 	public static final String TABLE_DATA_SCRIPT_NAME = "gettabledata.php";
 	public static final String GET_SEEDING_PLANTS_SCRIPT_NAME = "getseedingplants.php";
+	public static final String UPLOAD_SEED = "uploadseed.php";
 	public static final String TAG_FIELD = "Field";
 	public static final String TAG_TYPE = "Type";
 

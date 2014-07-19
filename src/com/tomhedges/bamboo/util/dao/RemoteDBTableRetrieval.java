@@ -387,4 +387,44 @@ public class RemoteDBTableRetrieval {
 
 		return remoteSeedingPlants;
 	}
+
+	public boolean uploadSeed(Date date, String username, double latitude, double longitude, int plantTypeID) {
+		// Check for success tag
+		int success;
+
+		jsonParser = new JSONParser();
+
+		try {
+			// Building Parameters
+			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			DateConverter dateConverter = new DateConverter();
+			params.add(new BasicNameValuePair(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(date)));
+			params.add(new BasicNameValuePair(Constants.TAG_USERNAME, username));
+			params.add(new BasicNameValuePair(Constants.PARAM_LATITUDE, "" + latitude));
+			params.add(new BasicNameValuePair(Constants.PARAM_LONGITUDE, "" + longitude));
+			params.add(new BasicNameValuePair(Constants.COLUMN_PLANT_TYPE_ID, "" + plantTypeID));
+
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting to upload a seed: plant_type_id=" + plantTypeID);
+			// getting product details by making HTTP request
+			JSONObject json = jsonParser.makeHttpRequest(coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.UPLOAD_SEED, Constants.HTML_VERB_POST, params);
+
+			// check your log for json response
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Response: " + json.toString());
+
+			// json success tag
+			success = json.getInt(Constants.TAG_SUCCESS);
+			if (success == 1) {
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Upload Successful! ent seed of plant type: " + plantTypeID);
+				return true;
+			} else {
+				Log.d(RemoteDBTableRetrieval.class.getName(), "ERROR: " + json.getString(Constants.TAG_MESSAGE));
+				return false;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		
+		//shouldn't get here, unless error...
+		return false;
+	}
 }
