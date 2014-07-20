@@ -90,6 +90,12 @@ public interface Constants {
 	public static final int ITERATION_TIME_DELAY = 1000;
 	public static final int PLANT_TYPE_MENU_ID_START_RANGE = 1000;
 	public static final int MENU_GROUP_PLANT_TYPES = 2;
+	
+	public static enum RETRIEVE_REMOTE_DATA_TYPE {
+		SEEDS,
+		WEATHER
+	}
+	
 	public static enum PLANT_DIALOG_TYPE {
 		PLANT_TYPE,
 		PLANT_INSTANCE,

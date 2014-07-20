@@ -15,11 +15,22 @@ public class PlantInstance implements Constants {
 	private boolean remoteSeededPlant;
 	private String originUsername;
 	private String sponsoredMessage;
+	private String successCopy;
 
 	public PlantInstance(PlantType plantType, int plantInstanceId) {
 		this.plantType = plantType;
 		this.plantInstanceId = plantInstanceId;
 		age = 0;
+	}
+	
+	public PlantInstance(PlantType plantType, int plantInstanceId, String originUsername, String sponsoredMessage, String successCopy) {
+		this.plantType = plantType;
+		this.plantInstanceId = plantInstanceId;
+		age = 0;
+		remoteSeededPlant = true;
+		this.originUsername = originUsername;
+		this.sponsoredMessage = sponsoredMessage;
+		this.successCopy = successCopy;
 	}
 	
 	public int getId() {
@@ -62,8 +73,21 @@ public class PlantInstance implements Constants {
 		return plantType.getCommonnessFactor();
 	}
 
+	public String getOriginUsername() {
+		return originUsername;
+	}
+
+	public String getSponsoredMessage() {
+		return sponsoredMessage;
+	}
+	public String getSuccessCopy() {
+		return successCopy;
+	}
+
 	@Override
 	public String toString() {
-		return "PlantInstance: instance_id=" + plantInstanceId + ", plantType=" + plantType.toString();
+		String additional="";
+		if (remoteSeededPlant) {additional = "\norigin username=" + originUsername + "\nsponsored message=" + sponsoredMessage;}
+		return "PlantInstance:\ninstance_id=" + plantInstanceId + "\nplantType=" + plantType.toString() + additional;
 	}
 }

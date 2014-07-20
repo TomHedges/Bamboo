@@ -7,6 +7,7 @@ import java.util.Observer;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -39,6 +40,9 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 	//private int num_rows;
 	//private int num_cols;
 
+	// Progress Dialog
+	private ProgressDialog pDialog;
+
 	private int touchedPlot = 0;
 
 	@Override
@@ -47,6 +51,14 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 		game = Game.getGameDetails(this);
 		game.addObserver(this);
+
+		if (!game.isGameStarted()) {
+			pDialog = new ProgressDialog(this);
+			pDialog.setMessage("Setting up game...");
+			pDialog.setIndeterminate(false);
+			pDialog.setCancelable(true);
+			pDialog.show();
+		}
 
 		setContentView(R.layout.table_display);
 
@@ -67,13 +79,11 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		// sets up initial table
 		Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
 		BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
-		updateAboveTableDisplay("Date: " + game.getDateString());
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
-		game.startGame();
 	}
 
 	@Override
@@ -94,8 +104,12 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			//Toast.makeText(TableDisplayActivity.this, "Notified of updated: " + data.getClass() + " from: " + observable.toString(), Toast.LENGTH_SHORT).show();
 
 			if (data instanceof Game.GameDate) {
-				Game.GameDate gameDate = (Game.GameDate) data;
-				updateAboveTableDisplay("Date: " + gameDate.returnDate());
+				final Game.GameDate gameDate = (Game.GameDate) data;
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						updateAboveTableDisplay("Date: " + gameDate.returnDate());
+					}
+				});
 			}
 
 			if (data instanceof Game.GameDetailsText) {
@@ -109,7 +123,40 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				TextView tv = (TextView) findViewById(plotDetails.returnPlotID());
 				Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + tv.getId());
 				tv.setText(plotDetails.returnPlotBasicText());
-				plotInfo[tv.getId()-1] = "R: " + game.getYPosFromID(plotDetails.returnPlotID()) + "\nC: " + plotDetails.returnPlotPlotFullDetails();
+				plotInfo[tv.getId()-1] = "R: " + game.getYPosFromID(plotDetails.returnPlotID()) + "\nC: " + game.getXPosFromID(plotDetails.returnPlotID()) + "\n" + plotDetails.returnPlotPlotFullDetails();
+			}
+
+			if (data instanceof Game.GameStartup) {
+				Log.w(TableDisplayActivity.class.getName(), "Received update to game startup...");
+				final Game.GameStartup gameStartupDetails = (Game.GameStartup) data;
+				if (pDialog.isShowing()) {
+					//Has to be run on UI thread, as altering dialog produced there...
+					TableDisplayActivity.this.runOnUiThread(new Runnable() {
+						public void run() {
+							pDialog.setMessage(gameStartupDetails.returnMessage());
+							if (gameStartupDetails.returnReadyToPlay()) {
+								pDialog.dismiss();
+							}
+						}
+					});
+				}
+			}
+
+			if (data instanceof Game.RemoteSeedPlanted) {
+				Game.RemoteSeedPlanted remotePlant = (Game.RemoteSeedPlanted) data;
+				Log.w(TableDisplayActivity.class.getName(), "Remote plant added: Plot=" + remotePlant.returnPlotID() + ", From=" + remotePlant.returnUsername() + ", Plant=" + remotePlant.returnPlantType() + ", isSponsored=" + remotePlant.returnIsSponsored());
+				final String alertToUser;
+				if (remotePlant.returnIsSponsored()) {
+					alertToUser = "A present has blown in from " + remotePlant.returnUsername() + "! Open your new " + remotePlant.returnPlantType() + " to find out their news...";
+				} else {
+					alertToUser = "A " + remotePlant.returnPlantType() + " from nearby player " + remotePlant.returnUsername() + " has taken root in your garden...";
+				}
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(TableDisplayActivity.this, alertToUser, Toast.LENGTH_LONG).show();
+					}
+				});
 			}
 		}
 	}
@@ -240,8 +287,8 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				//tv.setText("R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + mxPlots.getPlot(colCounter, rowCounter).toString());
 
 
-				tv.setText(game.getPlotBasicText(tv.getId()));
-				plotInfo[tv.getId()-1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + game.getPlotBasicFullPlotDetails(tv.getId());
+				//tv.setText(game.getPlotBasicText(tv.getId()));
+				//plotInfo[tv.getId()-1] = "R: " + rowCounter + "\nC: " + colCounter + "\nCell ID: " + tv.getId() + "\nPlot:\n" + game.getPlotBasicFullPlotDetails(tv.getId());
 
 
 
@@ -331,7 +378,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 					TextView tv = (TextView) findViewById(plotToLinkTo);
 					tv.setText(game.getPlotBasicText(plotToLinkTo));
 					plotInfo[plotToLinkTo-1] = "R: " + game.getYPosFromID(plotToLinkTo) + "\nC: " + game.getXPosFromID(plotToLinkTo) + "\nCell ID: " + plotToLinkTo + "\nPlot:\n" + game.getPlotBasicFullPlotDetails(plotToLinkTo);
-					
+
 					//Toast.makeText(TableDisplayActivity.this, "Planted " + game.getPlotFrom1BasedID(touchedPlot).getPlant().getType(), Toast.LENGTH_SHORT).show();
 					Toast.makeText(TableDisplayActivity.this, "Planted " + game.getPlantTypeByPlantTypeID(plantToLinkTo).getType(), Toast.LENGTH_SHORT).show();
 				}

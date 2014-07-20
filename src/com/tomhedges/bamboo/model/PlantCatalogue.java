@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Map.Entry;
 
 import android.util.Log;
@@ -69,10 +70,17 @@ public class PlantCatalogue {
 		return remoteSeedArray;
 	}
 
+	public RemoteSeed getRandomRemoteSeed() {
+		Random randomGenerator = new Random();
+		// apparently this will never return number in brackets, so shouldn't cause array out of bounds error.
+		int idToReturn = randomGenerator.nextInt(remoteSeedArray.length);
+		Log.w(PlantCatalogue.class.getName(), "Random remote seed to be returned: " + idToReturn + " from min of 0 and max of " + (remoteSeedArray.length-1));
+		return remoteSeedArray[randomGenerator.nextInt(remoteSeedArray.length)];
+	}
+
 	public int getRemoteSeedCount() {
 		return remoteSeedArray.length;
 	}
-
 	
 	// uses code from http://javarevisited.blogspot.co.uk/2012/12/how-to-sort-hashmap-java-by-key-and-value.html
 	public static <Integer extends Comparable,PlantType extends Comparable> Map<Integer,PlantType> sortByPlantType(Map<Integer,PlantType> map){

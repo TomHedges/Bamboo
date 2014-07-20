@@ -93,7 +93,7 @@ public class PlantType implements Constants, Comparable<PlantType> {
 
 	@Override
 	public String toString() {
-		return "PlantType: plantTypeId=" + plantTypeId + ", plantType=" + type;
+		return "PlantType:\nplantTypeId=" + plantTypeId + "\nplantType=" + type;
 	}
 
 	@Override

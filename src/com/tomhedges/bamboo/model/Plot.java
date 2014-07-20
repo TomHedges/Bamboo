@@ -64,7 +64,7 @@ public class Plot {
 		if (plotId>0) {
 			String plantInstDets = "No plant here!";
 			if (plantInstance != null) {
-				plantInstDets = plantInstance.toString();
+				plantInstDets = "\n" + plantInstance.toString();
 			}
 			return "Plot details:\nID=" + plotId + "\nX Pos=" + xPosInMatrix +"\nY Pos=" + yPosInMatrix + "\nGroundState=" + groundState + "\nPlant Instance=" + plantInstDets;
 		} else {

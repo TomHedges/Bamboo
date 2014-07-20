@@ -190,7 +190,7 @@ public class RemoteDBTableRetrieval {
 		return null;
 	}
 
-	public RemoteSeed[] getSeedingPlants(double latitude, double longitude, double distance_user, double distance_sponsor, Date dateAndTime ) {
+	public RemoteSeed[] getSeedingPlants(String username, double latitude, double longitude, double distance_user, double distance_sponsor, Date dateAndTime ) {
 		// Check for success tag
 		int success;
 
@@ -201,6 +201,7 @@ public class RemoteDBTableRetrieval {
 		try {
 			// Building Parameters
 			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair(Constants.TAG_USERNAME, "" + username));
 			params.add(new BasicNameValuePair(Constants.PARAM_LATITUDE, "" + latitude));
 			params.add(new BasicNameValuePair(Constants.PARAM_LONGITUDE, "" + longitude));
 			params.add(new BasicNameValuePair(Constants.PARAM_DISTANCE_USER, "" + distance_user));
@@ -354,7 +355,6 @@ public class RemoteDBTableRetrieval {
 			}
 
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -381,7 +381,6 @@ public class RemoteDBTableRetrieval {
 				remoteSeedingPlants[loopCounter] = tempSeed;
 			}
 		} catch (JSONException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

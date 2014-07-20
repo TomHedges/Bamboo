@@ -123,7 +123,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			coreSettings.addSetting(Constants.ROOT_URL_FIELD_NAME, Constants.ROOT_URL.toString());
 
 			java.util.Random randomGenerator = new java.util.Random();
-			boolean seedUploadStatus = remoteDataRetriever.uploadSeed(new Date(), coreSettings.checkStringSetting(Constants.TAG_USERNAME), randomGenerator.nextDouble(), randomGenerator.nextDouble(), randomGenerator.nextInt(4));
+			boolean seedUploadStatus = remoteDataRetriever.uploadSeed(new Date(), coreSettings.checkStringSetting(Constants.TAG_USERNAME), randomGenerator.nextDouble(), randomGenerator.nextDouble(), randomGenerator.nextInt(2)+3);
 
 			if (seedUploadStatus) {
 				Log.w(UploadTest.class.getName(), "Upload successful!");

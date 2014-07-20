@@ -113,7 +113,6 @@ public class WeatherFragment extends Fragment implements OnClickListener, Consta
 
 		@Override
 		protected String doInBackground(String... args) {
-			// TODO Auto-generated method stub
 			// Check for success tag
 			int success;
 			String q = locator.getLocation().getLatitude() + "," + locator.getLocation().getLongitude();
@@ -150,7 +149,7 @@ public class WeatherFragment extends Fragment implements OnClickListener, Consta
 				remoteDataRetriever = new RemoteDBTableRetrieval();
 				PlantCatalogue.createPlantCatalogue(null);
 				PlantCatalogue plantCat = PlantCatalogue.getPlantCatalogue();
-				RemoteSeed[] remoteSeeds = remoteDataRetriever.getSeedingPlants(locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date());
+				RemoteSeed[] remoteSeeds = remoteDataRetriever.getSeedingPlants("tomhedges", locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date());
 				plantCat.setRemoteSeedArray(remoteSeeds);
 				remoteSeeds = null;
 				

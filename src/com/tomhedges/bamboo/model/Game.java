@@ -4,9 +4,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Observable;
+import java.util.Random;
 
-import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.config.Constants.RETRIEVE_REMOTE_DATA_TYPE;
 import com.tomhedges.bamboo.config.CoreSettings;
 import com.tomhedges.bamboo.util.LocationRetrieve;
 import com.tomhedges.bamboo.util.WeatherRetriever;
@@ -31,28 +32,30 @@ public class Game extends Observable {
 	private WeatherRetriever weather;
 	private Calendar gameStartDate;
 	private int numOfDaysPlayed;
-	private String gameDate;
-	private GameDate gd2;
 	private LocationRetrieve locator;
 	private Handler handler;
 	private int iteration_time_delay;
-	
+	private boolean gameStarted;
+	private boolean weatherRetrieved;
+	private boolean seedsRetrieved;
+	private boolean initialPlotUpdateSent;
+
 	public class GameDate {
-		String gameDate;
-		
+		String gameDateString;
+
 		public String returnDate() {
-			return gameDate;
+			return gameDateString;
 		}
 	}
-	
+
 	public class GameDetailsText {
 		String gameDetails;
-		
+
 		public String returnDetails() {
 			return gameDetails;
 		}
 	}
-	
+
 	public class PlotDetails {
 		int plotID;
 		String plotBasicText;
@@ -65,13 +68,49 @@ public class Game extends Observable {
 		public String returnPlotBasicText() {
 			return plotBasicText;
 		}
-		
+
 		public String returnPlotPlotFullDetails() {
 			return plotPlotFullDetails;
 		}
 	}
-	
-	
+
+	public class RemoteSeedPlanted {
+		int plotID;
+		String plantType;
+		String username;
+		boolean isSponsered;
+
+		public int returnPlotID() {
+			return plotID;
+		}
+
+		public String returnPlantType() {
+			return plantType;
+		}
+
+		public String returnUsername() {
+			return username;
+		}
+		
+		public boolean returnIsSponsored() {
+			return isSponsered;
+		}
+	}
+
+	public class GameStartup {
+		boolean readyToPlay;
+		String message;
+
+
+		public boolean returnReadyToPlay() {
+			return readyToPlay;
+		}
+
+		public String returnMessage() {
+			return message;
+		}
+	}
+
 	// Private constructor
 	private Game(Context context){
 		this.context = context;
@@ -81,14 +120,22 @@ public class Game extends Observable {
 		handler = new Handler();
 
 		gameStartDate = Calendar.getInstance();
-		numOfDaysPlayed = 0;
+		gameStartDate.add(Calendar.DATE, -1);
+		numOfDaysPlayed = -1;
 		locator = new LocationRetrieve(context);
 		weather = new WeatherRetriever();
 		weather.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
 		remoteDataRetriever = new RemoteDBTableRetrieval();
 		setDateString();
-		
+
 		iteration_time_delay = checkIntSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY);
+		gameStarted = false;
+		weatherRetrieved = false;
+		seedsRetrieved = false;
+		initialPlotUpdateSent = false;
+
+		//Carry out once to set up!
+		nextIteration();
 	}
 
 	// Singleton Factory method
@@ -100,6 +147,7 @@ public class Game extends Observable {
 	}
 
 	private void UpdateObservers(Object objectUpdated) {
+		Log.w(Game.class.getName(), "Sending update to Observers!");
 		setChanged();
 		notifyObservers(objectUpdated);
 	}
@@ -128,32 +176,51 @@ public class Game extends Observable {
 		sendPlotStateUpdate();
 	}
 
-	public void startGame() {
-		// nothing to do here at present...
+	private void startGame() {
+		gameStarted = true;
+		startRepeatedActivity();
 	}
-	
+
+	public boolean isGameStarted() {
+		return gameStarted;
+	}
+
 	public void pauseGame() {
 		stopRepeatedActivity();
 		locator.disconnect();
 	}
 
 	public void resumeGame() {
-		startRepeatedActivity();
+		if (gameStarted) {startRepeatedActivity();}
 		locator.connect();
 	}
-	
+
 	public void advanceDate(){
 		numOfDaysPlayed = numOfDaysPlayed + 1;
 		gameStartDate.add(Calendar.DATE, 1);
 		setDateString();
 
-		if (numOfDaysPlayed == 1 || numOfDaysPlayed % 20 == 0) {
-			weather.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
+		if (!gameStarted || numOfDaysPlayed % 20 == 0) {
+			new RetrieveRemoteData().execute(RETRIEVE_REMOTE_DATA_TYPE.WEATHER);
 		}
 
-		if (numOfDaysPlayed == 1 || numOfDaysPlayed % 20 == 10) {
-			new RetrieveRemoteData().execute(1);
+		if (!gameStarted || numOfDaysPlayed % 20 == 10) {
+			new RetrieveRemoteData().execute(RETRIEVE_REMOTE_DATA_TYPE.SEEDS);
 		}
+	}
+
+	private void sendStartupUpdate(String message) {
+		GameStartup gs = new GameStartup();
+		if (weatherRetrieved && seedsRetrieved && initialPlotUpdateSent) {
+			Log.w(Game.class.getName(), "Ready to start game!");
+			gs.readyToPlay = true;
+			startGame();
+		} else {
+			gs.readyToPlay = false;
+		}
+		gs.message = message;
+		Log.w(Game.class.getName(), "Sending update to UI!");
+		UpdateObservers(gs);
 	}
 
 	private void updateGameDetailsText() {
@@ -163,12 +230,11 @@ public class Game extends Observable {
 	}
 
 	private void setDateString() {
-		gameDate = gameStartDate.get(Calendar.DATE) + " " + gameStartDate.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " " + gameStartDate.get(Calendar.YEAR);
-		GameDate gd2 = new GameDate();
-		gd2.gameDate = gameDate;
-		Log.w(Game.class.getName(), "Date is: " + gameDate);
+		GameDate gameDate  = new GameDate();
+		gameDate.gameDateString = gameStartDate.get(Calendar.DATE) + " " + gameStartDate.getDisplayName(Calendar.MONTH, Calendar.LONG, Locale.getDefault()) + " " + gameStartDate.get(Calendar.YEAR);
+		Log.w(Game.class.getName(), "Date is: " + gameDate.gameDateString);
 
-		UpdateObservers(gd2);
+		UpdateObservers(gameDate);
 	}
 
 	private void sendPlotStateUpdate() {
@@ -177,13 +243,10 @@ public class Game extends Observable {
 			plotUpdate.plotID = loopCounter;
 			plotUpdate.plotBasicText = getPlotBasicText(loopCounter);
 			plotUpdate.plotPlotFullDetails = getPlotBasicFullPlotDetails(loopCounter);
-			
+
 			UpdateObservers(plotUpdate);
 		}
-	}
-
-	public String getDateString(){
-		return gameDate;
+		initialPlotUpdateSent = true;
 	}
 
 	public int getRealTemp() {
@@ -198,29 +261,49 @@ public class Game extends Observable {
 		return plantCatalogue.getRemoteSeedCount();
 	}
 
-	private class RetrieveRemoteData extends AsyncTask<Integer, Void, Void> {
+	private class RetrieveRemoteData extends AsyncTask<RETRIEVE_REMOTE_DATA_TYPE, Void, Void> {
 
 		protected void onPreExecute() {
 			Log.w(RetrieveRemoteData.class.getName(), "Attempting retrieval of remote data from within Game");
 		}
 
 		@Override
-		protected Void doInBackground(Integer... params) {
+		protected Void doInBackground(RETRIEVE_REMOTE_DATA_TYPE... params) {
+			String message = "";
 			switch (params[0]) {
-			case 1:
+			case SEEDS:
 				Log.w(RetrieveRemoteData.class.getName(), "Attempting retrieval of remote seed data...");
-				plantCatalogue.setRemoteSeedArray(remoteDataRetriever.getSeedingPlants(locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date()));
+				plantCatalogue.setRemoteSeedArray(remoteDataRetriever.getSeedingPlants(coreSettings.checkStringSetting(Constants.TAG_USERNAME), locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date()));
+				message = "Retrieved nearby seeds...";
+				weatherRetrieved = true;
 				Log.w(RetrieveRemoteData.class.getName(), "Remote seed data retrieved");
+
+				//FOR TESTING!
+				if (gameStarted && plantCatalogue.getRemoteSeedCount() > 0) {
+					plantRandomRemoteSeed();
+				}
 				break;
+
+			case WEATHER:
+				Log.w(RetrieveRemoteData.class.getName(), "Attempting retrieval of local weather data...");
+				weather.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
+				message = "Retrieved local weather details...";
+				seedsRetrieved = true;
+				Log.w(RetrieveRemoteData.class.getName(), "Local weather data retrieved");
+				break;
+
 			default:
 				Log.e(RetrieveRemoteData.class.getName(), "Attempted retrieval of unknown type!!!");
 				break;
 			}
+
+			if (!gameStarted) {
+				sendStartupUpdate(message);
+			}
+
 			return null;
 		}
-
 	}
-
 
 	public SubMenu getSubMenuPlantTypes(MenuItem rootMenuItem) {
 		SubMenu submenu = rootMenuItem.getSubMenu();
@@ -243,6 +326,48 @@ public class Game extends Observable {
 	public void plantSeed(int plantTypeID, int plotID) {
 		//What ID to use for plant instance id??? Plot for now...
 		getPlotFrom1BasedID(plotID).setPlant(new PlantInstance(getPlantTypeByPlantTypeID(plantTypeID), plotID));
+	}
+
+	private void plantRandomRemoteSeed() {
+		// To test the process...
+		
+		Log.w(Game.class.getName(), "Random seed being planted...");
+
+		Random randomGenerator = new Random();
+
+		//find plot without plant already - but only try as many times as there are plots, to prevent infinite loop if all hold plants
+		int plotForPlanting = 0;
+		int loopLimiter = 0;
+		int num_plots = mxPlots.getNumCols() * mxPlots.getNumRows();
+		while (plotForPlanting == 0 && loopLimiter <= num_plots) {
+			int temp = randomGenerator.nextInt(num_plots) + 1;
+			if (getPlotFrom1BasedID(temp).getPlant() == null) {
+				plotForPlanting = temp;
+			}
+			loopLimiter++;
+		}
+
+		Log.w(Game.class.getName(), "Random seed selected");
+		RemoteSeed remoteSeed = plantCatalogue.getRandomRemoteSeed();
+		PlantInstance newRemotePlant;
+		boolean isSponsored = remoteSeed.isSponsored();
+		if (isSponsored) {
+			newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting, remoteSeed.getUsername(), remoteSeed.getMessage(), remoteSeed.getSuccess_copy());
+		} else {
+			newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting);
+			}
+		getPlotFrom1BasedID(plotForPlanting).setPlant(newRemotePlant);
+		Log.w(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
+
+		RemoteSeedPlanted remSeedPlanted = new RemoteSeedPlanted();
+		remSeedPlanted.plotID = plotForPlanting;
+		remSeedPlanted.username = remoteSeed.getUsername();
+		remSeedPlanted.isSponsered = isSponsored;
+		remSeedPlanted.plantType = plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()).getType();
+
+		Log.w(Game.class.getName(), "Returning random plant notification to obervers: From=" + remSeedPlanted.username + ", Plant=" + remSeedPlanted.plantType + ", isSponsored=" + remSeedPlanted.isSponsered);
+
+		UpdateObservers(remSeedPlanted);
 	}
 
 	public void uprootPlant(int plotId) {
@@ -280,7 +405,7 @@ public class Game extends Observable {
 	}
 
 	public String getPlotBasicText(int plotID) {
-		Plot localCopy = game.getPlotFrom1BasedID(plotID);
+		Plot localCopy = getPlotFrom1BasedID(plotID);
 		String plotText = localCopy.getGroundState().toString();
 		if (localCopy.getPlant() == null) {
 			plotText = plotText + "\nNo plant";
@@ -292,9 +417,7 @@ public class Game extends Observable {
 	}
 
 	public String getPlotBasicFullPlotDetails(int plotID) {
-		Plot localCopy = game.getPlotFrom1BasedID(plotID);
+		Plot localCopy = getPlotFrom1BasedID(plotID);
 		return localCopy.toString();
 	}
-
-
 }
