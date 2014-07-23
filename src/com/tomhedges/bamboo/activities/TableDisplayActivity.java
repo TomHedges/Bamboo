@@ -8,7 +8,9 @@ import java.util.Observer;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -27,11 +29,12 @@ import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.model.Game;
+import com.tomhedges.bamboo.model.Game.SeedPlanted;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Observer {
 
 	private TableLayout table_layout;
-	private TextView aboveTable, belowTable;
+	private TextView aboveTableLeft, aboveTableRight, belowTable;
 	//private EditText rowno_et, colno_et;
 	//private Button build_btn;
 	//private int rows, cols = 0;
@@ -70,7 +73,8 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		//colno_et = (EditText) findViewById(R.id.colno_id);
 		//build_btn = (Button) findViewById(R.id.build_btn_id);
 		table_layout = (TableLayout) findViewById(R.id.tableLayout1);
-		aboveTable = (TextView) findViewById(R.id.tvAboveTable);
+		aboveTableLeft = (TextView) findViewById(R.id.tvAboveTableLeft);
+		aboveTableRight = (TextView) findViewById(R.id.tvAboveTableRight);
 		belowTable = (TextView) findViewById(R.id.tvBelowTable);
 
 		//build_btn.setOnClickListener(this);
@@ -107,7 +111,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				final Game.GameDate gameDate = (Game.GameDate) data;
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
-						updateAboveTableDisplay("Date: " + gameDate.returnDate());
+						aboveTableLeft.setText("Date: " + gameDate.returnDate());
 					}
 				});
 			}
@@ -142,19 +146,52 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				}
 			}
 
-			if (data instanceof Game.RemoteSeedPlanted) {
-				Game.RemoteSeedPlanted remotePlant = (Game.RemoteSeedPlanted) data;
-				Log.w(TableDisplayActivity.class.getName(), "Remote plant added: Plot=" + remotePlant.returnPlotID() + ", From=" + remotePlant.returnUsername() + ", Plant=" + remotePlant.returnPlantType() + ", isSponsored=" + remotePlant.returnIsSponsored());
+			if (data instanceof SeedPlanted) {
+				final Game.SeedPlanted seedPlanted = (Game.SeedPlanted) data;
 				final String alertToUser;
-				if (remotePlant.returnIsSponsored()) {
-					alertToUser = "A present has blown in from " + remotePlant.returnUsername() + "! Open your new " + remotePlant.returnPlantType() + " to find out their news...";
+				boolean isRemote = seedPlanted.returnIsRemote();
+
+				if (isRemote) {
+					Log.w(TableDisplayActivity.class.getName(), "Remote plant added: Plot=" + seedPlanted.returnPlotID() + ", From=" + seedPlanted.returnUsername() + ", Plant=" + seedPlanted.returnPlantType() + ", isSponsored=" + seedPlanted.returnIsSponsored());
+
+					if (seedPlanted.returnIsSponsored()) {
+						alertToUser = "A present has blown in from " + seedPlanted.returnUsername() + "! Open your new " + seedPlanted.returnPlantType() + " to find out their news...";
+					} else {
+						alertToUser = "A " + seedPlanted.returnPlantType() + " from nearby player " + seedPlanted.returnUsername() + " has taken root in your garden...";
+					}
 				} else {
-					alertToUser = "A " + remotePlant.returnPlantType() + " from nearby player " + remotePlant.returnUsername() + " has taken root in your garden...";
+					Log.w(TableDisplayActivity.class.getName(), "Local plant added: Plot=" + seedPlanted.returnPlotID() + ", Plant=" + seedPlanted.returnPlantType());
+
+					alertToUser = seedPlanted.returnPlantType() + " has self-seeded in your garden";
 				}
+				
 				//Has to be run on UI thread, as crashes otherwise??...
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
 						Toast.makeText(TableDisplayActivity.this, alertToUser, Toast.LENGTH_LONG).show();
+						final TextView tv = (TextView) findViewById(seedPlanted.returnPlotID());
+						tv.setBackgroundColor(Color.YELLOW);
+						Handler handler = new Handler(); 
+						handler.postDelayed(new Runnable() { 
+							public void run() { 
+								tv.setBackgroundResource(R.drawable.cell_shape);
+							} 
+						}, 5000); 
+					}
+				});
+			}
+
+			if (data instanceof Game.WeatherValues) {
+				final Game.WeatherValues weatherVals = (Game.WeatherValues) data;
+				Log.w(TableDisplayActivity.class.getName(), "Weather updated: Temperature=" + weatherVals.returnTemperature() + " degrees C");
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						//Toast.makeText(TableDisplayActivity.this, "Weather: " + weatherVals.returnTemperature() + " degrees C", Toast.LENGTH_LONG).show();
+
+						aboveTableLeft.setText(aboveTableLeft.getText() + "\nSeason is: " + weatherVals.returnSeason().toString());
+						aboveTableRight.setText("Weather........\nTemperature: " + weatherVals.returnTemperature() + "\u00B0C\nRainfall: " + weatherVals.returnRainfall() + "mm");
 					}
 				});
 			}
@@ -187,6 +224,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		default:
 			//removed for now as replaced with context menu
 			if (CheckForCellTouch(v.getId())) {
+				v.setBackgroundResource(R.drawable.cell_shape);
 				v.showContextMenu();
 			}
 			break;
@@ -327,10 +365,6 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		} else {
 			return false;
 		}
-	}
-
-	private void updateAboveTableDisplay(String forDisplay) {
-		aboveTable.setText(forDisplay);
 	}
 
 	private void updateBelowTableDisplay(String forDisplay) {

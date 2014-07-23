@@ -6,11 +6,29 @@
     android:layout_height="match_parent"
     android:orientation="vertical" >
 
-    <TextView
-        android:id="@+id/tvAboveTable"
+    <LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Awaiting content..." />
+        android:orientation="horizontal"
+        android:weightSum="1.0" >
+
+        <TextView
+            android:id="@+id/tvAboveTableLeft"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+    android:layout_weight="0.7"
+            android:gravity="left"
+            android:text="Date..." />
+
+        <TextView
+            android:id="@+id/tvAboveTableRight"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+    android:layout_weight="0.3"
+            android:gravity="left"
+            android:text="Weather..." />
+    </LinearLayout>
 
     <ScrollView
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -56,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Build" />
-            </LinearLayout>
+            </LinearLayout>
                 -->
 
                 <TableLayout
@@ -68,7 +86,7 @@
 
                     <!--
                 android:shrinkColumns="*"
-                android:stretchColumns="*"
+                android:stretchColumns="*"
                     -->
                 </TableLayout>
             </LinearLayout>
@@ -80,4 +98,5 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Awaiting content..." />
+
 </LinearLayout>

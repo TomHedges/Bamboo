@@ -1,5 +1,9 @@
 package com.tomhedges.bamboo.config;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
 public interface Constants {
 	public static final String ROOT_URL = "http://54.229.96.8/bamboo-test/";
 	public static final String ROOT_URL_FIELD_NAME = "root_url";
@@ -90,12 +94,12 @@ public interface Constants {
 	public static final int ITERATION_TIME_DELAY = 1000;
 	public static final int PLANT_TYPE_MENU_ID_START_RANGE = 1000;
 	public static final int MENU_GROUP_PLANT_TYPES = 2;
-	
+
 	public static enum RETRIEVE_REMOTE_DATA_TYPE {
 		SEEDS,
 		WEATHER
 	}
-	
+
 	public static enum PLANT_DIALOG_TYPE {
 		PLANT_TYPE,
 		PLANT_INSTANCE,
@@ -131,6 +135,30 @@ public interface Constants {
 	public static int default_WaterLevel = 10;
 	public static int default_Temperature = 15;
 	public static int default_pHLevel = 0;
+
+	public static enum Season {
+		SPRING,
+		SUMMER,
+		AUTUMN,
+		WINTER
+	}
+
+	public static Season[] default_WEATHER_SEASONS = {Season.WINTER, Season.WINTER,
+		Season.SPRING, Season.SPRING, Season.SPRING,
+		Season.SUMMER, Season.SUMMER, Season.SUMMER,
+		Season.AUTUMN, Season.AUTUMN, Season.AUTUMN,
+		Season.WINTER};
+	public static int[] default_WEATHER_TEMPS = {3, 5, 8, 11, 14, 17, 20, 21, 17, 11, 7, 5};
+	public static int[] default_WEATHER_RAIN = {3, 2, 3, 4, 5, 3, 2, 1, 2, 5, 4, 3};
+
+	public static int default_WEATHER_ROLLING_AVERAGE_LENGTH = 7;
+	public static int default_WEATHER_STAN_DEV = 3; //ie 70% of values will have values in this range of degrees from the average
+	public static int default_WEATHER_MAX_CHANGE = 10;
+	public static int default_WEATHER_MAX_RUN_SAME_DIRECTION = 3;
+	public static int default_WEATHER_MAX_TEMP = 35;
+	public static int default_WEATHER_MIN_TEMP = -10;
+	public static int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
+
 
 	public static double default_DISTANCE_USER = 0.05;
 	public static double default_DISTANCE_SPONSOR = 0.2;
