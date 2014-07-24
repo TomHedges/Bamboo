@@ -149,16 +149,19 @@ public interface Constants {
 		Season.AUTUMN, Season.AUTUMN, Season.AUTUMN,
 		Season.WINTER};
 	public static int[] default_WEATHER_TEMPS = {3, 5, 8, 11, 14, 17, 20, 21, 17, 11, 7, 5};
-	public static int[] default_WEATHER_RAIN = {3, 2, 3, 4, 5, 3, 2, 1, 2, 5, 4, 3};
+	public static int[] default_WEATHER_RAIN = {3, 2, 3, 3, 2, 1, 1, 0, 1, 2, 3, 4};
 
 	public static int default_WEATHER_ROLLING_AVERAGE_LENGTH = 7;
 	public static int default_WEATHER_STAN_DEV = 3; //ie 70% of values will have values in this range of degrees from the average
-	public static int default_WEATHER_MAX_CHANGE = 10;
+	public static int default_WEATHER_MAX_TEMP_CHANGE = 5;
+	public static int default_WEATHER_MAX_RAIN_CHANGE = 2;
 	public static int default_WEATHER_MAX_RUN_SAME_DIRECTION = 3;
 	public static int default_WEATHER_MAX_TEMP = 35;
 	public static int default_WEATHER_MIN_TEMP = -10;
+	public static int default_WEATHER_MAX_RAINFALL = 10;
+	public static int default_WEATHER_MIN_RAINFALL = 0;
 	public static int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
-
+	public static int default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER = 10;
 
 	public static double default_DISTANCE_USER = 0.05;
 	public static double default_DISTANCE_SPONSOR = 0.2;

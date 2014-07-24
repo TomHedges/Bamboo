@@ -20,8 +20,8 @@ public class LocationRetrieve implements LocationListener {
 	public LocationRetrieve(Context context) {
 		Log.d("LocationRetrieve","Creating Locator...");
 		this.context = context;
-		objLocation = new LocationObject();
 		locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+		objLocation = new LocationObject();
 		connect();
 	}
 
@@ -59,6 +59,7 @@ public class LocationRetrieve implements LocationListener {
 	
 	public void connect() {
 		Log.d("LocationRetrieve","Requesting updates...");
+		locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 10, this);
 		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
 		//locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 1000, 10, this);

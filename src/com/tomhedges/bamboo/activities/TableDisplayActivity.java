@@ -8,7 +8,6 @@ import java.util.Observer;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -170,7 +169,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 					public void run() {
 						Toast.makeText(TableDisplayActivity.this, alertToUser, Toast.LENGTH_LONG).show();
 						final TextView tv = (TextView) findViewById(seedPlanted.returnPlotID());
-						tv.setBackgroundColor(Color.YELLOW);
+						tv.setBackgroundResource(R.drawable.cell_shape_highlighted);
 						Handler handler = new Handler(); 
 						handler.postDelayed(new Runnable() { 
 							public void run() { 

@@ -7,6 +7,7 @@ import java.util.Observable;
 import java.util.Random;
 
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.config.Constants.GroundState;
 import com.tomhedges.bamboo.config.Constants.RETRIEVE_REMOTE_DATA_TYPE;
 import com.tomhedges.bamboo.config.Constants.Season;
 import com.tomhedges.bamboo.config.CoreSettings;
@@ -398,7 +399,7 @@ public class Game extends Observable {
 
 		Random randomGenerator = new Random();
 		int chosen = randomGenerator.nextInt(localSeedCommonnessTotal) + 1;
-
+		
 		int lowerBound = 0;
 		PlantType chosenPlant = null;
 		int loopCounter = 0;
@@ -411,12 +412,13 @@ public class Game extends Observable {
 			loopCounter++;
 		} while (chosenPlant == null);
 
-		int plotForPlanting = getPlotForPlanting();
-		
+		int plotForPlanting = getPlotForPlanting(chosenPlant.getPreferredGroundState());
+
 		if (plotForPlanting > -1) {
 			Log.w(Game.class.getName(), "Random plot selected");
 			
 			PlantInstance newLocalPlant = new PlantInstance(chosenPlant, plotForPlanting);
+
 			getPlotFrom1BasedID(plotForPlanting).setPlant(newLocalPlant);
 			Log.w(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
 
@@ -434,15 +436,17 @@ public class Game extends Observable {
 			Log.w(Game.class.getName(), "No plot selected! So no planting happening");
 		}
 	}
-	
+
 	private void plantRandomRemoteSeed() {
 		Log.w(Game.class.getName(), "Random seed being planted...");
 
-		int plotForPlanting = getPlotForPlanting();
+		RemoteSeed remoteSeed = plantCatalogue.getRandomRemoteSeed();
+		GroundState gsPlantPrefers = plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()).getPreferredGroundState();
+
+		int plotForPlanting = getPlotForPlanting(gsPlantPrefers);
 
 		if (plotForPlanting > -1) {
 			Log.w(Game.class.getName(), "Random plot selected");
-			RemoteSeed remoteSeed = plantCatalogue.getRandomRemoteSeed();
 			PlantInstance newRemotePlant;
 			boolean isSponsored = remoteSeed.isSponsored();
 			if (isSponsored) {
@@ -470,19 +474,32 @@ public class Game extends Observable {
 		}
 	}
 
-	private int getPlotForPlanting() {
+	private int getPlotForPlanting(GroundState gsPlantPrefers) {
+		//find plot with acceptable GroundState without plant already - if none,  return -1, else pick one randomly to return
+		
 		Random randomGenerator = new Random();
-		//find plot without plant already - but only try as many times as there are plots, to prevent infinite loop if all hold plants
 		int plotForPlanting = -1;
-		int loopLimiter = 0;
 		int num_plots = mxPlots.getNumCols() * mxPlots.getNumRows();
-		while (plotForPlanting == -1 && loopLimiter <= num_plots) {
-			int temp = randomGenerator.nextInt(num_plots) + 1;
-			if (getPlotFrom1BasedID(temp).getPlant() == null) {
-				plotForPlanting = temp;
-			}
-			loopLimiter++;
+		
+		boolean needWater = false;
+		if (gsPlantPrefers == GroundState.WATER) {
+			needWater = true;
 		}
+		
+		int[] possiblePlots = new int[mxPlots.getNumCols() * mxPlots.getNumRows()];	
+		int totalPossPlots = 0;
+		for (int loopCounter = 1; loopCounter<=num_plots; loopCounter++) {
+			if ((getPlotFrom1BasedID(loopCounter).getPlant() == null && needWater && getPlotFrom1BasedID(loopCounter).getGroundState() == GroundState.WATER)
+					|| (getPlotFrom1BasedID(loopCounter).getPlant() == null && !needWater && getPlotFrom1BasedID(loopCounter).getGroundState() != GroundState.WATER)) {
+				possiblePlots[totalPossPlots] = getPlotFrom1BasedID(loopCounter).getPlotId();
+				totalPossPlots++;
+			}
+		}
+		
+		if (totalPossPlots>0) {
+			plotForPlanting = possiblePlots[randomGenerator.nextInt(totalPossPlots)];
+		}
+
 		return plotForPlanting;
 	}
 
