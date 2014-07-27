@@ -137,7 +137,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		@Override
 		protected void onPostExecute(Boolean uploadStatus) {
 			pDialog.cancel();
-			
+
 			if (uploadStatus) {
 				Toast.makeText(getActivity(), "Upload successful!", Toast.LENGTH_LONG).show();
 			} else {
@@ -226,6 +226,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 					// CONFIG
 					if (forceUpdate || tablesUpdatedRemote.getConfig().after(tablesUpdatedLocal.getConfig())) {
+						///WE ARE REMOTE!!!
 						Log.w(LaunchFragment.class.getName(), "NEED TO UPDATE CONFIG TABLE!");
 						publishProgress("Updating Configuration data with updated values!");
 						ConfigValues remoteConfigValues = remoteDataRetriever.getConfig();
@@ -245,7 +246,8 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 							for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
 								for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
-									plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+									//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+									plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
 								}
 							}
 
@@ -310,7 +312,8 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 				for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
 					for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
-						plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+						//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+						plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
 					}
 				}
 

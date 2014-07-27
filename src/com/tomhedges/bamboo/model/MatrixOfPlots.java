@@ -1,5 +1,7 @@
 package com.tomhedges.bamboo.model;
 
+import com.tomhedges.bamboo.config.Constants;
+
 import android.util.Log;
 
 public class MatrixOfPlots {
@@ -42,6 +44,16 @@ public class MatrixOfPlots {
 			return plotArray[yPos-1][xPos-1];
 		} else {
 			return new Plot(0, 0, 0, null, 0, 0, 0);
+		}
+	}
+	
+	public Plot getNeigbouringPlot(int xPosCentral, int yPosCentral, int xShift, int yShift) {
+		if ((xPosCentral+xShift)>=1 && (xPosCentral+xShift)<=num_cols && (yPosCentral+yShift)>=1 && (yPosCentral+yShift)<=num_rows) {
+			return getPlot(xPosCentral+xShift, yPosCentral+yShift);
+		} else {
+            Log.d(MatrixOfPlots.class.getName(), "Request for off-edge plot: " + ((xPosCentral+xShift)-1) + "," + ((yPosCentral+yShift)-1) + " (0-based array)");
+			int waterLevel = getPlot(xPosCentral, yPosCentral).getWaterLevel()/Constants.default_EDGE_PLOT_RESOURCE_DIVIDER;
+			return new Plot(-1, -1, -1, null, waterLevel, -1, -1);
 		}
 	}
 	

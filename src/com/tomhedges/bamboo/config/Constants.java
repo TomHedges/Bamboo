@@ -106,8 +106,8 @@ public interface Constants {
 		NONE
 	}
 
-	//public static final int PLOT_MATRIX_COLUMNS = 4;
-	//public static final int PLOT_MATRIX_ROWS = 3;
+	public static final int PLOT_MATRIX_COLUMNS = 4;
+	public static final int PLOT_MATRIX_ROWS = 3;
 
 	public static final GroundState[] PLOT_PATTERN = {
 		GroundState.WATER,
@@ -132,7 +132,7 @@ public interface Constants {
 		MUD
 	}
 
-	public static int default_WaterLevel = 10;
+	public static int default_WaterLevel = 3;
 	public static int default_Temperature = 15;
 	public static int default_pHLevel = 0;
 
@@ -141,6 +141,14 @@ public interface Constants {
 		SUMMER,
 		AUTUMN,
 		WINTER
+	}
+	
+	public static enum PlantState {
+		NEW_SEED,
+		GROWING,
+		WILTING,
+		FLOWERING,
+		FRUITING
 	}
 
 	public static Season[] default_WEATHER_SEASONS = {Season.WINTER, Season.WINTER,
@@ -162,6 +170,11 @@ public interface Constants {
 	public static int default_WEATHER_MIN_RAINFALL = 0;
 	public static int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
 	public static int default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER = 10;
+	public static int default_WEATHER_GROUND_WATER = 2;
+	public static int default_WEATHER_MAX_STANDING_WATER = 15;
+	public static int default_WEATHER_WATER_LEVEL_REDUCTION_EACH_DAY = 2;
+	public static int default_PLANT_EXCESS_WATER_TOLERANCE = 4;
+	public static int default_EDGE_PLOT_RESOURCE_DIVIDER = 2;
 
 	public static double default_DISTANCE_USER = 0.05;
 	public static double default_DISTANCE_SPONSOR = 0.2;

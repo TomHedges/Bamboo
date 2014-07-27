@@ -11,6 +11,7 @@ public class Plot {
 	private int waterLevel;
 	private int temperature;
 	private int pHlevel;
+	private boolean neighbourhoodCreated;
 
 	public Plot (int plotId, int xPosInMatrix, int yPosInMatrix, Constants.GroundState groundState, int waterLevel, int temperature, int pHlevel) {
 		this.plotId = plotId;
@@ -21,6 +22,7 @@ public class Plot {
 		this.waterLevel = waterLevel;
 		this.temperature = temperature;
 		this.pHlevel = pHlevel;
+		neighbourhoodCreated = false;
 	}
 
 	public int getXPosInMatrix() {
@@ -42,6 +44,10 @@ public class Plot {
 	public void setWaterLevel(int waterLevel) {
 		this.waterLevel = waterLevel;
 	}
+	
+	public void changeWaterLevel(int waterLevelChange) {
+		waterLevel = waterLevel + waterLevelChange;
+	}
 
 	public int getWaterLevel() {
 		return waterLevel;
@@ -57,6 +63,22 @@ public class Plot {
 
 	public PlantInstance getPlant() {
 		return plantInstance;
+	}
+
+	public void setNeighbourhoodCreated(boolean neighbourhoodCreated) {
+		this.neighbourhoodCreated = neighbourhoodCreated;
+	}
+
+	public boolean isNeighbourhoodCreated() {
+		return neighbourhoodCreated;
+	}
+
+	public boolean isPlantWatered() {
+		return plantInstance.isWateredThisIteration();
+	}
+	
+	public void setPlantWatered(boolean isWatered) {
+		plantInstance.setWateredThisIteration(isWatered);
 	}
 
 	@Override
