@@ -95,9 +95,10 @@ public interface Constants {
 	public static final int PLANT_TYPE_MENU_ID_START_RANGE = 1000;
 	public static final int MENU_GROUP_PLANT_TYPES = 2;
 
-	public static enum RETRIEVE_REMOTE_DATA_TYPE {
-		SEEDS,
-		WEATHER
+	public static enum REMOTE_DATA_EXCHANGE_DATA_TYPE {
+		DOWNLOAD_SEEDS,
+		WEATHER,
+		UPLOAD_SEED
 	}
 
 	public static enum PLANT_DIALOG_TYPE {
@@ -105,21 +106,40 @@ public interface Constants {
 		PLANT_INSTANCE,
 		NONE
 	}
+	
+	public static final int[][] NEIGHBOURHOOD_STRUCTURE = {
+		{0,-1},
+		{1,-1},
+		{1,0},
+		{1,1},
+		{0,1},
+		{-1,1},
+		{-1,0},
+		{-1,-1}
+		};
 
-	public static final int PLOT_MATRIX_COLUMNS = 4;
-	public static final int PLOT_MATRIX_ROWS = 3;
+	public static final int PLOT_MATRIX_COLUMNS = 5;
+	public static final int PLOT_MATRIX_ROWS = 4;
 
 	public static final GroundState[] PLOT_PATTERN = {
 		GroundState.WATER,
 		GroundState.MUD,
 		GroundState.SOIL,
 		GroundState.SOIL,
+		GroundState.SOIL,
 		GroundState.WATER,
 		GroundState.MUD,
 		GroundState.SOIL,
 		GroundState.SOIL,
+		GroundState.SOIL,
 		GroundState.WATER,
 		GroundState.MUD,
+		GroundState.SOIL,
+		GroundState.SOIL,
+		GroundState.SOIL,
+		GroundState.WATER,
+		GroundState.MUD,
+		GroundState.SOIL,
 		GroundState.SOIL,
 		GroundState.SOIL
 	};
@@ -148,7 +168,9 @@ public interface Constants {
 		GROWING,
 		WILTING,
 		FLOWERING,
-		FRUITING
+		FRUITING,
+		CHILLY,
+		DEAD
 	}
 
 	public static Season[] default_WEATHER_SEASONS = {Season.WINTER, Season.WINTER,
@@ -176,9 +198,22 @@ public interface Constants {
 	public static int default_PLANT_EXCESS_WATER_TOLERANCE = 4;
 	public static int default_EDGE_PLOT_RESOURCE_DIVIDER = 2;
 
+	public static int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE = 8;
+	public static int default_PLANT_STATE_CHANGE_HEALTH_MOVEMENT = 1;
+	public static int default_PLANT_HEALTH_AT_PLANTING = 60;
+	public static int default_PLANT_HEALTH_FOR_FLOWERING = 50;
+	public static int default_PLANT_HEALTH_FOR_FRUITING = 70;
+	public static int default_PLANT_HEALTH_MINIMUM_FOR_STAYING_ALIVE = 35;
+	public static int default_PLANT_WILTING_LIMIT_BEFORE_DYING = 3;
+	public static int default_PLANT_DISAPPEARS_AFTER = 3;
+	
 	public static double default_DISTANCE_USER = 0.05;
 	public static double default_DISTANCE_SPONSOR = 0.2;
 	public static int default_LAST_UPDATE_USER_TIMEGAP_MINUTES = 10;
 	public static int default_LAST_UPDATE_SPONSOR_TIMEGAP_MINUTES = 10 * 6 * 24 * 7;
 
+	public static int default_GAME_WEATHER_RETRIEVE_FREQ = 20;
+	public static int default_GAME_WEATHER_RETRIEVE_OFFSET = 0;
+	public static int default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ = 20;
+	public static int default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET = 10;
 }

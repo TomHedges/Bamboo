@@ -12,6 +12,7 @@ import com.tomhedges.bamboo.config.CoreSettings;
 import com.tomhedges.bamboo.model.ConfigValues;
 import com.tomhedges.bamboo.model.Globals;
 import com.tomhedges.bamboo.model.MatrixOfPlots;
+import com.tomhedges.bamboo.model.Neighbourhood;
 import com.tomhedges.bamboo.model.PlantCatalogue;
 import com.tomhedges.bamboo.model.PlantType;
 import com.tomhedges.bamboo.model.Plot;
@@ -247,7 +248,9 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 							for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
 								for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
 									//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
-									plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+									
+									Plot newPlot = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+									plotArray[rowCounter][columnCounter] = newPlot;
 								}
 							}
 
@@ -338,6 +341,38 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 				}
 			}
 
+			
+			//BUILD NEIGHBOURHOODS FROM MATRIX OF PLOTS, AND ADD
+			MatrixOfPlots mxPlots = MatrixOfPlots.getMatrix();
+			int num_rows = mxPlots.getNumRows();
+			int num_cols = mxPlots.getNumCols();
+			Neighbourhood[] neighbourhoodArray = new Neighbourhood[num_rows * num_cols];
+			for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
+				for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
+					Plot localPlot = mxPlots.getPlot(columnCounter+1, rowCounter+1);
+					Neighbourhood neigbourhoodToInsert = new Neighbourhood(localPlot, Constants.NEIGHBOURHOOD_STRUCTURE.length);
+
+					int xPosCentral = localPlot.getXPosInMatrix();
+					int yPosCentral = localPlot.getYPosInMatrix();
+
+					Log.w(LaunchFragment.class.getName(), "Building " +  Constants.NEIGHBOURHOOD_STRUCTURE.length + " plot neighbourhood for plot: " + localPlot.getPlotId() + ", at X=" + xPosCentral + ",Y=" + yPosCentral + ". Plot marked as 'neighbourhood created'?: " + localPlot.isNeighbourhoodCreated());
+
+					for (int[] neighbourRelPos : Constants.NEIGHBOURHOOD_STRUCTURE) {
+						neigbourhoodToInsert.addNeighbour(mxPlots.getNeigbouringPlot(xPosCentral, yPosCentral, neighbourRelPos[0], neighbourRelPos[1]));
+					}
+
+					localPlot.setNeighbourhoodCreated(true);
+					neighbourhoodArray[localPlot.getPlotId()-1] = neigbourhoodToInsert;
+					Log.w(LaunchFragment.class.getName(), "Built neighbourhood of: " + neigbourhoodToInsert.getNeighbourCounter() + " plots with central plot id " + localPlot.getPlotId());
+
+					// DROOLS LINE - PUT INTO GAME???S ksession.insert(localPlot);
+					//Log.w(LaunchFragment.class.getName(), "Inserted plot with ID: " + localPlot.getPlotId());
+				}
+			}
+			mxPlots.setNeighbourhoodMatrix(neighbourhoodArray);
+			
+			Log.w(LaunchFragment.class.getName(), "Created neighbourhood matrix from plot matrix data!");
+			
 			return "Starting game...";
 		}
 

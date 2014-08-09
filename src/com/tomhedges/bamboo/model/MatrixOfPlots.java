@@ -7,8 +7,9 @@ import android.util.Log;
 public class MatrixOfPlots {
 
 	private static MatrixOfPlots matrix = null;
-	
+
 	private Plot[][] plotArray;
+	private Neighbourhood[] neighbourhoodArray;
 	
 	private int num_rows;
 	private int num_cols;
@@ -35,6 +36,14 @@ public class MatrixOfPlots {
 	// Singleton access method
 	public static MatrixOfPlots getMatrix() {
 		return matrix;
+	}
+
+	public void setNeighbourhoodMatrix(Neighbourhood[] neighbourhoodArray) {
+		if (this.neighbourhoodArray == null) { this.neighbourhoodArray = neighbourhoodArray; }
+	}
+
+	public Neighbourhood[] getNeighbourhoodMatrix() {
+		return neighbourhoodArray;
 	}
 
 	public Plot getPlot(int xPos, int yPos) {

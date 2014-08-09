@@ -8,11 +8,13 @@ import java.util.Observer;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Display;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
@@ -46,6 +48,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 	private ProgressDialog pDialog;
 
 	private int touchedPlot = 0;
+	private boolean tableBuilt;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,12 +84,14 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 		// sets up initial table
 		Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
-		BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
+		//BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
+		tableBuilt = false;
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
+		if (!tableBuilt) { BuildTable(game.getNumPlotRows(), game.getNumPlotCols()); }
 	}
 
 	@Override
@@ -163,7 +168,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 					alertToUser = seedPlanted.returnPlantType() + " has self-seeded in your garden";
 				}
-				
+
 				//Has to be run on UI thread, as crashes otherwise??...
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
@@ -191,6 +196,18 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 						aboveTableLeft.setText(aboveTableLeft.getText() + "\nSeason is: " + weatherVals.returnSeason().toString());
 						aboveTableRight.setText("Weather........\nTemperature: " + weatherVals.returnTemperature() + "\u00B0C\nRainfall: " + weatherVals.returnRainfall() + "mm");
+					}
+				});
+			}
+
+			if (data instanceof Game.SeedUploaded) {
+				final Game.SeedUploaded seedUploaded = (Game.SeedUploaded) data;
+				Log.w(TableDisplayActivity.class.getName(), "Seed uploaded. Message to player: " + seedUploaded.returnMessage());
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(TableDisplayActivity.this, seedUploaded.returnMessage(), Toast.LENGTH_LONG).show();
 					}
 				});
 			}
@@ -304,6 +321,13 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 	private void BuildTable(int rows, int cols) {
 		Log.w(TableDisplayActivity.class.getName(), "Starting build table");
+
+		Display display = getWindowManager().getDefaultDisplay();
+		Point size = new Point();
+		display.getSize(size);
+		int width = size.x - (table_layout.getPaddingLeft() + table_layout.getPaddingRight());
+		//width = table_layout.getWidth();
+
 		// outer for loop
 		for (int rowCounter = 1; rowCounter <= rows; rowCounter++) {
 
@@ -315,8 +339,10 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 				TextView tv = new TextView(this);
 				//tv.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
-				tv.setLayoutParams(new LayoutParams(100, 100));
+				//tv.setLayoutParams(new LayoutParams(100, 100));
+				tv.setLayoutParams(new LayoutParams(width/cols, width/cols)); //making plots square, so only need 'width/cols' value...??
 				tv.setBackgroundResource(R.drawable.cell_shape);
+				tv.setTextSize(10);
 				tv.setPadding(5, 5, 5, 5);
 				tv.setId(((rowCounter-1) * cols) + colCounter);
 				Log.d(TableDisplayActivity.class.getName(), "Requesting plot @ pos: " + colCounter + "," + rowCounter + " with ID: " + tv.getId() + " (1-based array)");
@@ -353,6 +379,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			table_layout.addView(row);
 		}
 
+		tableBuilt = true;
 		Log.w(TableDisplayActivity.class.getName(), "All rows added to view - all set!");
 	}
 

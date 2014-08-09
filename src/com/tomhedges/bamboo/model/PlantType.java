@@ -1,24 +1,25 @@
 package com.tomhedges.bamboo.model;
 
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class PlantType implements Constants, Comparable<PlantType> {
+public class PlantType implements Comparable<PlantType> {
 	private int plantTypeId;
 	private String type;
 	private int preferredTemp;
 	private int requiredWater;
 	private double preferredPH;
 	private GroundState preferredGroundState;
-	private int livesFor;
+	private int livesFor; // in years!
 	private int commonnessFactor;
-	private int maturesAtAge;
+	private int maturesAtAge; //in days!
 	private int floweringTarget;
 	private int flowersFor;
 	private int fruitingTarget;
 	private int fruitsFor;
 
 	public PlantType(int plantTypeId, String type, int preferredTemp, int requiredWater,
-			double preferredPH, GroundState preferredGroundState, int livesFor, int commonnessFactor,
+			double preferredPH, Constants.GroundState preferredGroundState, int livesFor, int commonnessFactor,
 			int maturesAtAge, int floweringTarget, int flowersFor, int fruitingTarget, int fruitsFor) {
 		this.plantTypeId = plantTypeId;
 		this.type = type;

@@ -2,46 +2,51 @@ package com.tomhedges.bamboo.model;
 
 import com.tomhedges.bamboo.config.Constants;
 
-public class PlantInstance implements Constants {
+public class PlantInstance {
 	private PlantType plantType;
-	private PlantState plantState;
+	private Constants.PlantState plantState;
 	private int plantInstanceId;
-	private int age;
+	private int age; // in days!
 	private int daysInCurrentState;
-	private int floweringTargetCount;
+	private boolean isMatureEnoughToFlower;
 	private boolean isFlowering;
-	private int flowersForCount;
-	private int fruitingTargetCount;
 	private int isFruiting;
-	private int fruitsForCount;
+	private int health;
 	private boolean remoteSeededPlant;
+	private boolean stateUpdatedThisIteration;
 	private String originUsername;
 	private String sponsoredMessage;
 	private String successCopy;
 	private boolean wateredThisIteration;
+	private int deathProbability;
+	private boolean diesThisIteration;
+	private int timesFlowered;
 
 	public PlantInstance(PlantType plantType, int plantInstanceId) {
 		this.plantType = plantType;
 		this.plantInstanceId = plantInstanceId;
 		this.age = 0;
-		this.plantState = PlantState.NEW_SEED;
+		this.plantState = Constants.PlantState.NEW_SEED;
 		this.daysInCurrentState = 0;
+		this.health = Constants.default_PLANT_HEALTH_AT_PLANTING;
+		this.isMatureEnoughToFlower = false;
+		this.timesFlowered = 0;
 	}
-	
+
 	public PlantInstance(PlantType plantType, int plantInstanceId, String originUsername, String sponsoredMessage, String successCopy) {
 		this(plantType, plantInstanceId);
-		
+
 		remoteSeededPlant = true;
 		this.originUsername = originUsername;
 		this.sponsoredMessage = sponsoredMessage;
 		this.successCopy = successCopy;
 		this.wateredThisIteration = false;
 	}
-	
+
 	public int getId() {
 		return plantType.getPlantTypeId();
 	}
-	
+
 	public int getPlantInstanceId() {
 		return plantInstanceId;
 	}
@@ -54,6 +59,15 @@ public class PlantInstance implements Constants {
 		return age;
 	}
 
+	public void updateAge() {
+		age++;
+		if (!isMatureEnoughToFlower && age >= plantType.getMaturesAtAge()) { isMatureEnoughToFlower = true; }
+	}
+
+	public boolean isMatureEnoughToFlower() {
+		return isMatureEnoughToFlower;
+	}
+
 	public int getPreferredTemp() {
 		return plantType.getPreferredTemp();
 	}
@@ -62,7 +76,7 @@ public class PlantInstance implements Constants {
 		return plantType.getRequiredWater();
 	}
 
-	public GroundState getPreferredGroundState() {
+	public Constants.GroundState getPreferredGroundState() {
 		return plantType.getPreferredGroundState();
 	}
 
@@ -73,9 +87,25 @@ public class PlantInstance implements Constants {
 	public int getLivesFor() {
 		return plantType.getLivesFor();
 	}
-	
+
 	public int getCommonnessFactor() {
 		return plantType.getCommonnessFactor();
+	}
+
+	public int getFloweringTarget() {
+		return plantType.getFloweringTarget();
+	}
+
+	public int getFlowersFor() {
+		return plantType.getFlowersFor();
+	}
+
+	public int getFruitingTarget() {
+		return plantType.getFruitingTarget();
+	}
+
+	public int getFruitsFor() {
+		return plantType.getFruitsFor();
 	}
 
 	public String getOriginUsername() {
@@ -97,11 +127,16 @@ public class PlantInstance implements Constants {
 		return wateredThisIteration;
 	}
 
-	public void setPlantState(PlantState plantState) {
-		this.plantState = plantState;
+	public void setPlantState(Constants.PlantState plantState) {
+		if (plantState == this.plantState) {
+			daysInCurrentState++;
+		} else {
+			this.plantState = plantState;
+			daysInCurrentState = 1;
+		}
 	}
 
-	public PlantState getPlantState() {
+	public Constants.PlantState getPlantState() {
 		return plantState;
 	}
 
@@ -113,10 +148,63 @@ public class PlantInstance implements Constants {
 		return daysInCurrentState;
 	}
 
+	public void setStateUpdatedThisIteration(boolean stateUpdatedThisIteration) {
+		this.stateUpdatedThisIteration = stateUpdatedThisIteration;
+	}
+
+	public boolean isStateUpdatedThisIteration() {
+		return stateUpdatedThisIteration;
+	}
+
+	public void changeHealth(int healthAlteration) {
+		health = health + healthAlteration;
+		if (health>100) { health = 100; }
+		if (health<0) { health = 0; }
+	}
+
+	public int getHealth() {
+		return health;
+	}
+
+	public void setDeathProbability(int deathProbability) {
+		this.deathProbability = deathProbability;
+	}
+
+	public int getDeathProbability() {
+		return deathProbability;
+	}
+
+	public void setDiesThisIteration(boolean diesThisIteration) {
+		this.diesThisIteration = diesThisIteration;
+	}
+
+	public boolean isDiesThisIteration() {
+		return diesThisIteration;
+	}
+
+	public void setTimesFlowered(int timesFlowered) {
+		this.timesFlowered = timesFlowered;
+	}
+
+	public int getTimesFlowered() {
+		return timesFlowered;
+	}
+
 	@Override
 	public String toString() {
 		String additional="";
 		if (remoteSeededPlant) {additional = "\norigin username=" + originUsername + "\nsponsored message=" + sponsoredMessage;}
-		return "PlantInstance:\ninstance_id=" + plantInstanceId + "\nplantType=" + plantType.toString() + "\nplantState=" + plantState + "\nDays in state=" + daysInCurrentState + additional;
+		return "PlantInstance:\ninstance_id=" + plantInstanceId
+		+ "\nplantType=" + plantType.toString()
+		+ "\nplantState=" + plantState
+		+ "\nDays in state=" + daysInCurrentState
+		+ "\nAge in days=" + age
+		+ "\nIs Watered?=" + wateredThisIteration
+		+ "\nFlowering Target=" + getFloweringTarget()
+		+ "\nFlowers For=" + getFlowersFor()
+		+ "\nFruiting Target=" + getFruitingTarget()
+		+ "\nFruits For=" + getFruitsFor()
+		+ "\nHealth=" + getHealth()
+		+ additional;
 	}
 }

@@ -9,12 +9,14 @@ public class Neighbourhood {
 	private Plot[] neighbouringPlots;
 	private int neighbourCounter;
 	private boolean neighbouringWaterPlot;
+	private int importedWater;
 
 	public Neighbourhood(Plot centralPlot, int numNeighbours) {
 		this.centralPlot = centralPlot;
 		neighbouringPlots = new Plot[numNeighbours];
 		neighbourCounter = 0;
 		neighbouringWaterPlot = false;
+		importedWater = 0;
 	}
 
 	public Plot getCentralPlot() {
@@ -33,7 +35,7 @@ public class Neighbourhood {
 		return neighbouringPlots[neighbourID];
 	}
 
-	public int getRandomNeighbourID() {
+	public int getRandomNeighbourWithWaterID() {
 		int[] neighbourWithWater = new int[neighbouringPlots.length];
 		int numWithWater = 0;
 		int loopCounter = 0;
@@ -59,5 +61,13 @@ public class Neighbourhood {
 
 	public boolean isNeighbouringWaterPlot() {
 		return neighbouringWaterPlot;
+	}
+
+	public void setImportedWater(int importedWater) {
+		this.importedWater = importedWater;
+	}
+
+	public int getImportedWater() {
+		return importedWater;
 	}
 }
