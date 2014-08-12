@@ -37,6 +37,8 @@ public interface Constants {
 	public static final String TABLE_TABLES = "Tables";
 	public static final String TABLE_CONFIG = "Config";
 	public static final String TABLE_PLANT_TYPES = "PlantTypes";
+	public static final String TABLE_OBJECTIVES = "Objectives";
+	public static final String TABLE_ITERATION_RULES = "IterationRules";
 
 	public static final String COLUMN_PLANTTYPES_TYPE = "type";
 	public static final String COLUMN_PLANTTYPES_PREFTEMP = "preferredTemp";
@@ -63,6 +65,11 @@ public interface Constants {
 	public static final String COLUMN_GLOBAL_ROOT_URL = "root_url";
 	public static final String COLUMN_TABLES_TABLENAME = "tablename";
 
+	public static final String COLUMN_OBJECTIVES_ID = "objective_id";
+	public static final String COLUMN_OBJECTIVES_DESC = "description";
+	public static final String COLUMN_OBJECTIVES_MESSAGE = "completion_message";
+	public static final String COLUMN_OBJECTIVES_COMPLETED = "completed";
+	
 	public static final String PARAM_LATITUDE = "latitude";
 	public static final String PARAM_LONGITUDE = "longitude";
 	public static final String PARAM_DISTANCE_USER = "distance_user";
@@ -78,11 +85,19 @@ public interface Constants {
 
 	public static final String TABLES_VALUES_CONFIG = "Config";
 	public static final String TABLES_VALUES_PLANTTYPES = "PlantTypes";
+	public static final String TABLES_VALUES_OBJECTIVES = "Objectives";
+	public static final String TABLES_VALUES_ITERATION_RULES = "IterationRules";
 
 	public static enum RetrievalType {
 		COLUMNS,
 		DATA
 	}
+
+	public static final String FILENAME_LOCAL_ITERATION_RULES = "IterationRules.pkg";
+	public static final String FILENAME_REMOTE_ITERATION_RULES = "bambootestv2.pkg";
+	public static final String FILENAME_LOCAL_OBJECTIVES = "Objectives.pkg";
+	public static final String FILENAME_REMOTE_OBJECTIVES = "bambooobjectivesv1.pkg";
+	public static final String FILENAME_LOCAL_GAME_SAVE = "game.data";
 
 	public static final String WEATHER_URL = "http://api.worldweatheronline.com/free/v1/weather.ashx";
 	public static final String WEATHER_FORMAT = "json";

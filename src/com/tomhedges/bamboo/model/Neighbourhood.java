@@ -1,10 +1,17 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class Neighbourhood {
+public class Neighbourhood implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
+	
 	private Plot centralPlot;
 	private Plot[] neighbouringPlots;
 	private int neighbourCounter;

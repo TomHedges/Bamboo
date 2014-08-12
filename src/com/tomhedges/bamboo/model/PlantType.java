@@ -1,9 +1,17 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
+
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class PlantType implements Comparable<PlantType> {
+public class PlantType implements Comparable<PlantType>, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
+	
 	private int plantTypeId;
 	private String type;
 	private int preferredTemp;

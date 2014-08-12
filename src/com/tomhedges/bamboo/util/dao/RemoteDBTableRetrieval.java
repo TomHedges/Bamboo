@@ -15,10 +15,9 @@ import android.util.Log;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 import com.tomhedges.bamboo.config.CoreSettings;
-import com.tomhedges.bamboo.config.Constants.RetrievalType;
 import com.tomhedges.bamboo.model.ConfigValues;
 import com.tomhedges.bamboo.model.Globals;
-import com.tomhedges.bamboo.model.PlantCatalogue;
+import com.tomhedges.bamboo.model.Objective;
 import com.tomhedges.bamboo.model.PlantType;
 import com.tomhedges.bamboo.model.RemoteSeed;
 import com.tomhedges.bamboo.model.TableLastUpdateDates;
@@ -171,9 +170,15 @@ public class RemoteDBTableRetrieval {
 					} else if (jaFields.getString(Constants.COLUMN_TABLES_TABLENAME).equals(Constants.TABLES_VALUES_PLANTTYPES)) {
 						tablesUpdatedRemote.setPlants(dateConverter.convertStringToDate(jaFields.getString(Constants.COLUMN_LAST_UPDATED)));
 						Log.d(RemoteDBTableRetrieval.class.getName(), "Set remote PlantTypes last update date!");
+					} else if (jaFields.getString(Constants.COLUMN_TABLES_TABLENAME).equals(Constants.TABLES_VALUES_OBJECTIVES)) {
+						tablesUpdatedRemote.setObjectives(dateConverter.convertStringToDate(jaFields.getString(Constants.COLUMN_LAST_UPDATED)));
+						Log.d(RemoteDBTableRetrieval.class.getName(), "Set remote Objectives last update date!");
+					} else if (jaFields.getString(Constants.COLUMN_TABLES_TABLENAME).equals(Constants.TABLES_VALUES_ITERATION_RULES)) {
+						tablesUpdatedRemote.setIterationRules(dateConverter.convertStringToDate(jaFields.getString(Constants.COLUMN_LAST_UPDATED)));
+						Log.d(RemoteDBTableRetrieval.class.getName(), "Set remote PlantTypes last update date!");
 					} else {
 						// ADD EXTRA TABLES AS NEEDED!
-						Log.d(RemoteDBTableRetrieval.class.getName(), "Unknown table in remote data!");
+						Log.e(RemoteDBTableRetrieval.class.getName(), "Unknown table in remote data!");
 					}
 
 					Log.d(RemoteDBTableRetrieval.class.getName(), "Got remote data: " + tablesUpdatedRemote.toString());
@@ -286,6 +291,47 @@ public class RemoteDBTableRetrieval {
 		return null;
 	}
 
+	public Objective[] getObjectives() {
+		// Check for success tag
+		int success;
+
+		jsonParser = new JSONParser();
+
+		try {
+			// Building Parameters
+			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair(Constants.TABLE_NAME_VARIABLE, Constants.TABLE_OBJECTIVES));
+
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting retrieval of data from: " + Constants.TABLE_OBJECTIVES);
+			// getting product details by making HTTP request
+			JSONObject json = jsonParser.makeHttpRequest(coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.TABLE_DATA_SCRIPT_NAME, Constants.HTML_VERB_POST, params);
+
+			// check your log for json response
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Response: " + json.toString());
+
+			// json success tag
+			success = json.getInt(Constants.TAG_SUCCESS);
+			if (success == 1) {
+				jaData = json.getJSONArray(Constants.TAG_MESSAGE);
+
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Request Successful! Data for: " + Constants.TABLE_OBJECTIVES);
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Got remote data for: " + jaData.length() + " objectives.");
+
+				Objective[] objectives = getObjectivesFromJSON(jaData);
+
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Completed retrieval of " + objectives.length + " objectives.");
+				return objectives;
+			} else {
+				Log.d(RemoteDBTableRetrieval.class.getName(), "ERROR: " + json.getString(Constants.TAG_MESSAGE));
+				return null;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	public PlantType[] getPlantTypes() {
 		// Check for success tag
 		int success;
@@ -359,6 +405,30 @@ public class RemoteDBTableRetrieval {
 		}
 
 		return plantTypes;
+	}
+
+	private Objective[] getObjectivesFromJSON(JSONArray jaData) {
+		Objective[] objectives = new Objective[jaData.length()];
+
+		try {
+			for (int loopCounter = 0; loopCounter<jaData.length(); loopCounter++) {
+				JSONObject jaFields = jaData.getJSONObject(loopCounter);
+
+				int objectiveID = jaFields.getInt(Constants.COLUMN_OBJECTIVES_ID);
+				String description = jaFields.getString(Constants.COLUMN_OBJECTIVES_DESC);
+				String message = jaFields.getString(Constants.COLUMN_OBJECTIVES_MESSAGE);
+
+				Objective objective = new Objective(objectiveID, description, message, false);
+				objectives[loopCounter] = objective;
+
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Accessed Objective data: " + objective.toString());
+			}
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return objectives;
 	}
 
 	private RemoteSeed[] getSeedsFromJSON(JSONArray jaData) {

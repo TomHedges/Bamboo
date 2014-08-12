@@ -18,8 +18,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tomhedges.bamboo.R;
-import com.tomhedges.bamboo.model.Game;
-
+import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.model.Objectives;
 
 import android.content.Context;
 import android.util.Log;
@@ -33,6 +33,7 @@ public class RulesEngineController {
 	private KnowledgeBase mKnowledgeBase;
 	private StatefulKnowledgeSession ksession;
 	private Collection<KnowledgePackage> pkgs;
+	private KnowledgePackage pkgTest;
 
 	//Private Constructor
 	private RulesEngineController(Context context){
@@ -41,7 +42,7 @@ public class RulesEngineController {
 		//Initialize android context and set system properties
 		DroolsAndroidContext.setContext(context);
 	}
-	
+
 
 	// Singleton Factory method
 	public static RulesEngineController getInstance(Context context) {
@@ -65,7 +66,7 @@ public class RulesEngineController {
 		//rulesFilePath=rulesFilePath+"/bambootestv2.pkg";
 		//Log.w(RulesEngineController.class.getName(), "Rules file for loading: " + rulesFilePath);      
 
-		
+
 		DroolsObjectInputStream dois = null;  
 		try { 
 			Log.w(RulesEngineController.class.getName(), "Loading knowledge base");
@@ -74,14 +75,41 @@ public class RulesEngineController {
 			System.setProperty("mvel2.disable.jit", "true");
 			Log.w(RulesEngineController.class.getName(), "System: Value of property 'mvel2.disable.jit' is: " + System.getProperty("mvel2.disable.jit"));
 			OptimizerFactory.setDefaultOptimizer("reflective");
-			
-			//File file = new File(rulesFilePath);
-			//InputStream iis = new FileInputStream(file);
 
-			InputStream iis = context.getResources().openRawResource(R.raw.bambootestv2);
+			// SET to false for production, or true for testing new rules files!
+			boolean useRaw = true;
+			
+			InputStream iis = null;
+			File file = null;
+			
+			iis = context.getResources().openRawResource(R.raw.bambootestv2);
 			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
 			dois = new DroolsObjectInputStream(iis);
 			pkgs = (Collection<KnowledgePackage>) dois.readObject();
+
+			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_ITERATION_RULES);
+			if(file.exists() || useRaw) {    
+				Log.w(RulesEngineController.class.getName(), "Using downloaded iteration rules file");
+				iis = new FileInputStream(file);
+			} else {
+				Log.w(RulesEngineController.class.getName(), "Using hardcoded iteration rules file");
+				iis = context.getResources().openRawResource(R.raw.bambootestv2);
+			}
+			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
+			dois = new DroolsObjectInputStream(iis);
+			pkgs.addAll((Collection<KnowledgePackage>) dois.readObject());
+			
+			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_OBJECTIVES);
+			if(file.exists() || useRaw) {    
+				Log.w(RulesEngineController.class.getName(), "Using downloaded objectives file");
+				iis = new FileInputStream(file);
+			} else {
+				Log.w(RulesEngineController.class.getName(), "Using hardcoded objectives file");
+				iis = context.getResources().openRawResource(R.raw.bambooobjectivesv1);
+			}
+			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
+			dois = new DroolsObjectInputStream(iis);
+			pkgs.addAll((Collection<KnowledgePackage>) dois.readObject());
 
 			Log.w(RulesEngineController.class.getName(), "Loaded rule packages: " + pkgs);
 			for(KnowledgePackage pkg : pkgs) {
@@ -126,7 +154,7 @@ public class RulesEngineController {
 
 		Log.w(RulesEngineController.class.getName(), "Rules Engine Session created!");
 	}
-	
+
 	public void insertFact(Object toInsert) {
 		ksession.insert(toInsert);
 		Log.w(RulesEngineController.class.getName(), "Inserted '" + toInsert.getClass() + "' fact into Rules Engine");
@@ -140,10 +168,10 @@ public class RulesEngineController {
 			Log.e(RulesEngineController.class.getName(),"FAILED!!!", e);
 		}
 		Log.w(RulesEngineController.class.getName(), "Fired Rules!");
-		
+
 		resetRuleEngine();
 	}
-	
+
 	private void resetRuleEngine() {
 		ksession.dispose();
 		ksession.destroy();

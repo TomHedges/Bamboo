@@ -6,6 +6,7 @@ import java.util.Observable;
 import java.util.Observer;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.graphics.Point;
@@ -21,6 +22,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -31,6 +33,7 @@ import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
+import com.tomhedges.bamboo.util.dao.ArrayAdapterObjectives;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Observer {
 
@@ -43,6 +46,8 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 	private String[] plotInfo;
 	//private int num_rows;
 	//private int num_cols;
+
+	private Button btnObjectives;
 
 	// Progress Dialog
 	private ProgressDialog pDialog;
@@ -78,9 +83,11 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		aboveTableLeft = (TextView) findViewById(R.id.tvAboveTableLeft);
 		aboveTableRight = (TextView) findViewById(R.id.tvAboveTableRight);
 		belowTable = (TextView) findViewById(R.id.tvBelowTable);
+		btnObjectives = (Button) findViewById(R.id.btnObjectives);
 
 		//build_btn.setOnClickListener(this);
 		table_layout.setOnClickListener(this);
+		btnObjectives.setOnClickListener(this);
 
 		// sets up initial table
 		Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
@@ -104,6 +111,12 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 	protected void onPause() {
 		super.onPause();
 		game.pauseGame();
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		game.stopAndSaveGame();
 	}
 
 	@Override
@@ -143,6 +156,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 						public void run() {
 							pDialog.setMessage(gameStartupDetails.returnMessage());
 							if (gameStartupDetails.returnReadyToPlay()) {
+								btnObjectives.setText("Objectives (" + gameStartupDetails.returnNumCompleted() + " of " + gameStartupDetails.returnTotalNum() + " completed)");
 								pDialog.dismiss();
 							}
 						}
@@ -211,6 +225,20 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 					}
 				});
 			}
+
+			if (data instanceof Game.CompletedObjective) {
+				final Game.CompletedObjective completedObjective = (Game.CompletedObjective) data;
+				final String messageToDisplay = "Objective " + completedObjective.returnID() + " completed! " + completedObjective.returnMessage();
+				Log.w(TableDisplayActivity.class.getName(), "Display completed objective message to player: " + messageToDisplay);
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						btnObjectives.setText("Objectives (" + completedObjective.returnNumCompleted() + " of " + completedObjective.returnTotalNum() + " completed)");
+						Toast.makeText(TableDisplayActivity.this, messageToDisplay, Toast.LENGTH_LONG).show();
+					}
+				});
+			}
 		}
 	}
 
@@ -237,6 +265,10 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			}
 			break;*/
 
+		case R.id.btnObjectives:
+			showObjectivesList();
+			break;
+
 		default:
 			//removed for now as replaced with context menu
 			if (CheckForCellTouch(v.getId())) {
@@ -246,6 +278,26 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			break;
 		}
 
+	}
+
+	private void showObjectivesList() {
+		// TODO Auto-generated method stub
+		//based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
+
+		// our adapter instance
+		ArrayAdapterObjectives adapter = new ArrayAdapterObjectives(this, R.layout.list_element_objectives, game.getObjectiveList());
+
+		// create a new ListView, set the adapter and item click listener
+		ListView listViewItems = new ListView(this);
+		listViewItems.setAdapter(adapter);
+		// should make this cancel??
+		//listViewItems.setOnItemClickListener(new OnItemClickListenerListViewItem());
+
+		// put the ListView in the pop up
+		AlertDialog alertDialogStores = new AlertDialog.Builder(this)
+		.setView(listViewItems)
+		.setTitle("Objectives")
+		.show();
 	}
 
 	@Override

@@ -7,6 +7,8 @@ import java.util.Date;
 public class TableLastUpdateDates {
 	private Date config;
 	private Date plants;
+	private Date objectives;
+	private Date iterationRules;
 
 	public void setConfig(Date config) {
 		this.config = config;
@@ -24,8 +26,24 @@ public class TableLastUpdateDates {
 		return plants;
 	}
 
+	public void setObjectives(Date objectives) {
+		this.objectives = objectives;
+	}
+
+	public Date getObjectives() {
+		return objectives;
+	}
+
+	public void setIterationRules(Date iterationRules) {
+		this.iterationRules = iterationRules;
+	}
+
+	public Date getIterationRules() {
+		return iterationRules;
+	}
+
 	@Override
 	public String toString() {
-		return "ConfigValues table last updated: " + getConfig() + ", Plants table last updated: " + getPlants();
+		return "ConfigValues table last updated: " + getConfig() + ", Plants table last updated: " + getPlants() + ", Objectives table last updated: " + getObjectives() + ", Iteration Rules lst updated: " + getIterationRules();
 	}
 }

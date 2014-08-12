@@ -17,7 +17,7 @@
             android:id="@+id/tvAboveTableLeft"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-    android:layout_weight="0.7"
+            android:layout_weight="0.6"
             android:gravity="left"
             android:text="Date..." />
 
@@ -25,7 +25,7 @@
             android:id="@+id/tvAboveTableRight"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-    android:layout_weight="0.3"
+            android:layout_weight="0.4"
             android:gravity="left"
             android:text="Weather..." />
     </LinearLayout>
@@ -74,7 +74,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Build" />
-            </LinearLayout>
+            </LinearLayout>
                 -->
 
                 <TableLayout
@@ -86,7 +86,7 @@
 
                     <!--
                 android:shrinkColumns="*"
-                android:stretchColumns="*"
+                android:stretchColumns="*"
                     -->
                 </TableLayout>
             </LinearLayout>
@@ -98,5 +98,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Awaiting content..." />
+
+    <Button
+        android:id="@+id/btnObjectives"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Objectives (x of x completed)" />
 
 </LinearLayout>

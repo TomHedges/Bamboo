@@ -17,7 +17,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	//private String[] allColumns = { COLUMN_ID_LOCAL, COLUMN_GLOBAL_VERSION, COLUMN_GLOBAL_ROOT_URL, COLUMN_LAST_UPDATED };
 
 	private static final String DATABASE_NAME = "bamboo.db";
-	private static final int DATABASE_VERSION = 18;
+	private static final int DATABASE_VERSION = 19;
 
 	private DateConverter dateConverter;
 
@@ -65,6 +65,15 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " integer, " + Constants.COLUMN_CONFIG_PLOT_MATRIX_COLUMNS
 		+ " integer);";
 
+	// CONFIG table creation sql statement
+	private static final String TABLE_CREATE_OBJECTIVES = "create table "
+		+ Constants.TABLE_OBJECTIVES + "(" + Constants.COLUMN_ID_LOCAL
+		+ " integer primary key autoincrement, " + Constants.COLUMN_OBJECTIVES_ID
+		+ " integer not null, " + Constants.COLUMN_OBJECTIVES_DESC
+		+ " text not null, " + Constants.COLUMN_OBJECTIVES_MESSAGE
+		+ " text not null, " + Constants.COLUMN_OBJECTIVES_COMPLETED
+		+ " boolean not null);";
+
 	public ConfigSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
@@ -80,7 +89,10 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		database.execSQL(TABLE_CREATE_CONFIG);
 		Log.w(ConfigSQLiteHelper.class.getName(),"Creating PLANT TYPES table: " + TABLE_CREATE_PLANTTYPES);
 		database.execSQL(TABLE_CREATE_PLANTTYPES);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG and PLANT TYPES tables!");
+		Log.w(ConfigSQLiteHelper.class.getName(),"Creating OBJECTIVES table: " + TABLE_CREATE_OBJECTIVES);
+		database.execSQL(TABLE_CREATE_OBJECTIVES);
+		
+		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES and OBJECTIVES tables!");
 
 		dateConverter = new DateConverter();
 
@@ -109,6 +121,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_CONFIG + " in TABLES table OK!");
 		}
+		
 		values = new ContentValues();
 		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_PLANT_TYPES);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
@@ -117,6 +130,26 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_PLANT_TYPES + " default in TABLES");
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_PLANT_TYPES + " in TABLES table OK!");
+		}
+		
+		values = new ContentValues();
+		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_OBJECTIVES);
+		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
+		insertId = database.insert(Constants.TABLE_TABLES, null, values);
+		if (insertId == -1) {
+			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_OBJECTIVES + " default in TABLES");
+		} else {
+			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_OBJECTIVES + " in TABLES table OK!");
+		}
+		
+		values = new ContentValues();
+		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_ITERATION_RULES);
+		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
+		insertId = database.insert(Constants.TABLE_TABLES, null, values);
+		if (insertId == -1) {
+			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_ITERATION_RULES + " default in TABLES");
+		} else {
+			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_ITERATION_RULES + " in TABLES table OK!");
 		}
 
 		//--------------------------------------------------
@@ -145,6 +178,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		dropTable(db, Constants.TABLE_TABLES);
 		dropTable(db, Constants.TABLE_CONFIG);
 		dropTable(db, Constants.TABLE_PLANT_TYPES);
+		// TODO - Need to do something about upgrading the objectives table??
 		onCreate(db);
 	}
 

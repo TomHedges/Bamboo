@@ -1,23 +1,24 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.Observable;
 import java.util.Random;
-import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
+import com.tomhedges.bamboo.config.Constants.PlantState;
 import com.tomhedges.bamboo.config.Constants.REMOTE_DATA_EXCHANGE_DATA_TYPE;
 import com.tomhedges.bamboo.config.Constants.Season;
 import com.tomhedges.bamboo.config.CoreSettings;
 import com.tomhedges.bamboo.rulesengine.RulesEngineController;
+import com.tomhedges.bamboo.util.FileReaderAndWriter;
 import com.tomhedges.bamboo.util.LocationRetrieve;
 import com.tomhedges.bamboo.util.WeatherRetriever;
+import com.tomhedges.bamboo.util.dao.ConfigDataSource;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
-
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Handler;
@@ -26,15 +27,23 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-public class Game extends Observable {
+public class Game extends Observable implements Serializable {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
 	private static Game game = null;
+	private FileReaderAndWriter fileReaderWriter;
 	private CoreSettings coreSettings;
 	private Context context;
 	private MatrixOfPlots mxPlots;
 	private RulesEngineController rulesEngineController;
 	private RemoteDBTableRetrieval remoteDataRetriever;
+	private ConfigDataSource localDataRetriever;
 	private PlantCatalogue plantCatalogue;
+	private Objectives objectives;
 	private WeatherRetriever weatherRetriever;
 	private Weather gameWeather;
 	private Calendar gameStartDate;
@@ -114,7 +123,8 @@ public class Game extends Observable {
 	public class GameStartup {
 		boolean readyToPlay;
 		String message;
-
+		int totalNum;
+		int numCompleted;
 
 		public boolean returnReadyToPlay() {
 			return readyToPlay;
@@ -122,6 +132,14 @@ public class Game extends Observable {
 
 		public String returnMessage() {
 			return message;
+		}
+
+		public int returnTotalNum() {
+			return totalNum;
+		}
+
+		public int returnNumCompleted() {
+			return numCompleted;
 		}
 	}
 
@@ -151,13 +169,38 @@ public class Game extends Observable {
 		}
 	}
 
+	public class CompletedObjective {
+		int objectiveID;
+		String message;
+		int totalNum;
+		int numCompleted;
+
+		public int returnID() {
+			return objectiveID;
+		}
+
+		public String returnMessage() {
+			return message;
+		}
+
+		public int returnTotalNum() {
+			return totalNum;
+		}
+
+		public int returnNumCompleted() {
+			return numCompleted;
+		}
+	}
+
 	// Private constructor
 	private Game(Context context){
 		this.context = context;
+		fileReaderWriter = new FileReaderAndWriter(context);
 		coreSettings = CoreSettings.accessCoreSettings();
 		plantCatalogue = PlantCatalogue.getPlantCatalogue();
 		mxPlots = MatrixOfPlots.getMatrix();
 		rulesEngineController = RulesEngineController.getInstance(context);
+		objectives = Objectives.getObjectives();
 		handler = new Handler();
 
 		gameStartDate = Calendar.getInstance();
@@ -167,6 +210,7 @@ public class Game extends Observable {
 		weatherRetriever = new WeatherRetriever();
 		weatherRetriever.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
 		remoteDataRetriever = new RemoteDBTableRetrieval();
+		localDataRetriever = new ConfigDataSource(context);
 		setDateString();
 
 		gameWeather = Weather.createWeather(gameStartDate, Constants.default_WEATHER_TEMPS, Constants.default_WEATHER_RAIN, Constants.default_WEATHER_SEASONS);
@@ -224,7 +268,11 @@ public class Game extends Observable {
 	};
 
 	private void nextIteration() {
+		// TODO
 		updateNeighbourhoods();
+		if (gameStarted) rulesEngineController.fireRules();
+		checkForCompletedObjectives();
+		checkForUploadableSeeds();
 		advanceDate();
 		updateGameDetailsText();
 		sendPlotStateUpdate();
@@ -249,24 +297,29 @@ public class Game extends Observable {
 	public void pauseGame() {
 		stopRepeatedActivity();
 		locator.disconnect();
+		if (localDataRetriever != null) {
+			localDataRetriever.open();
+		}
+	}
+
+	public void stopAndSaveGame() {
+		Log.w(Game.class.getName(), "Stopping and saving game!");
+		pauseGame();
+		fileReaderWriter.saveObject(mxPlots, context.getFilesDir() + Constants.FILENAME_LOCAL_GAME_SAVE);
+		Log.w(Game.class.getName(), "Game stopping NOW!");
 	}
 
 	public void resumeGame() {
 		if (gameStarted) {startRepeatedActivity();}
 		locator.connect();
+		localDataRetriever.open();
 	}
 
 	private void updateNeighbourhoods() {
-		//TEST that uploading of seeds works as expected - and it does!
-		//if (numOfDaysPlayed == 3 && mxPlots.getPlot(1, 1).getPlant() != null) {
-		//	uploadSeed(mxPlots.getPlot(1, 1).getPlant());
-		//}
-
-		// TODO Auto-generated method stub
 		if (gameStarted) {
 			//regular exercise of updating
 
-			rulesEngineController.createRulesEngineSession(gameWeather.getCurrentTemp(),gameWeather.getCurrentRain());
+			rulesEngineController.createRulesEngineSession(gameWeather.getCurrentTemp(), gameWeather.getCurrentRain());
 
 			//Log.w(Game.class.getName(), "TEST 1");
 			LinkedList<Neighbourhood> unwateredList = new LinkedList<Neighbourhood>();
@@ -328,7 +381,12 @@ public class Game extends Observable {
 				}
 			}
 
-			rulesEngineController.fireRules();
+			//TODO	
+			rulesEngineController.insertFact(objectives);
+			rulesEngineController.insertFact(mxPlots);
+
+
+			//rulesEngineController.fireRules();
 		} else {
 			//one-off building at start of game!
 
@@ -410,6 +468,32 @@ public class Game extends Observable {
 		}
 	}
 
+	private void checkForCompletedObjectives() {
+		// TODO Auto-generated method stub
+		int[] completedObjectives = objectives.getRecentlyCompletedObjectives();
+		for (int loopCounter = 0; loopCounter<completedObjectives.length; loopCounter++) {
+			localDataRetriever.updateObjective(objectives.getObjective(completedObjectives[loopCounter]), true);
+
+			CompletedObjective compObj = new CompletedObjective();
+			compObj.objectiveID = completedObjectives[loopCounter];
+			compObj.message = objectives.getObjective(completedObjectives[loopCounter]).getCompletionMessage();
+			compObj.totalNum = objectives.getTotalNumberOfObjectives();
+			compObj.numCompleted = objectives.getNumberOfCompletedObjectives();
+			UpdateObservers(compObj);
+		}
+	}
+
+	private void checkForUploadableSeeds() {
+		for (Neighbourhood neighbourhood : mxPlots.getNeighbourhoodMatrix()) {
+			if (neighbourhood.getCentralPlot().getPlant() != null && neighbourhood.getCentralPlot().getPlant().getPlantState() == PlantState.FLOWERING && neighbourhood.getCentralPlot().getPlant().getDaysInCurrentState() == 1) {
+				//Freshly flowering plant! Upload seed...
+				uploadSeed(neighbourhood.getCentralPlot().getPlant());
+			}
+
+		}
+
+	}
+
 	private void uploadSeed(PlantInstance seedToUpload) {
 		plantToUploadMaster = seedToUpload;
 		new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.UPLOAD_SEED);
@@ -448,6 +532,8 @@ public class Game extends Observable {
 		if (weatherRetrieved && seedsRetrieved && initialPlotUpdateSent) {
 			Log.w(Game.class.getName(), "Ready to start game!");
 			gs.readyToPlay = true;
+			gs.totalNum = objectives.getTotalNumberOfObjectives();
+			gs.numCompleted = objectives.getNumberOfCompletedObjectives();
 			startGame();
 		} else {
 			gs.readyToPlay = false;
@@ -759,4 +845,10 @@ public class Game extends Observable {
 		Plot localCopy = getPlotFrom1BasedID(plotID);
 		return localCopy.toString();
 	}
+
+	public Objective[] getObjectiveList() {
+		return objectives.getObjectiveList();
+	}
+	
+	
 }

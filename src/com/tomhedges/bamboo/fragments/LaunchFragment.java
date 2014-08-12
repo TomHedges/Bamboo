@@ -13,10 +13,13 @@ import com.tomhedges.bamboo.model.ConfigValues;
 import com.tomhedges.bamboo.model.Globals;
 import com.tomhedges.bamboo.model.MatrixOfPlots;
 import com.tomhedges.bamboo.model.Neighbourhood;
+import com.tomhedges.bamboo.model.Objective;
+import com.tomhedges.bamboo.model.Objectives;
 import com.tomhedges.bamboo.model.PlantCatalogue;
 import com.tomhedges.bamboo.model.PlantType;
 import com.tomhedges.bamboo.model.Plot;
 import com.tomhedges.bamboo.model.TableLastUpdateDates;
+import com.tomhedges.bamboo.util.FileDownloader;
 import com.tomhedges.bamboo.util.dao.ConfigDataSource;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 import android.app.ProgressDialog;
@@ -35,7 +38,7 @@ import android.widget.Toast;
 
 public class LaunchFragment extends Fragment implements OnClickListener {
 
-	private Button btnRepetitonTest, btnTableDisplayTest, btnTestSeedUpload;
+	private Button btnRepetitonTest, btnTableDisplayTest, btnTestSeedUpload, btnResetObjectives;
 	private EditText etUsername;
 	private Intent i;
 
@@ -44,8 +47,8 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 	// to build local settings
 	private RemoteDBTableRetrieval remoteDataRetriever;
-
 	private ConfigDataSource localDataRetriever;
+	private FileDownloader downloader;
 
 	// Storage for user preferences
 	private CoreSettings coreSettings;
@@ -61,11 +64,13 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
 		btnTableDisplayTest = (Button)v.findViewById(R.id.launchTableDisplayActivity);
 		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
-
+		btnResetObjectives = (Button)v.findViewById(R.id.reset_objective_completion);
+		
 		//register listeners
 		btnRepetitonTest.setOnClickListener(this);
 		btnTableDisplayTest.setOnClickListener(this);
 		btnTestSeedUpload.setOnClickListener(this);
+		btnResetObjectives.setOnClickListener(this);
 
 		return v;
 	}
@@ -87,7 +92,24 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 		case R.id.test_seed_upload:
 			new UploadTest().execute();
+			break;
 
+		case R.id.reset_objective_completion:
+			
+			localDataRetriever = new ConfigDataSource(getActivity());
+			localDataRetriever.open();
+			
+			String message = null;
+			if (localDataRetriever.resetObjectiveCompletionStatuses()) {
+				message = "Reset all objectives - enjoy playing again!";
+			} else {
+				message = "Problem resetting objectives.";
+			}
+			Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
+			
+			localDataRetriever.close();
+			localDataRetriever = null;
+			
 			break;
 
 		default:
@@ -207,6 +229,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 			remoteDataRetriever = new RemoteDBTableRetrieval();
 			Globals globalsRemote = remoteDataRetriever.getGlobals();
+			downloader = new FileDownloader();
 
 			//Log.w(LaunchFragment.class.getName(), "globalsRemote last updated: " + globalsRemote.getLast_updated());
 			//Log.w(LaunchFragment.class.getName(), "globalsLocal last updated: " + globalsLocal.getLast_updated())
@@ -248,7 +271,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 							for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
 								for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
 									//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
-									
+
 									Plot newPlot = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
 									plotArray[rowCounter][columnCounter] = newPlot;
 								}
@@ -288,7 +311,55 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 						}
 					}
 
-					//Now update other local tables!!! AND WE NEED TO DO SOMETHING WITH DATA -eg. URL (use downloaded rather than constants. Shouldthis actually be read from downloaded text file???!
+					// OBJECTIVES
+					if (forceUpdate || tablesUpdatedRemote.getObjectives().after(tablesUpdatedLocal.getObjectives())) {
+						Log.w(LaunchFragment.class.getName(), "NEED TO UPDATE OBJECTIVES TABLE + RULES FILE!");
+						publishProgress("Updating Objectives data with updated values!");
+						Objective[] remoteObjectives = remoteDataRetriever.getObjectives();
+
+						if (localDataRetriever.writeObjectives(remoteObjectives) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_OBJECTIVES, tablesUpdatedRemote.getObjectives())) {
+							Log.w(LaunchFragment.class.getName(), "Updated Objectives data!");
+							publishProgress("Local Objectives table data updated");
+
+							if (Objectives.createObjectives(remoteDataRetriever.getObjectives())) {
+								Log.w(LaunchFragment.class.getName(), "Created local objectives list!");
+							} else {
+								Log.e(LaunchFragment.class.getName(), "Could not create objectives list!");
+							}
+						} else {
+							Log.e(LaunchFragment.class.getName(), "Could not update Objectives date and/or data...");
+							publishProgress("Local Objectives data could not be updated");
+						}
+
+						String downloadFrom = coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.FILENAME_REMOTE_OBJECTIVES;
+						String saveTo = getActivity().getFilesDir() + Constants.FILENAME_LOCAL_OBJECTIVES;
+						Log.w(LaunchFragment.class.getName(), "Downloading updated objectives rules file from server. From: " + downloadFrom + ", To: " + saveTo);
+						publishProgress("Downloading updated objectives rules file...");
+						if (downloader.download(getActivity(), downloadFrom, saveTo)) {
+							publishProgress("...Successful!");
+						} else {
+							publishProgress("...not successful!");
+							Log.e(LaunchFragment.class.getName(), "Unable to download updated objectives rules file from server.");
+						}
+					}
+
+					// ITERATION RULES FILES
+					if (forceUpdate || tablesUpdatedRemote.getIterationRules().after(tablesUpdatedLocal.getIterationRules())) {
+						Log.w(LaunchFragment.class.getName(), "NEED TO UPDATE ITERATION RULES FILE!");
+
+						String downloadFrom = coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.FILENAME_REMOTE_ITERATION_RULES;
+						String saveTo = getActivity().getFilesDir() + Constants.FILENAME_LOCAL_ITERATION_RULES;
+						Log.w(LaunchFragment.class.getName(), "Downloading updated iteration rules file from server. From: " + downloadFrom + ", To: " + saveTo);
+						publishProgress("Downloading updated iteration rules file...");
+						if (downloader.download(getActivity(), downloadFrom, saveTo)) {
+							publishProgress("...Successful!");
+						} else {
+							publishProgress("...not successful!");
+							Log.e(LaunchFragment.class.getName(), "Unable to download updated iteration rules file from server.");
+						}
+					}
+
+					//Now update other local tables!!! AND WE NEED TO DO SOMETHING WITH DATA -eg. URL (use downloaded rather than constants.
 
 					publishProgress("Local data updated");
 				} else {
@@ -341,7 +412,24 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 				}
 			}
 
-			
+			// OBJECTIVES - only build if empty
+			if (Objectives.getObjectives() == null) {
+				publishProgress("Building Objectives list!");
+				Log.w(LaunchFragment.class.getName(), "Building Objectives list from local data...");
+
+				if (Objectives.createObjectives(localDataRetriever.getObjectives())) {
+					Log.w(LaunchFragment.class.getName(), "Created local objectives list!");
+				} else {
+					Log.e(LaunchFragment.class.getName(), "Could not create objectives list!");
+				}
+
+				//Objectives objectives = Objectives.getObjectives();
+				//objectives.addObjective(0, "test objective", "this is only a test", true);
+				//objectives.addObjective(1, "Plant something!", "Your garden now has a plant!", false);
+				//objectives.addObjective(2, "Flowering Carnation", "You have a blooming Carnation!", false);
+				//objectives.addObjective(3, "Multiple flowering Carnations", "You several flowering Carnations!", false);
+			}
+
 			//BUILD NEIGHBOURHOODS FROM MATRIX OF PLOTS, AND ADD
 			MatrixOfPlots mxPlots = MatrixOfPlots.getMatrix();
 			int num_rows = mxPlots.getNumRows();
@@ -370,9 +458,9 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 				}
 			}
 			mxPlots.setNeighbourhoodMatrix(neighbourhoodArray);
-			
+
 			Log.w(LaunchFragment.class.getName(), "Created neighbourhood matrix from plot matrix data!");
-			
+
 			return "Starting game...";
 		}
 

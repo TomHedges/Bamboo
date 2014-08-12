@@ -1,8 +1,16 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
+
 import com.tomhedges.bamboo.config.Constants;
 
-public class Plot {
+public class Plot implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
+	
 	private PlantInstance plantInstance;
 	private int plotId;
 	private int xPosInMatrix;

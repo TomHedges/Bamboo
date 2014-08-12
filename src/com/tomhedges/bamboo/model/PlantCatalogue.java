@@ -37,9 +37,14 @@ public class PlantCatalogue {
 	// Singleton Factory method
 	public static boolean createPlantCatalogue(PlantType[] plantTypes) {
 		if(plantCatalogue == null){
+			Log.w(PlantCatalogue.class.getName(), "Creating plant catalogue...");
 			plantCatalogue = new PlantCatalogue(plantTypes);
+			Log.w(PlantCatalogue.class.getName(), "...created catalogue!");
+			return true;
+		} else {
+			Log.w(PlantCatalogue.class.getName(), "Plant catalogue already exists, not updating");
+			return false;
 		}
-		return true;
 	}
 
 	// Singleton access method
@@ -81,7 +86,7 @@ public class PlantCatalogue {
 	public int getRemoteSeedCount() {
 		return remoteSeedArray.length;
 	}
-	
+
 	// uses code from http://javarevisited.blogspot.co.uk/2012/12/how-to-sort-hashmap-java-by-key-and-value.html
 	public static <Integer extends Comparable,PlantType extends Comparable> Map<Integer,PlantType> sortByPlantType(Map<Integer,PlantType> map){
 		List<Map.Entry<Integer,PlantType>> entries = new LinkedList<Map.Entry<Integer,PlantType>>(map.entrySet());
@@ -107,11 +112,11 @@ public class PlantCatalogue {
 	public Map<java.lang.Integer, com.tomhedges.bamboo.model.PlantType> getPlants() {
 		return test;
 	}
-	
+
 	public PlantType[] getPlantsSimple() {
 		return plantArray;
 	}
-	
+
 	public int getPlantTypeCountSimple() {
 		return plantArray.length;
 	}

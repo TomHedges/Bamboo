@@ -40,4 +40,10 @@
         android:layout_height="wrap_content"
         android:text="Test - upload a seed!" />
     
+    <Button
+        android:id="@+id/reset_objective_completion"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Reset objective completion!" />
+    
 </LinearLayout>
