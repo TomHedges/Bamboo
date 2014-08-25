@@ -103,6 +103,15 @@
         android:id="@+id/btnObjectives"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Objectives (x of x completed)" />
+        android:text="Objectives" />
+
+    <ToggleButton
+        android:id="@+id/tglWatering"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="Watering"
+        android:textOff="Watering OFF"
+        android:textOn="Watering ON" />
 
 </LinearLayout>

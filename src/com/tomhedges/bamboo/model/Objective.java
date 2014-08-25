@@ -1,6 +1,13 @@
 package com.tomhedges.bamboo.model;
 
-public class Objective {
+import java.io.Serializable;
+
+public class Objective implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
 	
 	private int objectiveID;
 	private String description;

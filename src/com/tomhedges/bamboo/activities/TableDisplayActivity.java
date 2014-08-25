@@ -28,10 +28,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TableRow.LayoutParams;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.model.Game;
+import com.tomhedges.bamboo.model.Game.PlotWatered;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
 import com.tomhedges.bamboo.util.dao.ArrayAdapterObjectives;
 
@@ -48,6 +51,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 	//private int num_cols;
 
 	private Button btnObjectives;
+	private ToggleButton tglWatering;
 
 	// Progress Dialog
 	private ProgressDialog pDialog;
@@ -73,7 +77,6 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		setContentView(R.layout.table_display);
 
 		Log.w(TableDisplayActivity.class.getName(), "Retrieving Matrix of plots and building local variables...");
-		plotInfo = new String[game.getNumPlotRows() * game.getNumPlotCols()];
 
 		//REMOVED as not needed to be dynamic
 		//rowno_et = (EditText) findViewById(R.id.rowno_id);
@@ -84,39 +87,47 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		aboveTableRight = (TextView) findViewById(R.id.tvAboveTableRight);
 		belowTable = (TextView) findViewById(R.id.tvBelowTable);
 		btnObjectives = (Button) findViewById(R.id.btnObjectives);
+		tglWatering = (ToggleButton) findViewById(R.id.tglWatering);
 
 		//build_btn.setOnClickListener(this);
 		table_layout.setOnClickListener(this);
 		btnObjectives.setOnClickListener(this);
+		tglWatering.setOnClickListener(this);
 
-		// sets up initial table
-		Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
 		//BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
 		tableBuilt = false;
 	}
 
 	@Override
 	public void onStart() {
+		Log.w(TableDisplayActivity.class.getName(), "Starting TDA...");
 		super.onStart();
-		if (!tableBuilt) { BuildTable(game.getNumPlotRows(), game.getNumPlotCols()); }
+		if (!tableBuilt) {
+			//plotInfo = new String[game.getNumPlotRows() * game.getNumPlotCols()];
+			//// sets up initial table
+			//Log.w(TableDisplayActivity.class.getName(), "Building table with " + game.getNumPlotRows() + " rows and " + game.getNumPlotCols() + " columns!");
+			//BuildTable(game.getNumPlotRows(), game.getNumPlotCols());
+		}
 	}
 
 	@Override
 	protected void onResume() {
+		Log.w(TableDisplayActivity.class.getName(), "Resuming TDA...");
 		super.onResume();
 		game.resumeGame();
 	}
 
 	@Override
 	protected void onPause() {
+		Log.w(TableDisplayActivity.class.getName(), "Pausing TDA...");
 		super.onPause();
 		game.pauseGame();
 	}
 
 	@Override
 	protected void onStop() {
+		Log.w(TableDisplayActivity.class.getName(), "Stopping TDA...");
 		super.onStop();
-		game.stopAndSaveGame();
 	}
 
 	@Override
@@ -150,18 +161,28 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			if (data instanceof Game.GameStartup) {
 				Log.w(TableDisplayActivity.class.getName(), "Received update to game startup...");
 				final Game.GameStartup gameStartupDetails = (Game.GameStartup) data;
-				if (pDialog.isShowing()) {
+				if (pDialog != null && pDialog.isShowing()) {
 					//Has to be run on UI thread, as altering dialog produced there...
 					TableDisplayActivity.this.runOnUiThread(new Runnable() {
 						public void run() {
 							pDialog.setMessage(gameStartupDetails.returnMessage());
 							if (gameStartupDetails.returnReadyToPlay()) {
-								btnObjectives.setText("Objectives (" + gameStartupDetails.returnNumCompleted() + " of " + gameStartupDetails.returnTotalNum() + " completed)");
 								pDialog.dismiss();
 							}
 						}
 					});
 				}
+			}
+
+			if (data instanceof Game.ObjectiveUpdate) {
+				Log.w(TableDisplayActivity.class.getName(), "Received update on objectives...");
+				final Game.ObjectiveUpdate ou = (Game.ObjectiveUpdate) data;
+				//Has to be run on UI thread, as altering dialog produced there...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						btnObjectives.setText("Objectives (" + ou.returnNumCompleted() + " of " + ou.returnTotalNum() + " completed)");
+					}
+				});
 			}
 
 			if (data instanceof SeedPlanted) {
@@ -239,11 +260,47 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 					}
 				});
 			}
+
+			if (data instanceof Game.GardenDimensions) {
+				final Game.GardenDimensions gardenDimensions = (Game.GardenDimensions) data;
+				Log.w(TableDisplayActivity.class.getName(), "Dimensions revealed: rows=" + gardenDimensions.returnRows() + ", cols=" + gardenDimensions.returnCols());
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						plotInfo = new String[gardenDimensions.returnRows() * gardenDimensions.returnCols()];
+						// sets up initial table
+						Log.w(TableDisplayActivity.class.getName(), "Building table with " + gardenDimensions.returnRows() + " rows and " + gardenDimensions.returnCols() + " columns!");
+						BuildTable(gardenDimensions.returnRows(), gardenDimensions.returnCols());
+					}
+				});
+			}
+			
+
+
+			if (data instanceof PlotWatered) {
+				final Game.PlotWatered pw = (Game.PlotWatered) data;
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(TableDisplayActivity.this, "Plot " + pw.returnPlotID() + " watered!", Toast.LENGTH_SHORT).show();
+						final TextView tv = (TextView) findViewById(pw.returnPlotID());
+						tv.setBackgroundResource(R.drawable.cell_shape_watered);
+						Handler handler = new Handler(); 
+						handler.postDelayed(new Runnable() { 
+							public void run() { 
+								tv.setBackgroundResource(R.drawable.cell_shape);
+							} 
+						}, 5000); 
+					}
+				});
+			}
 		}
 	}
 
 	@Override
-	public void onClick(View v) {
+	public void onClick(final View v) {
 
 		switch (v.getId()) {
 		//REMOVED as not needed to be dynamic
@@ -268,12 +325,30 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		case R.id.btnObjectives:
 			showObjectivesList();
 			break;
+			
+		case R.id.tglWatering:
+			if (tglWatering.isChecked()) {
+				Toast.makeText(TableDisplayActivity.this,
+						"Watering mode ON",
+						Toast.LENGTH_SHORT).show();
+			} else {
+				Toast.makeText(TableDisplayActivity.this,
+						"Watering mode OFF",
+						Toast.LENGTH_SHORT).show();
+				
+			}
+			break;
 
 		default:
 			//removed for now as replaced with context menu
 			if (CheckForCellTouch(v.getId())) {
 				v.setBackgroundResource(R.drawable.cell_shape);
-				v.showContextMenu();
+				if (tglWatering.isChecked()) {
+					// end watering request to game, which will send back update
+					game.WaterPlotWithID(v.getId());
+				} else {
+					v.showContextMenu();
+				}
 			}
 			break;
 		}

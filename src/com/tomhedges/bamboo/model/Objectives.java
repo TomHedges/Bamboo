@@ -1,9 +1,17 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Objectives {
+import android.util.Log;
+
+public class Objectives implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
 
 	private static Objectives objectives = null;
 	private List<Objective> allObjectives;
@@ -82,5 +90,10 @@ public class Objectives {
 
 	private void resetChangedList() {
 		changedObjectives.clear();
+	}
+
+	public void destroy() {
+		Log.d(Objectives.class.getName(), "Destroying Objectives!");
+		objectives = null;
 	}
 }

@@ -1,10 +1,17 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import com.tomhedges.bamboo.config.Constants;
 
-public class RemoteSeed implements Constants {
+public class RemoteSeed implements Constants, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
+	
 	private int plantTypeId;
 	private String username;
 	private Date last_updated;

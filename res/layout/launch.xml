@@ -29,10 +29,17 @@
         android:text="Launch Repetition test!" />
 
     <Button
-        android:id="@+id/launchTableDisplayActivity"
+        android:id="@+id/launchStartNewGame"
         android:layout_width="250dp"
-        android:layout_height="100dp"
-        android:text="Launch Table Display test!" />
+        android:layout_height="wrap_content"
+        android:text="Start New Game!" />
+
+    <Button
+        android:id="@+id/launchContinueCurrentGame"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Reload existing game!" />
 
     <Button
         android:id="@+id/test_seed_upload"

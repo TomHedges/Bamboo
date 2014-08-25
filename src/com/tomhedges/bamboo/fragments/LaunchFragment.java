@@ -9,17 +9,18 @@ import com.tomhedges.bamboo.activities.RepeatingActivity;
 import com.tomhedges.bamboo.activities.TableDisplayActivity;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.CoreSettings;
-import com.tomhedges.bamboo.model.ConfigValues;
-import com.tomhedges.bamboo.model.Globals;
-import com.tomhedges.bamboo.model.MatrixOfPlots;
-import com.tomhedges.bamboo.model.Neighbourhood;
-import com.tomhedges.bamboo.model.Objective;
-import com.tomhedges.bamboo.model.Objectives;
-import com.tomhedges.bamboo.model.PlantCatalogue;
-import com.tomhedges.bamboo.model.PlantType;
-import com.tomhedges.bamboo.model.Plot;
-import com.tomhedges.bamboo.model.TableLastUpdateDates;
-import com.tomhedges.bamboo.util.FileDownloader;
+//import com.tomhedges.bamboo.model.ConfigValues;
+import com.tomhedges.bamboo.model.Game;
+//import com.tomhedges.bamboo.model.Globals;
+//import com.tomhedges.bamboo.model.MatrixOfPlots;
+//import com.tomhedges.bamboo.model.Neighbourhood;
+//import com.tomhedges.bamboo.model.Objective;
+//import com.tomhedges.bamboo.model.Objectives;
+//import com.tomhedges.bamboo.model.PlantCatalogue;
+//import com.tomhedges.bamboo.model.PlantType;
+//import com.tomhedges.bamboo.model.Plot;
+//import com.tomhedges.bamboo.model.TableLastUpdateDates;
+//import com.tomhedges.bamboo.util.FileDownloader;
 import com.tomhedges.bamboo.util.dao.ConfigDataSource;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 import android.app.ProgressDialog;
@@ -38,7 +39,7 @@ import android.widget.Toast;
 
 public class LaunchFragment extends Fragment implements OnClickListener {
 
-	private Button btnRepetitonTest, btnTableDisplayTest, btnTestSeedUpload, btnResetObjectives;
+	private Button btnRepetitonTest, btnNewGame, btnLoadGame, btnTestSeedUpload, btnResetObjectives;
 	private EditText etUsername;
 	private Intent i;
 
@@ -48,29 +49,37 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 	// to build local settings
 	private RemoteDBTableRetrieval remoteDataRetriever;
 	private ConfigDataSource localDataRetriever;
-	private FileDownloader downloader;
+	//private FileDownloader downloader;
 
 	// Storage for user preferences
 	private CoreSettings coreSettings;
 
+	//master...
+	private Game game;
+
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		View v = inflater.inflate(R.layout.launch, container, false);        
+		View v = inflater.inflate(R.layout.launch, container, false);  
 
 		etUsername = (EditText)v.findViewById(R.id.username);
 
 		//setup buttons
 		btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
-		btnTableDisplayTest = (Button)v.findViewById(R.id.launchTableDisplayActivity);
+		btnNewGame = (Button)v.findViewById(R.id.launchStartNewGame);
+		btnLoadGame = (Button)v.findViewById(R.id.launchContinueCurrentGame);
 		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
 		btnResetObjectives = (Button)v.findViewById(R.id.reset_objective_completion);
-		
+
 		//register listeners
 		btnRepetitonTest.setOnClickListener(this);
-		btnTableDisplayTest.setOnClickListener(this);
+		btnNewGame.setOnClickListener(this);
+		btnLoadGame.setOnClickListener(this);
 		btnTestSeedUpload.setOnClickListener(this);
-		btnResetObjectives.setOnClickListener(this);
+		btnResetObjectives.setOnClickListener(this);      
+
+		game = Game.getGameDetails(getActivity());
+		btnLoadGame.setEnabled(game.savedGameExists());
 
 		return v;
 	}
@@ -83,11 +92,26 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			startActivity(i);
 			break;
 
-		case R.id.launchTableDisplayActivity:
-			new RetrieveData().execute();
+		case R.id.launchStartNewGame:
+			//new RetrieveData().execute();
 
 			//i = new Intent(this.getActivity(), TableDisplayActivity.class);
 			//startActivity(i);
+
+
+
+			game.setUsername(etUsername.getText().toString());
+			i = new Intent(this.getActivity(), TableDisplayActivity.class);
+			game.startNewGame();
+			startActivity(i);
+
+			break;
+
+		case R.id.launchContinueCurrentGame:
+			i = new Intent(this.getActivity(), TableDisplayActivity.class);
+			game.continueExistingGame();
+			startActivity(i);
+
 			break;
 
 		case R.id.test_seed_upload:
@@ -95,10 +119,10 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			break;
 
 		case R.id.reset_objective_completion:
-			
+
 			localDataRetriever = new ConfigDataSource(getActivity());
 			localDataRetriever.open();
-			
+
 			String message = null;
 			if (localDataRetriever.resetObjectiveCompletionStatuses()) {
 				message = "Reset all objectives - enjoy playing again!";
@@ -106,10 +130,10 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 				message = "Problem resetting objectives.";
 			}
 			Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
-			
+
 			localDataRetriever.close();
 			localDataRetriever = null;
-			
+
 			break;
 
 		default:
@@ -175,6 +199,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			localDataRetriever.open();
 		}
 		super.onResume();
+		btnLoadGame.setEnabled(game.savedGameExists());
 	}
 
 	@Override
@@ -185,11 +210,11 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		super.onPause();
 	}
 
-	class RetrieveData extends AsyncTask<Void, String, String> {
+	/*	class RetrieveData extends AsyncTask<Void, String, String> {
 
-		/**
-		 * Before starting background thread Show Progress Dialog
-		 * */
+	 *//**
+	 * Before starting background thread Show Progress Dialog
+	 * *//*
 		boolean failure = false;
 
 		protected void onPreExecute() {
@@ -469,9 +494,9 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 		}
 
-		/**
-		 * After completing background task Dismiss the progress dialog
-		 * **/
+	  *//**
+	  * After completing background task Dismiss the progress dialog
+	  * **//*
 		protected void onPostExecute(String retrievedData) {
 			pDialog.setMessage(retrievedData);
 			//			String showData;
@@ -495,5 +520,5 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			localDataRetriever.close();
 		}
 
-	}
+	}*/
 }

@@ -1,5 +1,6 @@
 package com.tomhedges.bamboo.model;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -12,7 +13,12 @@ import java.util.Map.Entry;
 
 import android.util.Log;
 
-public class PlantCatalogue {
+public class PlantCatalogue implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
 
 	private static PlantCatalogue plantCatalogue = null;
 
@@ -42,7 +48,7 @@ public class PlantCatalogue {
 			Log.w(PlantCatalogue.class.getName(), "...created catalogue!");
 			return true;
 		} else {
-			Log.w(PlantCatalogue.class.getName(), "Plant catalogue already exists, not updating");
+			Log.e(PlantCatalogue.class.getName(), "Plant catalogue already exists, not updating");
 			return false;
 		}
 	}
@@ -119,5 +125,10 @@ public class PlantCatalogue {
 
 	public int getPlantTypeCountSimple() {
 		return plantArray.length;
+	}
+
+	public void destroy() {
+		Log.d(PlantCatalogue.class.getName(), "Destroying plant catalogue!");
+		plantCatalogue = null;
 	}
 }

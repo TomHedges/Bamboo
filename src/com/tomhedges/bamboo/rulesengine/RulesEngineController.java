@@ -82,13 +82,15 @@ public class RulesEngineController {
 			InputStream iis = null;
 			File file = null;
 			
-			iis = context.getResources().openRawResource(R.raw.bambootestv2);
-			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
-			dois = new DroolsObjectInputStream(iis);
-			pkgs = (Collection<KnowledgePackage>) dois.readObject();
+			//iis = context.getResources().openRawResource(R.raw.bambootestv2);
+			//Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
+			//dois = new DroolsObjectInputStream(iis);
+			//pkgs = (Collection<KnowledgePackage>) dois.readObject();
 
+			
+			
 			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_ITERATION_RULES);
-			if(file.exists() || useRaw) {    
+			if(file.exists() && !useRaw) {    
 				Log.w(RulesEngineController.class.getName(), "Using downloaded iteration rules file");
 				iis = new FileInputStream(file);
 			} else {
@@ -97,10 +99,12 @@ public class RulesEngineController {
 			}
 			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
 			dois = new DroolsObjectInputStream(iis);
-			pkgs.addAll((Collection<KnowledgePackage>) dois.readObject());
+			pkgs = (Collection<KnowledgePackage>) dois.readObject();
+			
+			
 			
 			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_OBJECTIVES);
-			if(file.exists() || useRaw) {    
+			if(file.exists() && !useRaw) {    
 				Log.w(RulesEngineController.class.getName(), "Using downloaded objectives file");
 				iis = new FileInputStream(file);
 			} else {
@@ -111,6 +115,9 @@ public class RulesEngineController {
 			dois = new DroolsObjectInputStream(iis);
 			pkgs.addAll((Collection<KnowledgePackage>) dois.readObject());
 
+			
+			
+			
 			Log.w(RulesEngineController.class.getName(), "Loaded rule packages: " + pkgs);
 			for(KnowledgePackage pkg : pkgs) {
 				Log.w(RulesEngineController.class.getName(), "Loaded rule package: " + pkg.toString());

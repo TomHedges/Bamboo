@@ -170,7 +170,8 @@ public interface Constants {
 	public static int default_WaterLevel = 3;
 	public static int default_Temperature = 15;
 	public static int default_pHLevel = 0;
-
+	public static final int default_WateringAmount = 5;
+	
 	public static enum Season {
 		SPRING,
 		SUMMER,

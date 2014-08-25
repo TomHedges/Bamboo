@@ -1,12 +1,19 @@
 package com.tomhedges.bamboo.config;
 
+import java.io.Serializable;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class CoreSettings {
+public class CoreSettings implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 123L;
 
 	private static CoreSettings coreSettings;
 	

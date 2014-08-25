@@ -115,4 +115,9 @@ public class MatrixOfPlots implements Serializable {
 		}
 		return plotsWithPlants;
 	}
+
+	public void destroy() {
+		Log.d(MatrixOfPlots.class.getName(), "Destroying Matrix!");
+		matrix = null;
+	}
 }
