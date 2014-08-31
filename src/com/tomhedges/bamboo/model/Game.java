@@ -58,6 +58,7 @@ public class Game extends Observable {
 	private boolean initialPlotUpdateSent;
 	private int daysUntilNextRandomSeeding;
 	private PlantInstance plantToUploadMaster;
+	private int waterAllowance;
 
 	public class GameDate {
 		String gameDateString;
@@ -190,6 +191,14 @@ public class Game extends Observable {
 		}
 	}
 
+	public class WaterAllowanceLevel {
+		int waterAllowance;
+		
+		public int returnWaterAllowance() {
+			return waterAllowance;
+		}
+	}
+	
 	public class ObjectiveUpdate {
 		int totalNum;
 		int numCompleted;
@@ -348,9 +357,19 @@ public class Game extends Observable {
 		checkForCompletedObjectives();
 		checkForUploadableSeeds();
 		advanceDate();
+		increaseResourceAllowance();
+		updateWaterAllowanceInfo();
 		updateGameDetailsText();
 		sendPlotStateUpdate();
 		updateWeather();
+	}
+
+	private void increaseResourceAllowance() {
+		if (waterAllowance + Constants.default_UserWaterAvailability_DailyChange < Constants.default_UserWaterAvailability_Max) {
+			waterAllowance = waterAllowance + Constants.default_UserWaterAvailability_DailyChange; 
+		} else {
+			waterAllowance = Constants.default_UserWaterAvailability_Max;
+		}		
 	}
 
 	private void preStartChecks(String message) {
@@ -393,7 +412,8 @@ public class Game extends Observable {
 			saveState.month = gameStartDate.get(Calendar.MONTH);
 			saveState.year = gameStartDate.get(Calendar.YEAR);
 			saveState.numOfDaysPlayedSave = numOfDaysPlayed;
-
+			saveState.waterAllowance = waterAllowance;
+			
 			if (fileReaderWriter.saveObject(saveState, context.getFilesDir() + Constants.FILENAME_LOCAL_GAME_SAVE)) {
 				Log.w(Game.class.getName(), "Game successfully saved!");
 			} else {
@@ -460,6 +480,7 @@ public class Game extends Observable {
 		gameStartDate.set(savedState.year, savedState.month, savedState.day);
 		Log.w(Game.class.getName(), "Current state: gameStartDate null? " + (gameStartDate == null) + ", gameStartDate=" + gameStartDate);
 		numOfDaysPlayed = savedState.numOfDaysPlayedSave;
+		waterAllowance = savedState.waterAllowance;
 			
 		Log.w(Game.class.getName(), "...loaded existing game!");
 
@@ -696,7 +717,8 @@ public class Game extends Observable {
 
 	private void updateGameDetailsText() {
 		GameDetailsText gdText = new GameDetailsText();
-		gdText.gameDetails = "Local Weather:\nTemperature = " + getRealTemp() + "\u00B0C\nRainfall = " + getRealRainfall() + "mm\nNumber of remote seeds = " + getRemoteSeedCount() + "\nLat = " + locator.getLocation().getLatitude() + "\nLong = " + locator.getLocation().getLongitude();
+		float waterUsage = (waterAllowance * 100.0f)/Constants.default_UserWaterAvailability_Max;
+		gdText.gameDetails = "Local Weather:\nTemperature = " + getRealTemp() + "\u00B0C\nRainfall = " + getRealRainfall() + "mm\nNumber of remote seeds = " + getRemoteSeedCount() + "\nLat = " + locator.getLocation().getLatitude() + "\nLong = " + locator.getLocation().getLongitude() + "\nWater Allowance=" + waterUsage + "%";
 		UpdateObservers(gdText);
 	}
 
@@ -1234,7 +1256,6 @@ public class Game extends Observable {
 				mxPlots = MatrixOfPlots.getMatrix();
 			}
 
-
 			GardenDimensions gardenDimensions = new GardenDimensions();
 			gardenDimensions.cols = mxPlots.getNumCols();
 			gardenDimensions.rows = mxPlots.getNumRows();
@@ -1329,6 +1350,7 @@ public class Game extends Observable {
 				gameStartDate = Calendar.getInstance();
 				gameStartDate.add(Calendar.DATE, -1);
 				numOfDaysPlayed = -1;
+				waterAllowance = Constants.default_UserWaterAvailability_Initial;
 			} else {
 				Log.w(SetupGame.class.getName(), "Remaining key values already set - loading existing game");
 			}
@@ -1340,12 +1362,35 @@ public class Game extends Observable {
 	}
 
 	public void WaterPlotWithID(int plotID) {
+		int amountToWater = getAmountToWater();
 		Plot plotBeingWatered = getPlotFrom1BasedID(plotID);
 		int oldWaterLevel = plotBeingWatered.getWaterLevel();
-		plotBeingWatered.changeWaterLevel(Constants.default_WateringAmount);
+		plotBeingWatered.changeWaterLevel(amountToWater);
 		PlotWatered sw = new PlotWatered();
 		sw.plotID = plotID;
 		Log.w(Game.class.getName(), "Player watered plot with ID: " + plotID + ". Water level changed from " + oldWaterLevel + " to " + getPlotFrom1BasedID(plotID).getWaterLevel());
 		UpdateObservers(sw);
+		updateGameDetailsText();
+		updateWaterAllowanceInfo();
+	}
+
+	private void updateWaterAllowanceInfo() {
+		WaterAllowanceLevel wal = new WaterAllowanceLevel();
+		int waterAllPercent = waterAllowance * 100;
+		waterAllPercent = waterAllPercent / Constants.default_UserWaterAvailability_Max;
+		wal.waterAllowance = waterAllPercent;
+		Log.w(Game.class.getName(), "Sending water allowance update. Level is " + waterAllowance);
+		UpdateObservers(wal);
+	}
+
+	private int getAmountToWater() {
+		if (waterAllowance >= Constants.default_WateringAmount) {
+			waterAllowance = waterAllowance - Constants.default_WateringAmount;
+			return Constants.default_WateringAmount;
+		} else {
+			int remainder = waterAllowance;
+			waterAllowance = 0;
+			return remainder;
+		}
 	}
 }

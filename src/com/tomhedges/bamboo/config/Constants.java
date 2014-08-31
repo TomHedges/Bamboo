@@ -167,10 +167,9 @@ public interface Constants {
 		MUD
 	}
 
-	public static int default_WaterLevel = 3;
-	public static int default_Temperature = 15;
-	public static int default_pHLevel = 0;
-	public static final int default_WateringAmount = 5;
+	public static final int default_WaterLevel = 3;
+	public static final int default_Temperature = 15;
+	public static final int default_pHLevel = 0;
 	
 	public static enum Season {
 		SPRING,
@@ -189,47 +188,52 @@ public interface Constants {
 		DEAD
 	}
 
-	public static Season[] default_WEATHER_SEASONS = {Season.WINTER, Season.WINTER,
+	public static final Season[] default_WEATHER_SEASONS = {Season.WINTER, Season.WINTER,
 		Season.SPRING, Season.SPRING, Season.SPRING,
 		Season.SUMMER, Season.SUMMER, Season.SUMMER,
 		Season.AUTUMN, Season.AUTUMN, Season.AUTUMN,
 		Season.WINTER};
-	public static int[] default_WEATHER_TEMPS = {3, 5, 8, 11, 14, 17, 20, 21, 17, 11, 7, 5};
-	public static int[] default_WEATHER_RAIN = {3, 2, 3, 3, 2, 1, 1, 0, 1, 2, 3, 4};
+	public static final int[] default_WEATHER_TEMPS = {3, 5, 8, 11, 14, 17, 20, 21, 17, 11, 7, 5};
+	public static final int[] default_WEATHER_RAIN = {3, 2, 3, 3, 2, 1, 1, 0, 1, 2, 3, 4};
 
-	public static int default_WEATHER_ROLLING_AVERAGE_LENGTH = 7;
-	public static int default_WEATHER_STAN_DEV = 3; //ie 70% of values will have values in this range of degrees from the average
-	public static int default_WEATHER_MAX_TEMP_CHANGE = 5;
-	public static int default_WEATHER_MAX_RAIN_CHANGE = 2;
-	public static int default_WEATHER_MAX_RUN_SAME_DIRECTION = 3;
-	public static int default_WEATHER_MAX_TEMP = 35;
-	public static int default_WEATHER_MIN_TEMP = -10;
-	public static int default_WEATHER_MAX_RAINFALL = 10;
-	public static int default_WEATHER_MIN_RAINFALL = 0;
-	public static int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
-	public static int default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER = 10;
-	public static int default_WEATHER_GROUND_WATER = 2;
-	public static int default_WEATHER_MAX_STANDING_WATER = 15;
-	public static int default_WEATHER_WATER_LEVEL_REDUCTION_EACH_DAY = 2;
-	public static int default_PLANT_EXCESS_WATER_TOLERANCE = 4;
-	public static int default_EDGE_PLOT_RESOURCE_DIVIDER = 2;
+	public static final int default_WEATHER_ROLLING_AVERAGE_LENGTH = 7;
+	public static final int default_WEATHER_STAN_DEV = 3; //ie 70% of values will have values in this range of degrees from the average
+	public static final int default_WEATHER_MAX_TEMP_CHANGE = 5;
+	public static final int default_WEATHER_MAX_RAIN_CHANGE = 2;
+	public static final int default_WEATHER_MAX_RUN_SAME_DIRECTION = 3;
+	public static final int default_WEATHER_MAX_TEMP = 35;
+	public static final int default_WEATHER_MIN_TEMP = -10;
+	public static final int default_WEATHER_MAX_RAINFALL = 10;
+	public static final int default_WEATHER_MIN_RAINFALL = 0;
+	public static final int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
+	public static final int default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER = 10;
+	public static final int default_WEATHER_GROUND_WATER = 2;
+	public static final int default_WEATHER_MAX_STANDING_WATER = 15;
+	public static final int default_WEATHER_WATER_LEVEL_REDUCTION_EACH_DAY = 2;
+	public static final int default_PLANT_EXCESS_WATER_TOLERANCE = 4;
+	public static final int default_EDGE_PLOT_RESOURCE_DIVIDER = 2;
 
-	public static int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE = 8;
-	public static int default_PLANT_STATE_CHANGE_HEALTH_MOVEMENT = 1;
-	public static int default_PLANT_HEALTH_AT_PLANTING = 60;
-	public static int default_PLANT_HEALTH_FOR_FLOWERING = 50;
-	public static int default_PLANT_HEALTH_FOR_FRUITING = 70;
-	public static int default_PLANT_HEALTH_MINIMUM_FOR_STAYING_ALIVE = 35;
-	public static int default_PLANT_WILTING_LIMIT_BEFORE_DYING = 3;
-	public static int default_PLANT_DISAPPEARS_AFTER = 3;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE = 8;
+	public static final int default_PLANT_STATE_CHANGE_HEALTH_MOVEMENT = 1;
+	public static final int default_PLANT_HEALTH_AT_PLANTING = 60;
+	public static final int default_PLANT_HEALTH_FOR_FLOWERING = 50;
+	public static final int default_PLANT_HEALTH_FOR_FRUITING = 70;
+	public static final int default_PLANT_HEALTH_MINIMUM_FOR_STAYING_ALIVE = 35;
+	public static final int default_PLANT_WILTING_LIMIT_BEFORE_DYING = 3;
+	public static final int default_PLANT_DISAPPEARS_AFTER = 3;
 	
-	public static double default_DISTANCE_USER = 0.05;
-	public static double default_DISTANCE_SPONSOR = 0.2;
-	public static int default_LAST_UPDATE_USER_TIMEGAP_MINUTES = 10;
-	public static int default_LAST_UPDATE_SPONSOR_TIMEGAP_MINUTES = 10 * 6 * 24 * 7;
+	public static final double default_DISTANCE_USER = 0.05;
+	public static final double default_DISTANCE_SPONSOR = 0.2;
+	public static final int default_LAST_UPDATE_USER_TIMEGAP_MINUTES = 10;
+	public static final int default_LAST_UPDATE_SPONSOR_TIMEGAP_MINUTES = 10 * 6 * 24 * 7;
 
-	public static int default_GAME_WEATHER_RETRIEVE_FREQ = 20;
-	public static int default_GAME_WEATHER_RETRIEVE_OFFSET = 0;
-	public static int default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ = 20;
-	public static int default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET = 10;
+	public static final int default_GAME_WEATHER_RETRIEVE_FREQ = 20;
+	public static final int default_GAME_WEATHER_RETRIEVE_OFFSET = 0;
+	public static final int default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ = 20;
+	public static final int default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET = 10;
+
+	public static final int default_WateringAmount = 4;
+	public static final int default_UserWaterAvailability_Initial = 25;
+	public static final int default_UserWaterAvailability_Max = 50;
+	public static final int default_UserWaterAvailability_DailyChange = 2;
 }

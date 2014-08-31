@@ -36,6 +36,7 @@ import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.PlotWatered;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
+import com.tomhedges.bamboo.model.Game.WaterAllowanceLevel;
 import com.tomhedges.bamboo.util.dao.ArrayAdapterObjectives;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Observer {
@@ -70,7 +71,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			pDialog = new ProgressDialog(this);
 			pDialog.setMessage("Setting up game...");
 			pDialog.setIndeterminate(false);
-			pDialog.setCancelable(true);
+			pDialog.setCancelable(false);
 			pDialog.show();
 		}
 
@@ -275,7 +276,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 					}
 				});
 			}
-			
+
 
 
 			if (data instanceof PlotWatered) {
@@ -293,6 +294,25 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 								tv.setBackgroundResource(R.drawable.cell_shape);
 							} 
 						}, 5000); 
+					}
+				});
+			}
+
+			if (data instanceof WaterAllowanceLevel) {
+				final Game.WaterAllowanceLevel wal = (Game.WaterAllowanceLevel) data;
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				TableDisplayActivity.this.runOnUiThread(new Runnable() {
+					public void run() {
+						if (wal.returnWaterAllowance() == 0) {
+							//Toast.makeText(TableDisplayActivity.this, "No water available!", Toast.LENGTH_SHORT).show();
+							if (tglWatering.isChecked()) {
+								tglWatering.toggle();
+							}
+							tglWatering.setEnabled(false);
+						} else {
+							tglWatering.setEnabled(true);
+						}
 					}
 				});
 			}
@@ -325,7 +345,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		case R.id.btnObjectives:
 			showObjectivesList();
 			break;
-			
+
 		case R.id.tglWatering:
 			if (tglWatering.isChecked()) {
 				Toast.makeText(TableDisplayActivity.this,
@@ -335,7 +355,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				Toast.makeText(TableDisplayActivity.this,
 						"Watering mode OFF",
 						Toast.LENGTH_SHORT).show();
-				
+
 			}
 			break;
 

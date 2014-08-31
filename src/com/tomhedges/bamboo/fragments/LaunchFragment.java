@@ -5,6 +5,7 @@ package com.tomhedges.bamboo.fragments;
 import java.util.Date;
 
 import com.tomhedges.bamboo.R;
+import com.tomhedges.bamboo.activities.GameUI3D;
 import com.tomhedges.bamboo.activities.RepeatingActivity;
 import com.tomhedges.bamboo.activities.TableDisplayActivity;
 import com.tomhedges.bamboo.config.Constants;
@@ -39,7 +40,7 @@ import android.widget.Toast;
 
 public class LaunchFragment extends Fragment implements OnClickListener {
 
-	private Button btnRepetitonTest, btnNewGame, btnLoadGame, btnTestSeedUpload, btnResetObjectives;
+	private Button btnRepetitonTest, btnNewGame, btnLoadGame, btnNewGame3D, btnLoadGame3D, btnTestSeedUpload, btnResetObjectives;
 	private EditText etUsername;
 	private Intent i;
 
@@ -68,6 +69,8 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
 		btnNewGame = (Button)v.findViewById(R.id.launchStartNewGame);
 		btnLoadGame = (Button)v.findViewById(R.id.launchContinueCurrentGame);
+		btnNewGame3D = (Button)v.findViewById(R.id.launchStartNewGame3D);
+		btnLoadGame3D = (Button)v.findViewById(R.id.launchContinueCurrentGame3D);
 		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
 		btnResetObjectives = (Button)v.findViewById(R.id.reset_objective_completion);
 
@@ -75,11 +78,14 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		btnRepetitonTest.setOnClickListener(this);
 		btnNewGame.setOnClickListener(this);
 		btnLoadGame.setOnClickListener(this);
+		btnNewGame3D.setOnClickListener(this);
+		btnLoadGame3D.setOnClickListener(this);
 		btnTestSeedUpload.setOnClickListener(this);
 		btnResetObjectives.setOnClickListener(this);      
 
 		game = Game.getGameDetails(getActivity());
 		btnLoadGame.setEnabled(game.savedGameExists());
+		btnLoadGame3D.setEnabled(game.savedGameExists());
 
 		return v;
 	}
@@ -112,6 +118,19 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			game.continueExistingGame();
 			startActivity(i);
 
+			break;
+
+		case R.id.launchStartNewGame3D:
+			game.setUsername(etUsername.getText().toString());
+			i = new Intent(this.getActivity(), GameUI3D.class);
+			game.startNewGame();
+			startActivity(i);
+			break;
+
+		case R.id.launchContinueCurrentGame3D:
+			i = new Intent(this.getActivity(), GameUI3D.class);
+			game.continueExistingGame();
+			startActivity(i);
 			break;
 
 		case R.id.test_seed_upload:

@@ -10,7 +10,6 @@ public class SaveGame implements Serializable {
 	 */
 	private static final long serialVersionUID = 123L;
 	
-	
 	MatrixOfPlots mxPlotsSave;
 	PlantCatalogue plantCatalogueSave;
 	Objectives objectivesSave;
@@ -18,6 +17,7 @@ public class SaveGame implements Serializable {
 	int month;
 	int year;
 	int numOfDaysPlayedSave;
+	int waterAllowance;
 
 	public MatrixOfPlots returnMatrix() {
 		return mxPlotsSave;

@@ -25,7 +25,7 @@
     <Button
         android:id="@+id/launchRepeatingActivity"
         android:layout_width="250dp"
-        android:layout_height="100dp"
+        android:layout_height="wrap_content"
         android:text="Launch Repetition test!" />
 
     <Button
@@ -41,6 +41,18 @@
         android:enabled="false"
         android:text="Reload existing game!" />
 
+    <Button
+        android:id="@+id/launchStartNewGame3D"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:text="Start New Game in 3D!" />
+
+    <Button
+        android:id="@+id/launchContinueCurrentGame3D"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:enabled="false"
+        android:text="Reload existing game in 3D!" />
     <Button
         android:id="@+id/test_seed_upload"
         android:layout_width="250dp"
