@@ -13,7 +13,7 @@ public class MatrixOfPlots implements Serializable {
 	 */
 	private static final long serialVersionUID = 123L;
 	
-	private static MatrixOfPlots matrix = null;
+	private static MatrixOfPlots matrix;
 
 	private Plot[][] plotArray;
 	private Neighbourhood[] neighbourhoodArray;
@@ -48,6 +48,14 @@ public class MatrixOfPlots implements Serializable {
 	// Singleton access method
 	public static MatrixOfPlots getMatrix() {
 		return matrix;
+	}
+	
+	public boolean hasPlantArray() {
+		if (plotArray!=null) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	public void setNeighbourhoodMatrix(Neighbourhood[] neighbourhoodArray) {
@@ -119,5 +127,6 @@ public class MatrixOfPlots implements Serializable {
 	public void destroy() {
 		Log.d(MatrixOfPlots.class.getName(), "Destroying Matrix!");
 		matrix = null;
+		//plotArray = null;
 	}
 }

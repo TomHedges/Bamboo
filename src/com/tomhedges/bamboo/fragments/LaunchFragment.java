@@ -219,6 +219,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		}
 		super.onResume();
 		btnLoadGame.setEnabled(game.savedGameExists());
+		btnLoadGame3D.setEnabled(game.savedGameExists());
 	}
 
 	@Override

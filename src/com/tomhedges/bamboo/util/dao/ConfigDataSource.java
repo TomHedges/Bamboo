@@ -43,8 +43,11 @@ public class ConfigDataSource {
 			Constants.COLUMN_PLANTTYPES_FLOWTARGET,
 			Constants.COLUMN_PLANTTYPES_FLOWFOR,
 			Constants.COLUMN_PLANTTYPES_FRUITTARGET,
-			Constants.COLUMN_PLANTTYPES_FRUITFOR };
+			Constants.COLUMN_PLANTTYPES_FRUITFOR,
+			Constants.COLUMN_PLANTTYPES_PHOTO };
+	private String[] plantImageFileColumns = { Constants.COLUMN_PLANTTYPES_PHOTO };
 	private String[] objectivesColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_OBJECTIVES_ID, Constants.COLUMN_OBJECTIVES_DESC, Constants.COLUMN_OBJECTIVES_MESSAGE, Constants.COLUMN_OBJECTIVES_COMPLETED };
+	private String[] helpAndInfoColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_HELPANDINFO_DATATYPE, Constants.COLUMN_HELPANDINFO_REFERENCE, Constants.COLUMN_HELPANDINFO_TEXT };
 
 	public ConfigDataSource(Context context) {
 		dbHelper = new ConfigSQLiteHelper(context);
@@ -87,6 +90,16 @@ public class ConfigDataSource {
 
 		return plantTypes;
 	}
+	
+	public String[] getPlantImagePaths() {
+		Cursor cursor = database.query(Constants.TABLE_PLANT_TYPES, plantImageFileColumns, null, null, null, null, null);
+		cursor.moveToFirst();
+		String[] imageFiles = cursorToPlantImageFileArray(cursor);
+		cursor.close();
+		Log.w(ConfigDataSource.class.getName(), "Retrieved list of " + imageFiles.length + " plant images!");
+
+		return imageFiles;
+	}
 
 	public Objective[] getObjectives() {
 		Cursor cursor = database.query(Constants.TABLE_OBJECTIVES, objectivesColumns, null, null, null, null, null);
@@ -96,6 +109,20 @@ public class ConfigDataSource {
 		Log.w(ConfigDataSource.class.getName(), "Retrieved local " + objectivesArray.length + " objectives!");
 
 		return objectivesArray;
+	}
+
+	public String getHelpAndInfo(String dataType, String reference) {
+		Log.w(ConfigDataSource.class.getName(), "Retrieving HAI data for dataType=" + dataType + ", reference=" + reference);
+
+		String selection = Constants.COLUMN_HELPANDINFO_DATATYPE + " = ? AND " + Constants.COLUMN_HELPANDINFO_REFERENCE + " = ?";
+		String[] selectionArgs = { dataType, reference };
+
+		Cursor cursor = database.query(Constants.TABLE_HELPANDINFO, helpAndInfoColumns, selection, selectionArgs, null, null, null);
+		String helpOrInfoText = cursorToHelpAndInfoText(cursor);
+		cursor.close();
+		Log.w(ConfigDataSource.class.getName(), "Retrieved HAI data: " + helpOrInfoText);
+
+		return helpOrInfoText;
 	}
 
 	public ConfigValues getConfigValues() {
@@ -214,6 +241,7 @@ public class ConfigDataSource {
 			values.put(Constants.COLUMN_PLANTTYPES_FLOWFOR, remotePlantTypes[loopCounter].getFlowersFor());
 			values.put(Constants.COLUMN_PLANTTYPES_FRUITTARGET, remotePlantTypes[loopCounter].getFruitingTarget());
 			values.put(Constants.COLUMN_PLANTTYPES_FRUITFOR, remotePlantTypes[loopCounter].getFruitsFor());
+			values.put(Constants.COLUMN_PLANTTYPES_PHOTO, remotePlantTypes[loopCounter].getPhoto());
 
 			long newRowNum = database.insert(Constants.TABLE_PLANT_TYPES, null, values);
 			if ((int) newRowNum == -1) {
@@ -229,10 +257,60 @@ public class ConfigDataSource {
 		return true;
 	}
 
+	public boolean writeHelpAndInfoData(String[][] remoteHAIdata) {
+		Log.w(ConfigDataSource.class.getName(), "Updating local HelpAndInfo table with more recent remote data");
+		int deletedRows = database.delete(Constants.TABLE_HELPANDINFO, null, null);
+		Log.w(ConfigDataSource.class.getName(), "Deleted " + deletedRows + " local help and info entries.");
+
+		int numRowsAdded = 0;
+
+		for (int loopCounter = 0; loopCounter<remoteHAIdata.length; loopCounter++) {
+			ContentValues values = new ContentValues();
+			values.put(Constants.COLUMN_ID_LOCAL, remoteHAIdata[loopCounter][0]);
+			values.put(Constants.COLUMN_HELPANDINFO_DATATYPE, remoteHAIdata[loopCounter][1]);
+			values.put(Constants.COLUMN_HELPANDINFO_REFERENCE, remoteHAIdata[loopCounter][2]);
+			values.put(Constants.COLUMN_HELPANDINFO_TEXT, remoteHAIdata[loopCounter][3]);
+
+			long newRowNum = database.insert(Constants.TABLE_HELPANDINFO, null, values);
+			if ((int) newRowNum == -1) {
+				Log.e(ConfigDataSource.class.getName(), "Error inserting new row into Help and Info table");
+				return false;
+			} else {
+				numRowsAdded++;
+			}
+		}
+
+		Log.w(ConfigDataSource.class.getName(), "Added " + numRowsAdded + " Help and Info entries from remote source!");
+
+		return true;
+	}
+
 	public boolean writeObjectives(Objective[] remoteObjectives) {
 		// TODO - Need to do something about preserving existing values when updating the objectives table
 		Log.w(ConfigDataSource.class.getName(), "Updating local Objectives table with more recent remote data");
+		
 		Objective[] existingObjectives = getObjectives();
+		boolean[] archivedObjectiveStates = dbHelper.getObjectiveCompletionStates();
+		boolean[] completionStatuses = null;
+		
+		if (existingObjectives.length==0 && archivedObjectiveStates!=null) {
+			Log.d(ConfigDataSource.class.getName(), "Using archived objective statuses from berore DB upgrade");
+			completionStatuses = archivedObjectiveStates;
+			dbHelper.clearObjectiveCompletionStates();
+		} else if (existingObjectives.length!=0 && archivedObjectiveStates==null){
+			Log.d(ConfigDataSource.class.getName(), "Using current completion statuses as updating list");
+			completionStatuses = new boolean[existingObjectives.length];
+			for (int loopCounter = 0; loopCounter<existingObjectives.length; loopCounter++) {
+				if (existingObjectives[loopCounter].isCompleted() == true) {
+					completionStatuses[loopCounter] = true;
+				} else {
+					completionStatuses[loopCounter] = false;
+				}
+			}
+		} else {
+			Log.e(ConfigDataSource.class.getName(), "Unknown objective update state - wiping completion history");
+		}
+		
 		int deletedRows = database.delete(Constants.TABLE_OBJECTIVES, null, null);
 		Log.w(ConfigDataSource.class.getName(), "Deleted " + deletedRows + " local objectives.");
 
@@ -244,7 +322,8 @@ public class ConfigDataSource {
 			values.put(Constants.COLUMN_OBJECTIVES_DESC, remoteObjectives[loopCounter].getDescription());
 			values.put(Constants.COLUMN_OBJECTIVES_MESSAGE, remoteObjectives[loopCounter].getCompletionMessage());
 			boolean completed;
-			if ((loopCounter < existingObjectives.length && existingObjectives[loopCounter].isCompleted() == true) || remoteObjectives[loopCounter].getID() == 0) { //last clause handles test objective
+			//first clause handles test objective
+			if (remoteObjectives[loopCounter].getID() == 0 || (completionStatuses != null && loopCounter < completionStatuses.length && completionStatuses[loopCounter] == true)) {
 				completed = true;
 			} else {
 				completed = false;
@@ -272,10 +351,10 @@ public class ConfigDataSource {
 		values.put(Constants.COLUMN_OBJECTIVES_COMPLETED, completed);
 		String whereClause = Constants.COLUMN_OBJECTIVES_ID + " = ?";
 		String[] whereArgs = { "" + toUpdate.getID() };
-		
+
 		Log.w(ConfigDataSource.class.getName(), "Update with whereClause='" + whereClause + "',  whereArgs='" + whereArgs[0] + "'");
 		int rowsAffected = database.update(Constants.TABLE_OBJECTIVES, values, whereClause, whereArgs);	
-		
+
 		if (rowsAffected == 1) {
 			Log.w(ConfigDataSource.class.getName(), "Updated one row, as expected!");
 			return true;
@@ -291,14 +370,14 @@ public class ConfigDataSource {
 
 		Cursor cursor = database.query(Constants.TABLE_OBJECTIVES, objectivesColumns, null, null, null, null, null);
 		int numObjectives = cursor.getCount();
-		
+
 		//handles a 0-value first test objective
 		ContentValues values = new ContentValues();
 		values.put(Constants.COLUMN_OBJECTIVES_COMPLETED, false);
 		String whereClause = Constants.COLUMN_OBJECTIVES_ID + " > ?";
 		String[] whereArgs = { "0" };
 		int numSetFalse = database.update(Constants.TABLE_OBJECTIVES, values, whereClause, whereArgs);
-		
+
 		if (numObjectives == (numSetFalse+1)) {
 			Log.w(ConfigDataSource.class.getName(), "Set " + numSetFalse + " objective(s) to FALSE, as expected!");
 			return true;
@@ -307,7 +386,7 @@ public class ConfigDataSource {
 			return false;
 		}
 	}
-	
+
 	// not used
 	public void deleteComment(Comment comment) {
 		long id = comment.getId();
@@ -377,6 +456,9 @@ public class ConfigDataSource {
 			} else if (table_name.equals(Constants.TABLE_ITERATION_RULES)) {
 				Log.w(ConfigDataSource.class.getName(), "Retrieved last update for: " + table_name + ", last updated: " + table_date.toString());
 				lastUpdates.setIterationRules(table_date);
+			} else if (table_name.equals(Constants.TABLE_HELPANDINFO)) {
+				Log.w(ConfigDataSource.class.getName(), "Retrieved last update for: " + table_name + ", last updated: " + table_date.toString());
+				lastUpdates.setHelpAndInfo(table_date);
 			} else {
 				//ADD IN THE UPDATES FOR OTHER TABLE NAMES if necessary!
 				Log.e(ConfigDataSource.class.getName(), "Unknown table!");
@@ -417,13 +499,27 @@ public class ConfigDataSource {
 			int flow_for = cursor.getInt(cursor.getColumnIndex(Constants.COLUMN_PLANTTYPES_FLOWFOR));
 			int fruit_tar = cursor.getInt(cursor.getColumnIndex(Constants.COLUMN_PLANTTYPES_FRUITTARGET));
 			int fruit_for = cursor.getInt(cursor.getColumnIndex(Constants.COLUMN_PLANTTYPES_FRUITFOR));
+			String photoPath = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_PLANTTYPES_PHOTO));
 
-			PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph, pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar, fruit_for);
+			PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph, pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar, fruit_for, photoPath);
 			plantTypes[loopCounter] = plant;
 
 			cursor.moveToNext();
 		}
 		return plantTypes;
+	}
+
+	private String[] cursorToPlantImageFileArray(Cursor cursor) {
+		Log.d(ConfigDataSource.class.getName(), "Retrieving plant image file names from cursor...");
+		String[] plantImageFiles = new String[cursor.getCount() * plantImageFileColumns.length];
+		cursor.moveToFirst();
+		for (int loopCounter = 0; loopCounter < cursor.getCount(); loopCounter++) {
+			String photoPath = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_PLANTTYPES_PHOTO));
+			plantImageFiles[loopCounter] = photoPath;
+
+			cursor.moveToNext();
+		}
+		return plantImageFiles;
 	}
 
 	private Objective[] cursorToObjectiveArray(Cursor cursor) {
@@ -449,5 +545,25 @@ public class ConfigDataSource {
 			cursor.moveToNext();
 		}
 		return objectiveArray;
+	}
+
+	private String cursorToHelpAndInfoText(Cursor cursor) {
+		Log.w(ConfigDataSource.class.getName(), "Convert Cursor to HelpAndInfo value");
+		String textToReturn;
+
+		switch (cursor.getCount()) {
+		case 0:
+			textToReturn = "No data available!";
+			break;
+		case 1:
+			cursor.moveToFirst();
+			textToReturn = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_HELPANDINFO_TEXT));
+			break;
+		default:
+			textToReturn = "Multiple data items - source needs de-duping!";
+			break;
+		}
+
+		return textToReturn;
 	}
 }

@@ -76,20 +76,20 @@ public class RulesEngineController {
 			Log.w(RulesEngineController.class.getName(), "System: Value of property 'mvel2.disable.jit' is: " + System.getProperty("mvel2.disable.jit"));
 			OptimizerFactory.setDefaultOptimizer("reflective");
 
-			// SET to false for production, or true for testing new rules files!
-			boolean useRaw = true;
-			
+			// SET to false for production, or true for testing new rules files from local copy!
+			boolean useRaw = false;
+
 			InputStream iis = null;
 			File file = null;
-			
+
 			//iis = context.getResources().openRawResource(R.raw.bambootestv2);
 			//Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
 			//dois = new DroolsObjectInputStream(iis);
 			//pkgs = (Collection<KnowledgePackage>) dois.readObject();
 
-			
-			
-			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_ITERATION_RULES);
+
+
+			file = new File(context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_ITERATION_RULES);
 			if(file.exists() && !useRaw) {    
 				Log.w(RulesEngineController.class.getName(), "Using downloaded iteration rules file");
 				iis = new FileInputStream(file);
@@ -100,10 +100,10 @@ public class RulesEngineController {
 			Log.w(RulesEngineController.class.getName(), "iis object is...: " + iis.toString());
 			dois = new DroolsObjectInputStream(iis);
 			pkgs = (Collection<KnowledgePackage>) dois.readObject();
-			
-			
-			
-			file = new File(context.getFilesDir() + Constants.FILENAME_LOCAL_OBJECTIVES);
+
+
+
+			file = new File(context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_OBJECTIVES);
 			if(file.exists() && !useRaw) {    
 				Log.w(RulesEngineController.class.getName(), "Using downloaded objectives file");
 				iis = new FileInputStream(file);
@@ -115,9 +115,9 @@ public class RulesEngineController {
 			dois = new DroolsObjectInputStream(iis);
 			pkgs.addAll((Collection<KnowledgePackage>) dois.readObject());
 
-			
-			
-			
+
+
+
 			Log.w(RulesEngineController.class.getName(), "Loaded rule packages: " + pkgs);
 			for(KnowledgePackage pkg : pkgs) {
 				Log.w(RulesEngineController.class.getName(), "Loaded rule package: " + pkg.toString());
@@ -147,9 +147,11 @@ public class RulesEngineController {
 	public void createRulesEngineSession(int temperature, int rainfall) {
 		// TODO Auto-generated method stub
 		Log.w(RulesEngineController.class.getName(), "Creating Rules Engine Session");
-		mKnowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
-		Log.w(RulesEngineController.class.getName(), "Adding rules...");
-		mKnowledgeBase.addKnowledgePackages(pkgs);
+		if (mKnowledgeBase == null) {
+			mKnowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
+			Log.w(RulesEngineController.class.getName(), "Adding rules...");
+			mKnowledgeBase.addKnowledgePackages(pkgs);
+		}
 		ksession = mKnowledgeBase.newStatefulKnowledgeSession();
 
 		Log.w(RulesEngineController.class.getName(), "Adding 'global' values...");
@@ -181,8 +183,18 @@ public class RulesEngineController {
 
 	private void resetRuleEngine() {
 		ksession.dispose();
-		ksession.destroy();
-		ksession = null;
+		//ksession.destroy();
+		//ksession = null;
 		Log.w(RulesEngineController.class.getName(), "Reset Rules Engine Session");
+	}
+
+	public void closedownRuleEngine() {
+		if (ksession != null) {
+			ksession.dispose();
+			ksession.destroy();
+			ksession = null;
+		}
+		mKnowledgeBase = null;
+		Log.w(RulesEngineController.class.getName(), "Closing Rules Engine Session");
 	}
 }

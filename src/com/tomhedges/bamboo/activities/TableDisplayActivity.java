@@ -154,8 +154,10 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				Game.PlotDetails plotDetails = (Game.PlotDetails) data;
 				Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + plotDetails.returnPlotID());
 				TextView tv = (TextView) findViewById(plotDetails.returnPlotID());
-				Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + tv.getId());
-				tv.setText(plotDetails.returnPlotBasicText());
+				if (tv != null) {
+					Log.w(TableDisplayActivity.class.getName(), "Updating Plot: " + tv.getId());
+					tv.setText(plotDetails.returnPlotBasicText());
+				}
 				plotInfo[tv.getId()-1] = "R: " + game.getYPosFromID(plotDetails.returnPlotID()) + "\nC: " + game.getXPosFromID(plotDetails.returnPlotID()) + "\n" + plotDetails.returnPlotPlotFullDetails();
 			}
 
@@ -208,7 +210,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				//Has to be run on UI thread, as crashes otherwise??...
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
-						Toast.makeText(TableDisplayActivity.this, alertToUser, Toast.LENGTH_LONG).show();
+						Toast.makeText(TableDisplayActivity.this, alertToUser, Toast.LENGTH_SHORT).show();
 						final TextView tv = (TextView) findViewById(seedPlanted.returnPlotID());
 						tv.setBackgroundResource(R.drawable.cell_shape_highlighted);
 						Handler handler = new Handler(); 
@@ -228,7 +230,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				//Has to be run on UI thread, as crashes otherwise??...
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
-						//Toast.makeText(TableDisplayActivity.this, "Weather: " + weatherVals.returnTemperature() + " degrees C", Toast.LENGTH_LONG).show();
+						//Toast.makeText(TableDisplayActivity.this, "Weather: " + weatherVals.returnTemperature() + " degrees C", toast.length_short).show();
 
 						aboveTableLeft.setText(aboveTableLeft.getText() + "\nSeason is: " + weatherVals.returnSeason().toString());
 						aboveTableRight.setText("Weather........\nTemperature: " + weatherVals.returnTemperature() + "\u00B0C\nRainfall: " + weatherVals.returnRainfall() + "mm");
@@ -243,7 +245,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				//Has to be run on UI thread, as crashes otherwise??...
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
-						Toast.makeText(TableDisplayActivity.this, seedUploaded.returnMessage(), Toast.LENGTH_LONG).show();
+						Toast.makeText(TableDisplayActivity.this, seedUploaded.returnMessage(), Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
@@ -257,7 +259,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				TableDisplayActivity.this.runOnUiThread(new Runnable() {
 					public void run() {
 						btnObjectives.setText("Objectives (" + completedObjective.returnNumCompleted() + " of " + completedObjective.returnTotalNum() + " completed)");
-						Toast.makeText(TableDisplayActivity.this, messageToDisplay, Toast.LENGTH_LONG).show();
+						Toast.makeText(TableDisplayActivity.this, messageToDisplay, Toast.LENGTH_SHORT).show();
 					}
 				});
 			}

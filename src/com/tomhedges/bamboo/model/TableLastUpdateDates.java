@@ -9,6 +9,7 @@ public class TableLastUpdateDates {
 	private Date plants;
 	private Date objectives;
 	private Date iterationRules;
+	private Date helpAndInfo;
 
 	public void setConfig(Date config) {
 		this.config = config;
@@ -42,8 +43,16 @@ public class TableLastUpdateDates {
 		return iterationRules;
 	}
 
+	public void setHelpAndInfo(Date helpAndInfo) {
+		this.helpAndInfo = helpAndInfo;
+	}
+
+	public Date getHelpAndInfo() {
+		return helpAndInfo;
+	}
+
 	@Override
 	public String toString() {
-		return "ConfigValues table last updated: " + getConfig() + ", Plants table last updated: " + getPlants() + ", Objectives table last updated: " + getObjectives() + ", Iteration Rules lst updated: " + getIterationRules();
+		return "ConfigValues table last updated: " + getConfig() + ", Plants table last updated: " + getPlants() + ", Objectives table last updated: " + getObjectives() + ", Iteration Rules list updated: " + getIterationRules() + ", Help and Info table last update: " + getHelpAndInfo();
 	}
 }

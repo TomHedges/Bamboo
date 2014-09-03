@@ -5,10 +5,12 @@ package com.tomhedges.bamboo.util.localdatabase;
 import java.util.Date;
 
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.model.Objective;
 import com.tomhedges.bamboo.util.DateConverter;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -17,9 +19,10 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	//private String[] allColumns = { COLUMN_ID_LOCAL, COLUMN_GLOBAL_VERSION, COLUMN_GLOBAL_ROOT_URL, COLUMN_LAST_UPDATED };
 
 	private static final String DATABASE_NAME = "bamboo.db";
-	private static final int DATABASE_VERSION = 19;
+	private static final int DATABASE_VERSION = 22;
 
 	private DateConverter dateConverter;
+	private boolean[] objectiveCompletionStates = null;
 
 	// GLOBALS table creation sql statement
 	private static final String TABLE_CREATE_GLOBALS = "create table "
@@ -29,7 +32,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " text not null, " + Constants.COLUMN_LAST_UPDATED
 		+ " DATETIME not null);";
 
-	// GLOBALS table creation sql statement
+	// TABLES table creation sql statement
 	private static final String TABLE_CREATE_TABLES = "create table "
 		+ Constants.TABLE_TABLES + "(" + Constants.COLUMN_ID_LOCAL
 		+ " integer primary key autoincrement, " + Constants.COLUMN_TABLES_TABLENAME
@@ -46,7 +49,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " integer not null, " + Constants.COLUMN_CONFIG_PLOT_PATTERN
 		+ " text not null);";
 
-	// CONFIG table creation sql statement
+	// PLANTTYPES table creation sql statement
 	private static final String TABLE_CREATE_PLANTTYPES = "create table "
 		+ Constants.TABLE_PLANT_TYPES + "(" + Constants.COLUMN_ID_LOCAL
 		+ " integer primary key, " + Constants.COLUMN_PLANTTYPES_TYPE
@@ -61,11 +64,10 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_FLOWFOR
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_FRUITTARGET
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_FRUITFOR
-		+ " integer not null, " + Constants.COLUMN_LAST_UPDATED
-		+ " integer, " + Constants.COLUMN_CONFIG_PLOT_MATRIX_COLUMNS
-		+ " integer);";
+		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_PHOTO
+		+ " TEXT);";
 
-	// CONFIG table creation sql statement
+	// OBJECTIVES table creation sql statement
 	private static final String TABLE_CREATE_OBJECTIVES = "create table "
 		+ Constants.TABLE_OBJECTIVES + "(" + Constants.COLUMN_ID_LOCAL
 		+ " integer primary key autoincrement, " + Constants.COLUMN_OBJECTIVES_ID
@@ -73,6 +75,14 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " text not null, " + Constants.COLUMN_OBJECTIVES_MESSAGE
 		+ " text not null, " + Constants.COLUMN_OBJECTIVES_COMPLETED
 		+ " boolean not null);";
+
+	// HELPANDINFO table creation sql statement
+	private static final String TABLE_CREATE_HELPANDINFO = "create table "
+		+ Constants.TABLE_HELPANDINFO + "(" + Constants.COLUMN_ID_LOCAL
+		+ " integer primary key, " + Constants.COLUMN_HELPANDINFO_DATATYPE
+		+ " text not null, " + Constants.COLUMN_HELPANDINFO_REFERENCE
+		+ " text not null, " + Constants.COLUMN_HELPANDINFO_TEXT
+		+ " text not null);";
 
 	public ConfigSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -91,12 +101,15 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		database.execSQL(TABLE_CREATE_PLANTTYPES);
 		Log.w(ConfigSQLiteHelper.class.getName(),"Creating OBJECTIVES table: " + TABLE_CREATE_OBJECTIVES);
 		database.execSQL(TABLE_CREATE_OBJECTIVES);
-		
-		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES and OBJECTIVES tables!");
+		Log.w(ConfigSQLiteHelper.class.getName(),"Creating HELPANDINFO table: " + TABLE_CREATE_HELPANDINFO);
+		database.execSQL(TABLE_CREATE_HELPANDINFO);
+
+		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES, OBJECTIVES and HELPANDINFO tables!");
 
 		dateConverter = new DateConverter();
 
 		//--------------------------------------------------
+		
 		Log.w(ConfigSQLiteHelper.class.getName(),"Inserting defaults in GLOBALS table!");
 		ContentValues values = new ContentValues();
 		values.put(Constants.COLUMN_GLOBAL_VERSION, 1);
@@ -121,7 +134,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_CONFIG + " in TABLES table OK!");
 		}
-		
+
 		values = new ContentValues();
 		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_PLANT_TYPES);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
@@ -131,7 +144,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_PLANT_TYPES + " in TABLES table OK!");
 		}
-		
+
 		values = new ContentValues();
 		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_OBJECTIVES);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
@@ -141,7 +154,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_OBJECTIVES + " in TABLES table OK!");
 		}
-		
+
 		values = new ContentValues();
 		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_ITERATION_RULES);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
@@ -150,6 +163,16 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_ITERATION_RULES + " default in TABLES");
 		} else {
 			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_ITERATION_RULES + " in TABLES table OK!");
+		}
+
+		values = new ContentValues();
+		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_HELPANDINFO);
+		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
+		insertId = database.insert(Constants.TABLE_TABLES, null, values);
+		if (insertId == -1) {
+			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_HELPANDINFO + " default in TABLES");
+		} else {
+			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_HELPANDINFO + " in TABLES table OK!");
 		}
 
 		//--------------------------------------------------
@@ -178,17 +201,45 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		dropTable(db, Constants.TABLE_TABLES);
 		dropTable(db, Constants.TABLE_CONFIG);
 		dropTable(db, Constants.TABLE_PLANT_TYPES);
-		// TODO - Need to do something about upgrading the objectives table??
+		objectiveCompletionStates = retrieveObjectiveStates(db);
+		dropTable(db, Constants.TABLE_OBJECTIVES);
+		dropTable(db, Constants.TABLE_HELPANDINFO);
 		onCreate(db);
 	}
 
-	public void dropTable(SQLiteDatabase db, String tableName) {
+	private boolean[] retrieveObjectiveStates(SQLiteDatabase db) {
+		Log.w(ConfigSQLiteHelper.class.getName(), "Retrieveing and storing current objective completion statuses...");		
+		Cursor cursor = db.query(Constants.TABLE_OBJECTIVES, null, null, null, null, null, null);
+		boolean[] objCompStates = new boolean[cursor.getCount()];
+		cursor.moveToFirst();
+		// maybe not... start from 1 to remove the test objective...
+		for (int loopCounter = 0; loopCounter < cursor.getCount(); loopCounter++) {
+			int completed = cursor.getInt(cursor.getColumnIndex(Constants.COLUMN_OBJECTIVES_COMPLETED));
+			if (completed == 1) {
+				objCompStates[loopCounter] = true;
+			} else {
+				objCompStates[loopCounter] = false;
+			}
+			cursor.moveToNext();
+		}
+		return objCompStates;
+	}
+
+	private void dropTable(SQLiteDatabase db, String tableName) {
 		Log.w(ConfigSQLiteHelper.class.getName(), "Dropping");
 		db.execSQL("DROP TABLE IF EXISTS " + tableName);
 	}
 
-	public void createTable(SQLiteDatabase db, String tableName) {
-		Log.w(ConfigSQLiteHelper.class.getName(), "Dropping");
-		db.execSQL("DROP TABLE IF EXISTS " + tableName);
+	public boolean[] getObjectiveCompletionStates() {
+		return objectiveCompletionStates;
 	}
+	
+	public void clearObjectiveCompletionStates() {
+		objectiveCompletionStates = null;
+	}
+
+//	private void createTable(SQLiteDatabase db, String tableName) {
+//		Log.w(ConfigSQLiteHelper.class.getName(), "Dropping");
+//		db.execSQL("DROP TABLE IF EXISTS " + tableName);
+//	}
 }

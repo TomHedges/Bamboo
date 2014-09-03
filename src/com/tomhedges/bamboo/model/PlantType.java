@@ -25,10 +25,11 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 	private int flowersFor;
 	private int fruitingTarget;
 	private int fruitsFor;
+	private String photoPath;
 
 	public PlantType(int plantTypeId, String type, int preferredTemp, int requiredWater,
 			double preferredPH, Constants.GroundState preferredGroundState, int livesFor, int commonnessFactor,
-			int maturesAtAge, int floweringTarget, int flowersFor, int fruitingTarget, int fruitsFor) {
+			int maturesAtAge, int floweringTarget, int flowersFor, int fruitingTarget, int fruitsFor, String photoPath) {
 		this.plantTypeId = plantTypeId;
 		this.type = type;
 		this.preferredTemp = preferredTemp;
@@ -42,6 +43,7 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 		this.flowersFor = flowersFor;
 		this.fruitingTarget = fruitingTarget;
 		this.fruitsFor = fruitsFor;
+		this.photoPath = photoPath;
 	}
 
 	public int getPlantTypeId() {
@@ -98,6 +100,10 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 
 	public int getFruitsFor() {
 		return fruitsFor;
+	}
+
+	public String getPhoto() {
+		return photoPath;
 	}
 
 	@Override

@@ -2,19 +2,54 @@
 <!-- Based on original form http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    android:padding="10sp" >
 
-    <ImageView
-        android:id="@+id/dia_plant_img"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerHorizontal="true" />
+    <RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/dia_plant_headline_holder"
+        android:layout_width="fill_parent"
+        android:layout_height="50dip" >
+
+        <ImageView
+            android:id="@+id/dia_plant_img"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_launcher" />
+
+        <TextView
+            android:id="@+id/dia_plant_firstLine"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/dia_plant_img"
+            android:layout_toRightOf="@+id/dia_plant_img"
+            android:gravity="center_vertical"
+            android:paddingLeft="10sp"
+            android:text="plant: xx"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/dia_plant_secondLine"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_below="@+id/dia_plant_firstLine"
+            android:layout_toRightOf="@+id/dia_plant_img"
+            android:ellipsize="marquee"
+            android:paddingLeft="10sp"
+            android:singleLine="true"
+            android:text="(Ground type)"
+            android:textSize="12sp" />
+    </RelativeLayout>
 
     <ScrollView
         android:id="@+id/dia_plant_sv"
         android:layout_width="fill_parent"
         android:layout_height="200dp"
-        android:layout_below="@+id/dia_plant_img" >
+        android:layout_below="@+id/dia_plant_headline_holder"
+        android:paddingTop="5sp" >
 
         <TextView
             android:id="@+id/dia_plant_text"
@@ -22,19 +57,19 @@
             android:layout_height="wrap_content"
             android:text="plant details..." />
     </ScrollView>
-
+
     <LinearLayout
-        android:layout_centerHorizontal="true"
-        android:layout_below="@+id/dia_plant_sv"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/dia_plant_sv"
+        android:layout_centerHorizontal="true" >
 
         <Button
             android:id="@+id/dia_plant_select_plant"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Plant me!" />
-        
+
         <Button
             android:id="@+id/dia_plant_plot_details"
             android:layout_width="wrap_content"
@@ -46,7 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Close" />
-            <!-- android:layout_toRightOf="@+id/dia_plant_plot_details" -->
+        <!-- android:layout_toRightOf="@+id/dia_plant_plant_details" -->
     </LinearLayout>
 
 </RelativeLayout>

@@ -28,7 +28,7 @@ public class Weather {
 	private boolean currentRainChangeIncreasing;
 	private int currentRainChangeDirectionDaysRemaining = 0;
 
-	private int dayCounter = 0; //For averages - when starting game, and don't have full rollign average set
+	private int dayCounter = 0; //For averages - when starting game, and don't have full rolling average set
 
 	private int[] previousTemperatureValues; 
 	private int[] previousRainValues; 
@@ -39,6 +39,8 @@ public class Weather {
 	private Season[] seasonsForMonth;
 
 	private Random randomGenerator;
+
+	private int startOfSpring = 13; // this value will be set accurately at construction 
 
 	// Private constructor
 	private Weather(Calendar currentDate, int[] aveTempArray, int[] aveRainArray, Season[] seasonsForMonth) {
@@ -89,7 +91,7 @@ public class Weather {
 
 	private int calcChangeAmount(WeatherType type) {
 		int changeFactor = 0;
-		
+
 		switch (type) {
 		case Temperature:
 			directionChangeCalculation(type, currentTempChangeDirectionDaysRemaining,
@@ -264,5 +266,32 @@ public class Weather {
 
 	public Season getCurrentSeason() {
 		return currentSeason;
+	}
+
+	public int getStartMonthOfSpring() {
+		if (startOfSpring != 13) {
+			return startOfSpring;
+		} else {
+			boolean springSearchReset = false;
+			int monthCounter = 1;
+			while (startOfSpring == 13) {
+				int month = monthCounter % 12 ;
+				if (month == 0) {
+					month = 12;
+				} 
+
+				if (seasonsForMonth[month-1] != Season.SPRING) {
+					springSearchReset = true;
+				}
+
+				if (springSearchReset == true && seasonsForMonth[month-1] == Season.SPRING) {
+					startOfSpring = month;
+				}
+
+				monthCounter++;
+			}
+
+			return startOfSpring;
+		}
 	}
 }

@@ -1,12 +1,9 @@
 package com.tomhedges.bamboo.config;
 
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-
 public interface Constants {
 	public static final String ROOT_URL = "http://54.229.96.8/bamboo-test/";
 	public static final String ROOT_URL_FIELD_NAME = "root_url";
+	public static final String ROOT_URL_IMAGE_EXT = "images/";
 
 	// tests and samples
 	public static final String LOGIN_URL = ROOT_URL + "login.php";
@@ -24,6 +21,7 @@ public interface Constants {
 	public static final String TABLE_NAME_VARIABLE = "tablename";
 	public static final String TABLE_NAME_GLOBAL_SETTINGS = "GlobalSettings";
 	public static final String TABLE_NAME_TABLES = "Tables";
+	public static final String TABLE_NAME_HELPANDINFO = "HelpAndInfo";
 	public static final String HTML_VERB_POST = "POST";
 	//public static final String COLUMN_DETAILS_URL = ROOT_URL + "getcolumnnames.php";
 	//public static final String TABLE_DATA_URL = ROOT_URL + "gettabledata.php";
@@ -39,6 +37,7 @@ public interface Constants {
 	public static final String TABLE_PLANT_TYPES = "PlantTypes";
 	public static final String TABLE_OBJECTIVES = "Objectives";
 	public static final String TABLE_ITERATION_RULES = "IterationRules";
+	public static final String TABLE_HELPANDINFO = "HelpAndInfo";
 
 	public static final String COLUMN_PLANTTYPES_TYPE = "type";
 	public static final String COLUMN_PLANTTYPES_PREFTEMP = "preferredTemp";
@@ -52,7 +51,12 @@ public interface Constants {
 	public static final String COLUMN_PLANTTYPES_FLOWFOR = "flowersFor";
 	public static final String COLUMN_PLANTTYPES_FRUITTARGET = "fruitingTarget";
 	public static final String COLUMN_PLANTTYPES_FRUITFOR = "fruitsFor";
+	public static final String COLUMN_PLANTTYPES_PHOTO = "photo";
 
+	public static final String COLUMN_HELPANDINFO_DATATYPE = "data_type";
+	public static final String COLUMN_HELPANDINFO_REFERENCE = "reference";
+	public static final String COLUMN_HELPANDINFO_TEXT = "text";
+	
 	public static final String COLUMN_CONFIG_ITERATION_DELAY = "iteration_time_delay";
 	public static final String COLUMN_CONFIG_PLOT_MATRIX_COLUMNS = "plot_matrix_columns";
 	public static final String COLUMN_CONFIG_PLOT_MATRIX_ROWS = "plot_matrix_rows";
@@ -87,6 +91,10 @@ public interface Constants {
 	public static final String TABLES_VALUES_PLANTTYPES = "PlantTypes";
 	public static final String TABLES_VALUES_OBJECTIVES = "Objectives";
 	public static final String TABLES_VALUES_ITERATION_RULES = "IterationRules";
+	public static final String TABLES_VALUES_HELPANDINFO = "HelpAndInfo";
+
+	public static final String HELPANDINFO_PLOT_TYPE_SHORT = "plot_type_short";
+	public static final String HELPANDINFO_PLOT_TYPE_LONG = "plot_type_long";
 
 	public static enum RetrievalType {
 		COLUMNS,
@@ -106,6 +114,8 @@ public interface Constants {
 	public static final String DOWNLOAD_TEST_REMOTE_PATH = ROOT_URL + "rules.csv";
 	public static final String DOWNLOAD_TEST_LOCAL_PATH = "test_download.csv";
 
+	public static final int ERROR_INT = -10000;
+	
 	public static final int ITERATION_TIME_DELAY = 1000;
 	public static final int PLANT_TYPE_MENU_ID_START_RANGE = 1000;
 	public static final int MENU_GROUP_PLANT_TYPES = 2;
@@ -231,6 +241,8 @@ public interface Constants {
 	public static final int default_GAME_WEATHER_RETRIEVE_OFFSET = 0;
 	public static final int default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ = 20;
 	public static final int default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET = 10;
+	public static final int default_ERROR_DISPLAY_FREQ = 30;
+	public static final int default_ERROR_DISPLAY_OFFSET  = 0;
 
 	public static final int default_WateringAmount = 4;
 	public static final int default_UserWaterAvailability_Initial = 25;

@@ -176,9 +176,12 @@ public class RemoteDBTableRetrieval {
 					} else if (jaFields.getString(Constants.COLUMN_TABLES_TABLENAME).equals(Constants.TABLES_VALUES_ITERATION_RULES)) {
 						tablesUpdatedRemote.setIterationRules(dateConverter.convertStringToDate(jaFields.getString(Constants.COLUMN_LAST_UPDATED)));
 						Log.d(RemoteDBTableRetrieval.class.getName(), "Set remote PlantTypes last update date!");
+					} else if (jaFields.getString(Constants.COLUMN_TABLES_TABLENAME).equals(Constants.TABLES_VALUES_HELPANDINFO)) {
+						tablesUpdatedRemote.setHelpAndInfo(dateConverter.convertStringToDate(jaFields.getString(Constants.COLUMN_LAST_UPDATED)));
+						Log.d(RemoteDBTableRetrieval.class.getName(), "Set remote Help and Info last update date!");
 					} else {
 						// ADD EXTRA TABLES AS NEEDED!
-						Log.e(RemoteDBTableRetrieval.class.getName(), "Unknown table in remote data!");
+						Log.e(RemoteDBTableRetrieval.class.getName(), "Unknown table in remote data: " + jaFields.getString(Constants.COLUMN_TABLES_TABLENAME));
 					}
 
 					Log.d(RemoteDBTableRetrieval.class.getName(), "Got remote data: " + tablesUpdatedRemote.toString());
@@ -332,6 +335,47 @@ public class RemoteDBTableRetrieval {
 		return null;
 	}
 
+	public String[][] getHelpAndInfoData() {
+		// Check for success tag
+		int success;
+
+		jsonParser = new JSONParser();
+
+		try {
+			// Building Parameters
+			List<NameValuePair> params = new ArrayList<NameValuePair>();
+			params.add(new BasicNameValuePair(Constants.TABLE_NAME_VARIABLE, Constants.TABLE_HELPANDINFO));
+
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting retrieval of data from: " + Constants.TABLE_HELPANDINFO);
+			// getting product details by making HTTP request
+			JSONObject json = jsonParser.makeHttpRequest(coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.TABLE_DATA_SCRIPT_NAME, Constants.HTML_VERB_POST, params);
+
+			// check your log for json response
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Response: " + json.toString());
+
+			// json success tag
+			success = json.getInt(Constants.TAG_SUCCESS);
+			if (success == 1) {
+				jaData = json.getJSONArray(Constants.TAG_MESSAGE);
+
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Request Successful! Data for: " + Constants.TABLE_HELPANDINFO);
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Got " + jaData.length() + " Help and Info entries.");
+
+				String[][] helpAndInfoData = getHelpAndInfoFromJSON(jaData);
+
+				Log.d(RemoteDBTableRetrieval.class.getName(), "Completed retrieval of " + helpAndInfoData.length + " Help and Info entries.");
+				return helpAndInfoData;
+			} else {
+				Log.d(RemoteDBTableRetrieval.class.getName(), "ERROR: " + json.getString(Constants.TAG_MESSAGE));
+				return null;
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	public PlantType[] getPlantTypes() {
 		// Check for success tag
 		int success;
@@ -375,7 +419,7 @@ public class RemoteDBTableRetrieval {
 
 	private PlantType[] getPlantTypesFromJSON(JSONArray jaData) {
 		PlantType[] plantTypes = new PlantType[jaData.length()];
-
+		
 		try {
 			for (int loopCounter = 0; loopCounter<jaData.length(); loopCounter++) {
 				JSONObject jaFields = jaData.getJSONObject(loopCounter);
@@ -393,8 +437,9 @@ public class RemoteDBTableRetrieval {
 				int flow_for = jaFields.getInt(Constants.COLUMN_PLANTTYPES_FLOWFOR);
 				int fruit_tar = jaFields.getInt(Constants.COLUMN_PLANTTYPES_FRUITTARGET);
 				int fruit_for = jaFields.getInt(Constants.COLUMN_PLANTTYPES_FRUITFOR);
+				String photoPath = jaFields.getString(Constants.COLUMN_PLANTTYPES_PHOTO);
 
-				PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph, pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar, fruit_for);
+				PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph, pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar, fruit_for, photoPath);
 				plantTypes[loopCounter] = plant;
 
 				Log.d(RemoteDBTableRetrieval.class.getName(), "Accessed Plant Type data: " + plant.toString());
@@ -429,6 +474,27 @@ public class RemoteDBTableRetrieval {
 		}
 
 		return objectives;
+	}
+
+	private String[][] getHelpAndInfoFromJSON(JSONArray jaData) {
+		String[][] helpAndInfoData = new String[jaData.length()][4];
+
+		try {
+			for (int loopCounter = 0; loopCounter<jaData.length(); loopCounter++) {
+				JSONObject jaFields = jaData.getJSONObject(loopCounter);
+
+				helpAndInfoData[loopCounter][0] = jaFields.getString(Constants.COLUMN_ID_REMOTE);
+				helpAndInfoData[loopCounter][1] = jaFields.getString(Constants.COLUMN_HELPANDINFO_DATATYPE);
+				helpAndInfoData[loopCounter][2] = jaFields.getString(Constants.COLUMN_HELPANDINFO_REFERENCE);
+				helpAndInfoData[loopCounter][3] = jaFields.getString(Constants.COLUMN_HELPANDINFO_TEXT);
+			}
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Handled " + jaData.length() + " Help and Info entries.");
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+
+		return helpAndInfoData;
 	}
 
 	private RemoteSeed[] getSeedsFromJSON(JSONArray jaData) {
