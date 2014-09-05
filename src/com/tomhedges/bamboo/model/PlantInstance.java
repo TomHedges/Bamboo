@@ -18,8 +18,6 @@ public class PlantInstance implements Serializable {
 	private int age; // in days!
 	private int daysInCurrentState;
 	private boolean isMatureEnoughToFlower;
-	private boolean isFlowering;
-	private int isFruiting;
 	private int health;
 	private boolean remoteSeededPlant;
 	private boolean stateUpdatedThisIteration;
@@ -30,10 +28,7 @@ public class PlantInstance implements Serializable {
 	private int deathProbability;
 	private boolean diesThisIteration;
 	private int timesFlowered;
-	private int sizeMax;
-	private int sizeGrowthRate;
 	private int sizeCurrent;
-	private int sizeShrinkRate;
 
 	public PlantInstance(PlantType plantType, int plantInstanceId) {
 		this.plantType = plantType;
@@ -44,9 +39,6 @@ public class PlantInstance implements Serializable {
 		this.health = Constants.default_PLANT_HEALTH_AT_PLANTING;
 		this.isMatureEnoughToFlower = false;
 		this.timesFlowered = 0;
-		this.sizeMax = 20; //NB - this needs to come from remote data...
-		this.sizeGrowthRate = 3; //NB - this needs to come from remote data...
-		this.sizeShrinkRate = 2;//NB - this needs to come from remote data...
 		this.sizeCurrent = 1;
 	}
 
@@ -152,13 +144,13 @@ public class PlantInstance implements Serializable {
 			daysInCurrentState = 1;
 		}
 		
-		if ((plantState == PlantState.GROWING || plantState == PlantState.FLOWERING) && sizeCurrent<=sizeMax) {
-			sizeCurrent = sizeCurrent + sizeGrowthRate;
-			if (sizeCurrent>sizeMax) {
-				sizeCurrent=sizeMax;
+		if ((plantState == PlantState.GROWING || plantState == PlantState.FLOWERING || plantState == PlantState.FRUITING) && sizeCurrent<=plantType.getSizeMax()) {
+			sizeCurrent = sizeCurrent + plantType.getSizeGrowthRate();
+			if (sizeCurrent>plantType.getSizeMax()) {
+				sizeCurrent=plantType.getSizeMax();
 			}
 		} else {
-			sizeCurrent = sizeCurrent - sizeShrinkRate;
+			sizeCurrent = sizeCurrent - plantType.getSizeShrinkRate();
 			if (sizeCurrent < 1) {
 				sizeCurrent = 1;
 			}

@@ -2,7 +2,10 @@ package com.tomhedges.bamboo.model;
 
 import java.io.Serializable;
 
+import android.util.Log;
+
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.util.localdatabase.ConfigSQLiteHelper;
 
 public class Plot implements Serializable {
 
@@ -58,6 +61,7 @@ public class Plot implements Serializable {
 	}
 
 	public int getWaterLevel() {
+		Log.d(Plot.class.getName(),"Water level in plot: " + plotId + " is: " + waterLevel);
 		return waterLevel;
 	}
 

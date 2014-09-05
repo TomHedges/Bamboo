@@ -217,7 +217,7 @@ public class RemoteDBTableRetrieval {
 			params.add(new BasicNameValuePair(Constants.PARAM_LAST_UPDATED_USER, dateConverter.convertDateToString(dateConverter.reduceDateByMinutes(dateAndTime, Constants.default_LAST_UPDATE_USER_TIMEGAP_MINUTES))));
 			params.add(new BasicNameValuePair(Constants.PARAM_LAST_UPDATED_SPONSOR, dateConverter.convertDateToString(dateConverter.reduceDateByMinutes(dateAndTime, Constants.default_LAST_UPDATE_SPONSOR_TIMEGAP_MINUTES))));
 
-			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting retrieval of nearby seeding plants");
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting retrieval of nearby seeding plants - Lat=" + latitude + ", Long=" + longitude);
 			// getting product details by making HTTP request
 			JSONObject json = jsonParser.makeHttpRequest(Constants.ROOT_URL + Constants.GET_SEEDING_PLANTS_SCRIPT_NAME, Constants.HTML_VERB_POST, params);
 
@@ -438,8 +438,20 @@ public class RemoteDBTableRetrieval {
 				int fruit_tar = jaFields.getInt(Constants.COLUMN_PLANTTYPES_FRUITTARGET);
 				int fruit_for = jaFields.getInt(Constants.COLUMN_PLANTTYPES_FRUITFOR);
 				String photoPath = jaFields.getString(Constants.COLUMN_PLANTTYPES_PHOTO);
+				String imgGrowing = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_GROWING);
+				String imgWilting = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_WILTING);
+				String imgFlowering = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_FLOWERING);
+				String imgFruiting = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_FRUITING);
+				String imgChilly = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_CHILLY);
+				String imgDead = jaFields.getString(Constants.COLUMN_PLANTTYPES_IMAGE_DEAD);
+				int size_max = jaFields.getInt(Constants.COLUMN_PLANTTYPES_SIZE_MAX);
+				int size_growth_rate = jaFields.getInt(Constants.COLUMN_PLANTTYPES_SIZE_GROWTH_RATE);
+				int size_shrink_rate = jaFields.getInt(Constants.COLUMN_PLANTTYPES_SIZE_SHRINK_RATE);
 
-				PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph, pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar, fruit_for, photoPath);
+				PlantType plant = new PlantType(id, type, pref_temp, req_water, pref_ph,
+						pref_gs, lives_for, com_fact, mat_age, flow_tar, flow_for, fruit_tar,
+						fruit_for, photoPath, imgGrowing, imgWilting, imgFlowering, imgFruiting,
+						imgChilly, imgDead, size_max, size_growth_rate, size_shrink_rate);
 				plantTypes[loopCounter] = plant;
 
 				Log.d(RemoteDBTableRetrieval.class.getName(), "Accessed Plant Type data: " + plant.toString());

@@ -2,7 +2,7 @@
 <!-- Based on original form http://www.vogella.com/tutorials/AndroidListView/article.html#tutorial_ownadapter -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="50dip"
+    android:layout_height="wrap_content"
     android:padding="6dip" >
 
     <ImageView

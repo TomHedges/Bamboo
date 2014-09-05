@@ -11,7 +11,7 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 123L;
-	
+
 	private int plantTypeId;
 	private String type;
 	private int preferredTemp;
@@ -26,10 +26,30 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 	private int fruitingTarget;
 	private int fruitsFor;
 	private String photoPath;
+	private String imageGrowing;
+	private String imageWilting;
+	private String imageFlowering;
+	private String imageFruiting;
+	private String imageChilly;
+	private String imageDead;
+	private int sizeMax;
+	private int sizeGrowthRate;
+	private int sizeShrinkRate;
+
+
+
 
 	public PlantType(int plantTypeId, String type, int preferredTemp, int requiredWater,
-			double preferredPH, Constants.GroundState preferredGroundState, int livesFor, int commonnessFactor,
-			int maturesAtAge, int floweringTarget, int flowersFor, int fruitingTarget, int fruitsFor, String photoPath) {
+			double preferredPH, Constants.GroundState preferredGroundState, int livesFor,
+			int commonnessFactor, int maturesAtAge, int floweringTarget, int flowersFor,
+			int fruitingTarget, int fruitsFor, String photoPath, String imageGrowing,
+			String imageWilting, String imageFlowering,	String imageFruiting, String imageChilly,
+			String imageDead, int sizeMax, int sizeGrowthRate, int sizeShrinkRate) {
+
+		//		this.sizeMax = 100; //NB - this needs to come from remote data...
+		//		this.sizeGrowthRate = 15; //NB - this needs to come from remote data...
+		//		this.sizeShrinkRate = 10;//NB - this needs to come from remote data...
+
 		this.plantTypeId = plantTypeId;
 		this.type = type;
 		this.preferredTemp = preferredTemp;
@@ -44,6 +64,15 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 		this.fruitingTarget = fruitingTarget;
 		this.fruitsFor = fruitsFor;
 		this.photoPath = photoPath;
+		this.imageGrowing = imageGrowing;
+		this.imageWilting = imageWilting;
+		this.imageFlowering = imageFlowering;
+		this.imageFruiting = imageFruiting;
+		this.imageChilly = imageChilly;
+		this.imageDead = imageDead;
+		this.sizeMax = sizeMax;
+		this.sizeGrowthRate = sizeGrowthRate;
+		this.sizeShrinkRate = sizeShrinkRate;
 	}
 
 	public int getPlantTypeId() {
@@ -104,6 +133,42 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 
 	public String getPhoto() {
 		return photoPath;
+	}
+
+	public String getImageGrowing() {
+		return imageGrowing;
+	}
+
+	public String getImageWilting() {
+		return imageWilting;
+	}
+
+	public String getImageFlowering() {
+		return imageFlowering;
+	}
+
+	public String getImageFruiting() {
+		return imageFruiting;
+	}
+
+	public String getImageChilly() {
+		return imageChilly;
+	}
+
+	public String getImageDead() {
+		return imageDead;
+	}
+
+	public int getSizeMax() {
+		return sizeMax;
+	}
+
+	public int getSizeGrowthRate() {
+		return sizeGrowthRate;
+	}
+
+	public int getSizeShrinkRate() {
+		return sizeShrinkRate;
 	}
 
 	@Override

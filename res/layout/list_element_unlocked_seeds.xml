@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Based on original form http://www.vogella.com/tutorials/AndroidListView/article.html#tutorial_ownadapter -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:padding="6dip" >
+
+    <TextView
+        android:id="@+id/unlocked_list_date"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Revealed: xx September 2014"
+        android:layout_marginTop="3dip"
+        android:layout_marginBottom="3dip"
+        android:textSize="12sp" />
+    
+    <TextView
+        android:id="@+id/unlocked_list_sponsor_name"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/unlocked_list_date"
+        android:text="From: Tom's Test Company"
+        android:textStyle="bold"
+        android:layout_marginTop="3dip"
+        android:layout_marginBottom="3dip"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/unlocked_list_sponsor_message"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/unlocked_list_sponsor_name"
+        android:layout_marginTop="3dip"
+        android:layout_marginBottom="3dip"
+        android:text="Find out how you can get a discount!!!"
+        android:textSize="12sp" />
+
+    <TextView
+        android:id="@+id/unlocked_list_success_message"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/unlocked_list_sponsor_message"
+        android:textStyle="bold"
+        android:layout_marginTop="3dip"
+        android:layout_marginBottom="3dip"
+        android:text="Revealed message: discount code abc"
+        android:textSize="14sp" />
+
+
+</RelativeLayout>

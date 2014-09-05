@@ -57,8 +57,9 @@ public class Game extends Observable {
 	private boolean seedsRetrieved;
 	private boolean initialPlotUpdateSent;
 	private int daysUntilNextRandomSeeding;
-	private PlantInstance plantToUploadMaster;
+	//private PlantInstance plantToUploadMaster;
 	private int waterAllowance;
+	private int daysSinceLastWeatherMessage = 0;
 	private String errorMessage;
 	private static enum GameStartMode {
 		NEW_GAME,
@@ -98,6 +99,14 @@ public class Game extends Observable {
 
 		public String returnErrorMessage() {
 			return errorMessage;
+		}
+	}
+
+	public class WeatherMessage {
+		private String weatherMessage;
+
+		public String returnWeatherMessage() {
+			return weatherMessage;
 		}
 	}
 
@@ -146,6 +155,7 @@ public class Game extends Observable {
 		public boolean returnIsSponsored() {
 			return isSponsered;
 		}
+
 		public boolean returnIsRemote() {
 			return isRemote;
 		}
@@ -195,6 +205,24 @@ public class Game extends Observable {
 
 		public String returnMessage() {
 			return message;
+		}
+	}
+
+	public class SponsoredSeedUnlocked {
+		private String originUsername;
+		private String sponsoredMessage;
+		private String successCopy;
+
+		public String returnOriginUsername() {
+			return originUsername;
+		}
+
+		public String returnSponsoredMessage() {
+			return sponsoredMessage;
+		}
+
+		public String returnSuccessCopy() {
+			return successCopy;
 		}
 	}
 
@@ -257,7 +285,7 @@ public class Game extends Observable {
 
 	// Private constructor
 	private Game(Context context){
-		Log.w(Game.class.getName(), "Constructing game controller!");
+		Log.d(Game.class.getName(), "Constructing game controller!");
 
 		//core elements for initial construction
 		this.context = context;
@@ -274,7 +302,7 @@ public class Game extends Observable {
 		weatherRetrieved = false;
 		seedsRetrieved = false;
 
-		Log.w(Game.class.getName(), "Creating core settings preferences");
+		Log.d(Game.class.getName(), "Creating core settings preferences");
 		CoreSettings.createCoreSettings(context);
 		coreSettings = CoreSettings.accessCoreSettings();
 
@@ -284,11 +312,11 @@ public class Game extends Observable {
 
 	public boolean startNewGame() {
 		try {
-			Log.w(SetupGame.class.getName(), "Game - STARTING NEW");
+			Log.d(SetupGame.class.getName(), "Game - STARTING NEW");
 			boolean isNewGame = true;
 			new SetupGame().execute(isNewGame);
 
-			//Log.w(Game.class.getName(), "New game starting up!");
+			//Log.d(Game.class.getName(), "New game starting up!");
 			return true;
 		} catch (Exception ex) {
 			Log.e(Game.class.getName(), "Failed to start new game...");
@@ -298,11 +326,11 @@ public class Game extends Observable {
 
 	public boolean continueExistingGame() {
 		try {
-			Log.w(SetupGame.class.getName(), "Game - LOADING EXISTING");
+			Log.d(SetupGame.class.getName(), "Game - LOADING EXISTING");
 			boolean isNewGame = false;
 			new SetupGame().execute(isNewGame);
 
-			//Log.w(Game.class.getName(), "Restarted existing game ok!");
+			//Log.d(Game.class.getName(), "Restarted existing game ok!");
 			return true;
 		} catch (Exception ex) {
 			Log.e(Game.class.getName(), "Failed to restart game...");
@@ -315,10 +343,10 @@ public class Game extends Observable {
 		boolean exists = file.exists();
 
 		if (exists) {
-			Log.w(Game.class.getName(), "Saved game exists!");
+			Log.d(Game.class.getName(), "Saved game exists!");
 			return true;
 		} else {
-			Log.w(Game.class.getName(), "Saved game does NOT exist!");
+			Log.d(Game.class.getName(), "Saved game does NOT exist!");
 			return false;
 		}
 	}
@@ -336,10 +364,10 @@ public class Game extends Observable {
 		initialPlotUpdateSent = false;
 
 		nextIteration();
-		Log.w(Game.class.getName(), "Game starting up!");
+		Log.d(Game.class.getName(), "Game starting up!");
 		preStartChecks("Starting up...");
 		gameLoading = false;
-		Log.w(SetupGame.class.getName(), "Game LOADED");
+		Log.d(SetupGame.class.getName(), "Game LOADED");
 	}
 
 	// Singleton Factory method
@@ -352,11 +380,11 @@ public class Game extends Observable {
 
 	private int getDaysUntilNextRandomSeeding() {
 		Random randomGenerator = new Random();
-		return randomGenerator.nextInt(25) + 1;
+		return randomGenerator.nextInt(Constants.default_MAX_FREQUENCY_FOR_RANDOM_PLANTING) + 1;
 	}
 
 	private void UpdateObservers(Object objectUpdated) {
-		Log.w(Game.class.getName(), "Sending update to Observers!");
+		Log.d(Game.class.getName(), "Sending update to Observers!");
 		setChanged();
 		notifyObservers(objectUpdated);
 	}
@@ -382,9 +410,9 @@ public class Game extends Observable {
 	private void nextIteration() {
 		// TODO sort this out...
 		updateNeighbourhoods();
-		Log.w(Game.class.getName(), "Pause start - fire!");
+		Log.d(Game.class.getName(), "Pause start - fire!");
 		if (gameStarted) rulesEngineController.fireRules();
-		Log.w(Game.class.getName(), "Pause end - fire!");
+		Log.d(Game.class.getName(), "Pause end - fire!");
 		checkForCompletedObjectives();
 		checkForUploadableSeeds();
 		advanceDate();
@@ -394,8 +422,9 @@ public class Game extends Observable {
 		updateGameDetailsText();
 		sendPlotStateUpdate();
 		updateWeather();
+		checkForWeatherMatching();
 	}
-
+	
 	private void increaseResourceAllowance() {
 		if (waterAllowance + Constants.default_UserWaterAvailability_DailyChange < Constants.default_UserWaterAvailability_Max) {
 			waterAllowance = waterAllowance + Constants.default_UserWaterAvailability_DailyChange; 
@@ -405,14 +434,14 @@ public class Game extends Observable {
 	}
 
 	private void preStartChecks(String message) {
-		Log.w(Game.class.getName(), "Prestart checks: message=" + message + ", gameStarted=" + gameStarted + ", weatherRetrieved=" + weatherRetrieved + ", seedsRetrieved=" + seedsRetrieved);
+		Log.d(Game.class.getName(), "Prestart checks: message=" + message + ", gameStarted=" + gameStarted + ", weatherRetrieved=" + weatherRetrieved + ", seedsRetrieved=" + seedsRetrieved);
 		if (!gameStarted && weatherRetrieved && seedsRetrieved) {
 			sendStartupUpdate(message);
 		}
 	}
 
 	private void startGame() {
-		Log.w(Game.class.getName(), "Starting GAME");
+		Log.d(Game.class.getName(), "Starting GAME");
 		gameStarted = true;
 		startRepeatedActivity();
 	}
@@ -422,7 +451,7 @@ public class Game extends Observable {
 	}
 
 	public void pauseGame() {
-		Log.w(Game.class.getName(), "Pausing GAME");
+		Log.d(Game.class.getName(), "Pausing GAME");
 		stopRepeatedActivity();
 		locator.disconnect();
 		rulesEngineController.closedownRuleEngine();
@@ -434,7 +463,7 @@ public class Game extends Observable {
 
 	public void stopAndSaveGame() {
 		if (!gameLoading && !gameSaving) {
-			Log.w(Game.class.getName(), "Stopping and saving game!");
+			Log.d(Game.class.getName(), "Stopping and saving game!");
 			gameSaving = true;
 
 			SaveGame saveState = new SaveGame();
@@ -448,12 +477,12 @@ public class Game extends Observable {
 			saveState.waterAllowance = waterAllowance;
 
 			if (fileReaderWriter.saveObject(saveState, context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_GAME_SAVE)) {
-				Log.w(Game.class.getName(), "Game successfully saved!");
+				Log.d(Game.class.getName(), "Game successfully saved!");
 			} else {
 				Log.e(Game.class.getName(), "Game was not saved...");
 			}
 
-			Log.w(Game.class.getName(), "saveState which has been saved:" + 
+			Log.d(Game.class.getName(), "saveState which has been saved:" + 
 					" mxPlots null? " + (saveState.mxPlotsSave == null) +
 					",  plantCatalogue null? " + (saveState.plantCatalogueSave == null) +
 					",  objectives null? " + (saveState.objectivesSave == null) +
@@ -462,9 +491,9 @@ public class Game extends Observable {
 			destroyGame();
 
 			gameSaving = false;
-			Log.w(Game.class.getName(), "Game stopping NOW!");
+			Log.d(Game.class.getName(), "Game stopping NOW!");
 		} else {
-			Log.w(Game.class.getName(), "Not stopping and saving as game is still loading...");
+			Log.d(Game.class.getName(), "Not stopping and saving as game is still loading...");
 		}
 	}
 
@@ -477,7 +506,7 @@ public class Game extends Observable {
 
 	public void resumeGame() {
 		if (!gameLoading) {
-			Log.w(Game.class.getName(), "Resuming GAME");
+			Log.d(Game.class.getName(), "Resuming GAME");
 			if (gameStarted) {
 				startRepeatedActivity();
 			}
@@ -490,38 +519,38 @@ public class Game extends Observable {
 			locator.connect();
 			localDataRetriever.open();
 		} else {
-			Log.w(Game.class.getName(), "Not resuming as game is still loading...");
+			Log.d(Game.class.getName(), "Not resuming as game is still loading...");
 		}
 	}
 
 	private void loadExistingGame() {
-		Log.w(Game.class.getName(), "Loading existing game from file...");
+		Log.d(Game.class.getName(), "Loading existing game from file...");
 
 		SaveGame savedState = fileReaderWriter.loadSavedGame(context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_GAME_SAVE);
 
-		Log.w(Game.class.getName(), "savedState being loaded:" + 
+		Log.d(Game.class.getName(), "savedState being loaded:" + 
 				" mxPlots null? " + (savedState.mxPlotsSave == null) +
 				",  plantCatalogue null? " + (savedState.plantCatalogueSave == null) +
 				",  objectives null? " + (savedState.objectivesSave == null) +
 				",  numOfDaysPlayed=" + (savedState.numOfDaysPlayedSave));
 
 
-		Log.w(Game.class.getName(), "Current state: mxPlots null? " + (mxPlots == null) + ", mxPlots=" + mxPlots + ", MOP.getMatrix=" + MatrixOfPlots.getMatrix());
+		Log.d(Game.class.getName(), "Current state: mxPlots null? " + (mxPlots == null) + ", mxPlots=" + mxPlots + ", MOP.getMatrix=" + MatrixOfPlots.getMatrix());
 		mxPlots = savedState.mxPlotsSave;
-		Log.w(Game.class.getName(), "New state: mxPlots null? " + (mxPlots == null) + ", mxPlots=" + mxPlots + ", MOP.getMatrix=" + MatrixOfPlots.getMatrix());
+		Log.d(Game.class.getName(), "New state: mxPlots null? " + (mxPlots == null) + ", mxPlots=" + mxPlots + ", MOP.getMatrix=" + MatrixOfPlots.getMatrix());
 		plantCatalogue = savedState.plantCatalogueSave;
 		objectives = savedState.objectivesSave;
-		Log.w(Game.class.getName(), "Current state: gameDateInPlay null? " + (gameDateInPlay == null) + ", gameDateInPlay=" + gameDateInPlay);
+		Log.d(Game.class.getName(), "Current state: gameDateInPlay null? " + (gameDateInPlay == null) + ", gameDateInPlay=" + gameDateInPlay);
 		gameDateInPlay = Calendar.getInstance();
 		gameDateInPlay.set(savedState.year, savedState.month, savedState.day);
-		Log.w(Game.class.getName(), "Current state: gameDateInPlay null? " + (gameDateInPlay == null) + ", gameDateInPlay=" + gameDateInPlay);
+		Log.d(Game.class.getName(), "Current state: gameDateInPlay null? " + (gameDateInPlay == null) + ", gameDateInPlay=" + gameDateInPlay);
 		numOfDaysPlayed = savedState.numOfDaysPlayedSave;
 		waterAllowance = savedState.waterAllowance;
 
-		Log.w(Game.class.getName(), "...loaded existing game!");
+		Log.d(Game.class.getName(), "...loaded existing game!");
 
 		if (fileReaderWriter.deleteFile(context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_GAME_SAVE)) {
-			Log.w(Game.class.getName(), "Deleted saved game data");
+			Log.d(Game.class.getName(), "Deleted saved game data");
 		} else {
 			Log.e(Game.class.getName(), "Could not delete saved game data");
 		}
@@ -531,32 +560,33 @@ public class Game extends Observable {
 		if (gameStarted) {
 			//regular exercise of updating
 
-			Log.w(Game.class.getName(), "Pause start - create!");
+			Log.d(Game.class.getName(), "Pause start - create!");
 			rulesEngineController.createRulesEngineSession(gameWeather.getCurrentTemp(), gameWeather.getCurrentRain());
-			Log.w(Game.class.getName(), "Pause end - create!");
+			Log.d(Game.class.getName(), "Pause end - create!");
 
-			//Log.w(Game.class.getName(), "TEST 1");
+			//Log.d(Game.class.getName(), "TEST 1");
 			LinkedList<Neighbourhood> unwateredList = new LinkedList<Neighbourhood>();
-			//Log.w(Game.class.getName(), "TEST 2");
-			int loopCounter = 0;
+			//Log.d(Game.class.getName(), "TEST 2");
+			//int loopCounter = 0;
 			for (Neighbourhood neighbourhood : mxPlots.getNeighbourhoodMatrix()) {
-				neighbourhood = rainAndSimplePlantWatering(neighbourhood, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
+				//neighbourhood = rainAndSimplePlantWatering(neighbourhood, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
+				rainAndSimplePlantWatering(neighbourhood, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
 
 				if (neighbourhood.getCentralPlot().getPlant() != null && neighbourhood.getCentralPlot().isPlantWatered() == false) {
 					//build list of plots needing watering in pseudo-random order
 					Random random = new Random();
 					if (random.nextBoolean()) {
 						unwateredList.addFirst(neighbourhood);
-						Log.w(Game.class.getName(), "Added plot: " + neighbourhood.getCentralPlot().getPlotId() + " to FRONT of list needing watering");
+						Log.d(Game.class.getName(), "Added plot: " + neighbourhood.getCentralPlot().getPlotId() + " to FRONT of list needing watering");
 					} else {
 						unwateredList.addLast(neighbourhood);
-						Log.w(Game.class.getName(), "Added plot: " + neighbourhood.getCentralPlot().getPlotId() + " to BACK of list needing watering");
+						Log.d(Game.class.getName(), "Added plot: " + neighbourhood.getCentralPlot().getPlotId() + " to BACK of list needing watering");
 					}
 				}
 
-				rulesEngineController.insertFact(neighbourhood.getCentralPlot());
-				Log.w(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
-				loopCounter++;
+				//rulesEngineController.insertFact(neighbourhood.getCentralPlot());
+				//Log.d(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
+				//loopCounter++;
 			}
 
 			while (unwateredList.size()>0) {
@@ -568,33 +598,40 @@ public class Game extends Observable {
 					if (randomNeighbourWithWaterID > -1) {
 						neighbourhood.getNeighbour(randomNeighbourWithWaterID).setWaterLevel(neighbourhood.getNeighbour(randomNeighbourWithWaterID).getWaterLevel() - 1);
 						neighbourhood.setImportedWater(neighbourhood.getImportedWater() + 1);
-						Log.w(Game.class.getName(), "Found water for plant in plot: " + neighbourhood.getCentralPlot().getPlotId() + ". Increased to " + (neighbourhood.getCentralPlot().getWaterLevel() + neighbourhood.getImportedWater()) + ". Pulled one from plot: " + neighbourhood.getNeighbour(randomNeighbourWithWaterID).getPlotId() + ", leaving " + neighbourhood.getNeighbour(randomNeighbourWithWaterID).getWaterLevel());
+						Log.d(Game.class.getName(), "Found water for plant in plot: " + neighbourhood.getCentralPlot().getPlotId()
+								+ ". Increased to " + (neighbourhood.getCentralPlot().getWaterLevel() + neighbourhood.getImportedWater())
+								+ ". Pulled one from plot: " + neighbourhood.getNeighbour(randomNeighbourWithWaterID).getPlotId()
+								+ ", leaving " + neighbourhood.getNeighbour(randomNeighbourWithWaterID).getWaterLevel());
 
-						boolean plantWatered = localWaterAvailableForPlant(neighbourhood);
+						boolean plantWatered = localWaterAvailableForPlant(neighbourhood, gameWeather.getCurrentTemp());
 						if (plantWatered) {
 							neighbourhood.getCentralPlot().setPlantWatered(plantWatered);
 							// plant was watered, so remove from list!
 							unwateredList.remove(neighbourhood);
 							unwateredListLoopCounter--;
 
-							rulesEngineController.insertFact(neighbourhood.getCentralPlot());
-							Log.w(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
+							//rulesEngineController.insertFact(neighbourhood.getCentralPlot());
+							//Log.d(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
 						}
 					} else {
 						// plant cannot be watered, so remove from list, leaving it unwatered.
 						unwateredList.remove(neighbourhood);
 						unwateredListLoopCounter--;
 
-						rulesEngineController.insertFact(neighbourhood.getCentralPlot());
-						Log.w(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
+						//rulesEngineController.insertFact(neighbourhood.getCentralPlot());
+						//Log.d(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
 
-						Log.w(Game.class.getName(), "UNWATERED plant in plot: " + neighbourhood.getCentralPlot().getPlotId() + ". 4 - No water available!");
+						Log.d(Game.class.getName(), "UNWATERED plant in plot: " + neighbourhood.getCentralPlot().getPlotId() + ". 4 - No water available!");
 					}
 
 					unwateredListLoopCounter++;
 				}
 			}
-
+			
+			for (Neighbourhood neighbourhood : mxPlots.getNeighbourhoodMatrix()) {
+				rulesEngineController.insertFact(neighbourhood.getCentralPlot());
+				Log.d(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
+			}
 			rulesEngineController.insertFact(objectives);
 			rulesEngineController.insertFact(mxPlots);
 
@@ -607,7 +644,8 @@ public class Game extends Observable {
 		}
 	}
 
-	private Neighbourhood rainAndSimplePlantWatering(Neighbourhood neighbourhoodToUpdate, int rainfall, int temperature) {
+	//private Neighbourhood rainAndSimplePlantWatering(Neighbourhood neighbourhoodToUpdate, int rainfall, int temperature) {
+	private void rainAndSimplePlantWatering(Neighbourhood neighbourhoodToUpdate, int rainfall, int temperature) {
 		boolean centralPlantWatered = false;
 
 		boolean hasPlantAtCentre;
@@ -617,50 +655,66 @@ public class Game extends Observable {
 			hasPlantAtCentre = true;
 		}
 
-		// if not watery, rain on, otherwise, mark any plant as watered
+		// if not watery, rain on. if watery, mark any plant as watered
 		if (neighbourhoodToUpdate.getCentralPlot().getGroundState() != GroundState.WATER){
 			int oldWaterLevel = neighbourhoodToUpdate.getCentralPlot().getWaterLevel();
 			neighbourhoodToUpdate.getCentralPlot().changeWaterLevel(rainfall);
 			for (int loopCounter = 0; loopCounter < Constants.NEIGHBOURHOOD_STRUCTURE.length; loopCounter++) {
 				// if plot is manufactured, its ID will be -1 : and it needs to get a water top up!
-				if (neighbourhoodToUpdate.getNeighbour(loopCounter).getPlotId() == -1) {
+				if (neighbourhoodToUpdate.getNeighbour(loopCounter).getPlotId() == -1 && neighbourhoodToUpdate.getNeighbour(loopCounter).getWaterLevel()<=Constants.default_WEATHER_MAX_STANDING_WATER) {
 					neighbourhoodToUpdate.getNeighbour(loopCounter).changeWaterLevel(rainfall/Constants.default_EDGE_PLOT_RESOURCE_DIVIDER);
 				}
+				if (neighbourhoodToUpdate.getNeighbour(loopCounter).getPlotId() == -1 && neighbourhoodToUpdate.getNeighbour(loopCounter).getWaterLevel()>Constants.default_WEATHER_MAX_STANDING_WATER) {
+					neighbourhoodToUpdate.getNeighbour(loopCounter).changeWaterLevel(neighbourhoodToUpdate.getNeighbour(loopCounter).getWaterLevel() - Constants.default_WEATHER_MAX_STANDING_WATER);
+				}
+				// TODO when to reduce the water level of the "off edge" plots???
 			}
-			Log.w(Game.class.getName(), "Rainfall of " + rainfall + " on plot with ID: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". Water level changed from " + oldWaterLevel + " to " + neighbourhoodToUpdate.getCentralPlot().getWaterLevel());
+			Log.d(Game.class.getName(), "Rainfall of " + rainfall + " on plot with ID: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". Water level changed from " + oldWaterLevel + " to " + neighbourhoodToUpdate.getCentralPlot().getWaterLevel());
 		} else {
 			if (hasPlantAtCentre) {
 				neighbourhoodToUpdate.getCentralPlot().setPlantWatered(true);
 				centralPlantWatered = true;
-				Log.w(Game.class.getName(), "Watered plant in plot: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". 1 - Water plot!");
+				Log.d(Game.class.getName(), "Watered plant in plot: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". 1 - Water plot!");
 			}
 		}
 
 		if (hasPlantAtCentre && !centralPlantWatered) {
 			if (neighbourhoodToUpdate.isNeighbouringWaterPlot()) {
 				neighbourhoodToUpdate.getCentralPlot().setPlantWatered(true);
-				neighbourhoodToUpdate.getCentralPlot().changeWaterLevel(0-neighbourhoodToUpdate.getCentralPlot().getPlant().getRequiredWater());
+				int requiredWater = neighbourhoodToUpdate.getCentralPlot().getPlant().getRequiredWater();
+				int degreesOutsideComfortableRange = temperature - (neighbourhoodToUpdate.getCentralPlot().getPlant().getPreferredTemp() + Constants.default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE);
+				if (degreesOutsideComfortableRange > 0) {
+					float totalWaterRequired = requiredWater + (degreesOutsideComfortableRange * Constants.default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE_WATER_MULTIPLIER_PER_DEGREE);
+					requiredWater = (int) totalWaterRequired;
+				}
+				neighbourhoodToUpdate.getCentralPlot().changeWaterLevel(0-requiredWater);
 				if (neighbourhoodToUpdate.getCentralPlot().getWaterLevel() < 0) {
 					neighbourhoodToUpdate.getCentralPlot().changeWaterLevel(0 - neighbourhoodToUpdate.getCentralPlot().getWaterLevel());
 				}
-				Log.w(Game.class.getName(), "Watered plant in plot: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". 2 - Neighbours a water plot! Water level now: " + neighbourhoodToUpdate.getCentralPlot().getWaterLevel());
+				Log.d(Game.class.getName(), "Watered plant in plot: " + neighbourhoodToUpdate.getCentralPlot().getPlotId() + ". 2 - Neighbours a water plot! Water level now: " + neighbourhoodToUpdate.getCentralPlot().getWaterLevel());
 				centralPlantWatered = true;
 			}
 		}
 
 		if (hasPlantAtCentre && !centralPlantWatered) {
-			neighbourhoodToUpdate.getCentralPlot().setPlantWatered(localWaterAvailableForPlant(neighbourhoodToUpdate));
+			neighbourhoodToUpdate.getCentralPlot().setPlantWatered(localWaterAvailableForPlant(neighbourhoodToUpdate, gameWeather.getCurrentTemp()));
 			centralPlantWatered = true;
 		}
 
-		return neighbourhoodToUpdate;
+		//return neighbourhoodToUpdate;
 	}
 
-	private boolean localWaterAvailableForPlant(Neighbourhood neighbourhood) {
+	private boolean localWaterAvailableForPlant(Neighbourhood neighbourhood, int temperature) {
 		//do the necessary if there is water available locally	
 		int centralPlotWaterLevel = neighbourhood.getCentralPlot().getWaterLevel();
 		int importedWater = neighbourhood.getImportedWater();
+		
 		int plantReqWater = neighbourhood.getCentralPlot().getPlant().getRequiredWater();
+		int degreesOutsideComfortableRange = temperature - (neighbourhood.getCentralPlot().getPlant().getPreferredTemp() + Constants.default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE);
+		if (degreesOutsideComfortableRange > 0) {
+			float totalWaterRequired = plantReqWater + (degreesOutsideComfortableRange * Constants.default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE_WATER_MULTIPLIER_PER_DEGREE);
+			plantReqWater = (int) totalWaterRequired;
+		}
 
 		if (plantReqWater <= (centralPlotWaterLevel + importedWater)) {	
 			neighbourhood.getCentralPlot().changeWaterLevel(0 - (plantReqWater - importedWater));
@@ -668,10 +722,10 @@ public class Game extends Observable {
 			//this line actually done higher up
 			//neighbourhood.getCentralPlot().setPlantWatered(true);
 
-			Log.w(Game.class.getName(), "Water available for plant in plot " + neighbourhood.getCentralPlot().getPlotId() + ", plant " + neighbourhood.getCentralPlot().getPlant().getType() +
+			Log.d(Game.class.getName(), "Water available for plant in plot " + neighbourhood.getCentralPlot().getPlotId() + ", plant " + neighbourhood.getCentralPlot().getPlant().getType() +
 					". plot water was: " + centralPlotWaterLevel + " plus imported water of: " + importedWater + ", plant water req: " + plantReqWater +
 					". So plot water level now: " + neighbourhood.getCentralPlot().getWaterLevel());
-			Log.w(Game.class.getName(), "Watered plant in plot: " + neighbourhood.getCentralPlot().getPlotId() + ". 3 - Local water!");
+			Log.d(Game.class.getName(), "Watered plant in plot: " + neighbourhood.getCentralPlot().getPlotId() + ". 3 - Local water!");
 
 			//plant could be watered
 			return true;
@@ -700,13 +754,22 @@ public class Game extends Observable {
 			if (neighbourhood.getCentralPlot().getPlant() != null && neighbourhood.getCentralPlot().getPlant().getPlantState() == PlantState.FLOWERING && neighbourhood.getCentralPlot().getPlant().getDaysInCurrentState() == 1) {
 				//Freshly flowering plant! Upload seed...
 				uploadSeed(neighbourhood.getCentralPlot().getPlant());
+
+				if (neighbourhood.getCentralPlot().getPlant().getSuccessCopy() != null && !neighbourhood.getCentralPlot().getPlant().getSuccessCopy().isEmpty()) {
+					recordSponsoredSeedUnlocked(neighbourhood.getCentralPlot().getPlant());
+				}
+			}
+
+			//flowering of a non-fruiting plant, or fruiting of a fruiting plant
+			if (neighbourhood.getCentralPlot().getPlant() != null && ((neighbourhood.getCentralPlot().getPlant().getFruitingTarget() == 0 && neighbourhood.getCentralPlot().getPlant().getPlantState() == PlantState.FLOWERING && neighbourhood.getCentralPlot().getPlant().getDaysInCurrentState() == 1) || (neighbourhood.getCentralPlot().getPlant().getFruitingTarget() != 0 && neighbourhood.getCentralPlot().getPlant().getPlantState() == PlantState.FRUITING && neighbourhood.getCentralPlot().getPlant().getDaysInCurrentState() == 1))) {
+				localSeedDistribution(neighbourhood);
 			}
 		}
 	}
 
 	private void uploadSeed(PlantInstance seedToUpload) {
-		plantToUploadMaster = seedToUpload;
-		new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.UPLOAD_SEED);
+		//plantToUploadMaster = seedToUpload;
+		new RemoteDataExchange().execute( REMOTE_DATA_EXCHANGE_DATA_TYPE.UPLOAD_SEED, seedToUpload );
 	}
 
 	public void advanceDate(){
@@ -717,29 +780,29 @@ public class Game extends Observable {
 
 	public void performRegularTasks(){
 		if (errorMessage!=null && (!gameStarted || numOfDaysPlayed % Constants.default_ERROR_DISPLAY_FREQ == Constants.default_ERROR_DISPLAY_OFFSET)) {
-			Log.w(Game.class.getName(), "Sending error message..." + gameStarted);
+			Log.d(Game.class.getName(), "Sending error message..." + gameStarted);
 			ErrorMessage errMsg = new ErrorMessage();
 			errMsg.errorMessage = errorMessage;
 			UpdateObservers(errMsg);
 		}
 
 		if (!gameStarted || numOfDaysPlayed % Constants.default_GAME_WEATHER_RETRIEVE_FREQ == Constants.default_GAME_WEATHER_RETRIEVE_OFFSET) {
-			Log.w(Game.class.getName(), "Requesting update to local weather state..." + gameStarted);
+			Log.d(Game.class.getName(), "Requesting update to local weather state..." + gameStarted);
 			new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.WEATHER);
 		}
 
 		if (!gameStarted || numOfDaysPlayed % Constants.default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ == Constants.default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET) {
-			Log.w(Game.class.getName(), "Requesting update to remote seed list..." + gameStarted);
+			Log.d(Game.class.getName(), "Requesting update to remote seed list..." + gameStarted);
 			new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.DOWNLOAD_SEEDS);
 		}
 
 		if (daysUntilNextRandomSeeding == 0) {
 			Random randomGenerator = new Random();
 			if (randomGenerator.nextBoolean() && plantCatalogue.getRemoteSeedCount() > 0) {
-				Log.w(Game.class.getName(), "Planting remote seed...");
+				Log.d(Game.class.getName(), "Planting remote seed...");
 				plantRandomRemoteSeed();
 			} else {
-				Log.w(Game.class.getName(), "Planting local seed...");
+				Log.d(Game.class.getName(), "Planting local seed...");
 				plantRandomLocalSeed(); 
 			}
 			daysUntilNextRandomSeeding = getDaysUntilNextRandomSeeding();
@@ -750,7 +813,7 @@ public class Game extends Observable {
 	private void sendStartupUpdate(String message) {
 		GameStartup gs = new GameStartup();
 		if (weatherRetrieved && seedsRetrieved && initialPlotUpdateSent) {
-			Log.w(Game.class.getName(), "Ready to start game!");
+			Log.d(Game.class.getName(), "Ready to start game!");
 			gs.readyToPlay = true;
 
 			//taken out to begin game from outside! now revoked...
@@ -759,7 +822,7 @@ public class Game extends Observable {
 			gs.readyToPlay = false;
 		}
 		gs.message = message;
-		Log.w(Game.class.getName(), "Sending update to UI!");
+		Log.d(Game.class.getName(), "Sending update to UI!");
 		UpdateObservers(gs);
 	}
 
@@ -783,7 +846,7 @@ public class Game extends Observable {
 		Calendar springStartDate = Calendar.getInstance();
 		if (gameWeather!=null) {springStartDate.set(2001, gameWeather.getStartMonthOfSpring()-1, 1); }
 		gameDate.startOfSpring = springStartDate.get(Calendar.DAY_OF_YEAR);
-		Log.w(Game.class.getName(), "Date is: " + gameDate.gameDateString);
+		Log.d(Game.class.getName(), "Date is: " + gameDate.gameDateString);
 
 		UpdateObservers(gameDate);
 	}
@@ -821,6 +884,37 @@ public class Game extends Observable {
 		UpdateObservers(weatherVals);
 	}
 
+	private void checkForWeatherMatching() {
+		if (daysSinceLastWeatherMessage >= Constants.default_WEATHER_MESSAGE_MAXIMUM_FREQUENCY) {
+			if (gameWeather.getCurrentTemp()>=weatherRetriever.getTemperature()-Constants.default_WEATHER_MESSAGE_TEMP_RANGE || gameWeather.getCurrentTemp()<=weatherRetriever.getTemperature()+Constants.default_WEATHER_MESSAGE_TEMP_RANGE) {
+				WeatherMessage wm = new WeatherMessage();
+				String message = "";
+				
+				if (gameWeather.getCurrentTemp() == weatherRetriever.getTemperature()) {
+					message = "Your garden is the same temperature as your current location, ";
+				} else if (gameWeather.getCurrentTemp() < weatherRetriever.getTemperature()) {
+					message = "Your garden is " + (weatherRetriever.getTemperature() - gameWeather.getCurrentTemp()) + "\u00B0C cooler than your current location, ";
+				} else {
+					message = "Your garden is " + (gameWeather.getCurrentTemp() - weatherRetriever.getTemperature()) + "\u00B0C warmer than your current location, ";
+				}
+				
+				if (gameWeather.getCurrentRain() == weatherRetriever.getRainfall()) {
+					message = message + "and is experiencing the same level of rainfall (" + gameWeather.getCurrentRain() + "mm)";
+				} else if (gameWeather.getCurrentRain() < weatherRetriever.getRainfall()) {
+					message = message + "and is experiencing " + (weatherRetriever.getRainfall() - gameWeather.getCurrentRain()) + "mm less rain";
+				} else {
+					message = message + "and is experiencing " + (gameWeather.getCurrentRain() - weatherRetriever.getRainfall()) + "mm more rain";
+				}
+				
+				wm.weatherMessage = message;
+				UpdateObservers(wm);
+				
+				daysSinceLastWeatherMessage = 0;
+			}
+		}
+		daysSinceLastWeatherMessage++;
+	}
+
 	public int getRealTemp() {
 		errorMessage = weatherRetriever.getErrorMessage();
 		return weatherRetriever.getTemperature();
@@ -835,52 +929,48 @@ public class Game extends Observable {
 		return plantCatalogue.getRemoteSeedCount();
 	}
 
-	private class RemoteDataExchange extends AsyncTask<REMOTE_DATA_EXCHANGE_DATA_TYPE, Void, Void> {
+	private class RemoteDataExchange extends AsyncTask<Object, Void, Void> {
 
 		protected void onPreExecute() {
-			Log.w(RemoteDataExchange.class.getName(), "Attempting remote data exchange from within Game");
+			Log.d(RemoteDataExchange.class.getName(), "Attempting remote data exchange from within Game");
 		}
 
 		@Override
-		protected Void doInBackground(REMOTE_DATA_EXCHANGE_DATA_TYPE... params) {
+		protected Void doInBackground(Object... params) {
 			String message = "";
-			switch (params[0]) {
+			switch ((REMOTE_DATA_EXCHANGE_DATA_TYPE) params[0]) {
 			case DOWNLOAD_SEEDS:
-				Log.w(RemoteDataExchange.class.getName(), "Attempting retrieval of remote seed data...");
+				Log.d(RemoteDataExchange.class.getName(), "Attempting retrieval of remote seed data...");
 				plantCatalogue.setRemoteSeedArray(remoteDataRetriever.getSeedingPlants(coreSettings.checkStringSetting(Constants.TAG_USERNAME), locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date()));
 				message = "Retrieved nearby seeds...";
 				seedsRetrieved = true;
-				Log.w(RemoteDataExchange.class.getName(), "Remote seed data retrieved");
+				Log.d(RemoteDataExchange.class.getName(), "Remote seed data retrieved");
 				break;
 
 			case WEATHER:
-				Log.w(RemoteDataExchange.class.getName(), "Attempting retrieval of local weatherRetriever data...");
+				Log.d(RemoteDataExchange.class.getName(), "Attempting retrieval of local weatherRetriever data...");
 				weatherRetriever.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
 				message = "Retrieved local weatherRetriever details...";
 				weatherRetrieved = true;
-				Log.w(RemoteDataExchange.class.getName(), "Local weatherRetriever data retrieved");
+				Log.d(RemoteDataExchange.class.getName(), "Local weatherRetriever data retrieved");
 				break;
 
 			case UPLOAD_SEED:
-				if (plantToUploadMaster != null) {
-					Log.w(RemoteDataExchange.class.getName(), "Attempting to upload seed of flowering plant...");
-					boolean seedUploadStatus = remoteDataRetriever.uploadSeed(new Date(),
-							coreSettings.checkStringSetting(Constants.TAG_USERNAME),
-							locator.getLocation().getLatitude(),
-							locator.getLocation().getLongitude(),
-							plantToUploadMaster.getId()
-					);
-					if (seedUploadStatus) {
-						Log.w(RemoteDataExchange.class.getName(), "Seed upload successful!");
-						SeedUploaded seedUploaded = new SeedUploaded();
-						seedUploaded.message = "Seeds from your flowering " + plantToUploadMaster.getType() + " have been released into the environment!";
-						UpdateObservers(seedUploaded);
-						plantToUploadMaster = null;
-					} else {
-						Log.e(RemoteDataExchange.class.getName(), "Seed upload NOT successful!");
-					}
+				PlantInstance seedToUpload = (PlantInstance) params[1];
+				Log.d(RemoteDataExchange.class.getName(), "Attempting to upload seed of flowering " + seedToUpload.getType());
+				boolean seedUploadStatus = remoteDataRetriever.uploadSeed(new Date(),
+						coreSettings.checkStringSetting(Constants.TAG_USERNAME),
+						locator.getLocation().getLatitude(),
+						locator.getLocation().getLongitude(),
+						seedToUpload.getId()
+				);
+				if (seedUploadStatus) {
+					Log.d(RemoteDataExchange.class.getName(), "Seed upload successful!");
+					SeedUploaded seedUploaded = new SeedUploaded();
+					seedUploaded.message = "Seeds from your flowering " + seedToUpload.getType() + " have been released into the environment!";
+					UpdateObservers(seedUploaded);
 				} else {
-					Log.e(RemoteDataExchange.class.getName(), "No seed to upload to remote server!");
+					Log.e(RemoteDataExchange.class.getName(), "Seed upload NOT successful!");
 				}
 				break;
 
@@ -894,6 +984,19 @@ public class Game extends Observable {
 			}
 
 			return null;
+		}
+	}
+
+	private void recordSponsoredSeedUnlocked(PlantInstance seedUnlocked) {
+		//only send update if this is a newly unlocked seed, not one previously unlocked...
+		if (localDataRetriever.writeNewSponsoredPlantUnlocked(Calendar.getInstance().getTime(), seedUnlocked.getOriginUsername(), seedUnlocked.getSponsoredMessage(), seedUnlocked.getSuccessCopy())) {
+			Log.d(Game.class.getName(), "Recording and displaying an unlocked seed from: " + seedUnlocked.getOriginUsername());
+			SponsoredSeedUnlocked ssu = new SponsoredSeedUnlocked();
+			ssu.originUsername = seedUnlocked.getOriginUsername();
+			ssu.sponsoredMessage = seedUnlocked.getSponsoredMessage();
+			ssu.successCopy = seedUnlocked.getSuccessCopy();
+
+			UpdateObservers(ssu);
 		}
 	}
 
@@ -945,30 +1048,30 @@ public class Game extends Observable {
 		int plotForPlanting = getPlotForPlanting(chosenPlant.getPreferredGroundState());
 
 		if (plotForPlanting > -1) {
-			Log.w(Game.class.getName(), "Random plot selected");
+			Log.d(Game.class.getName(), "Random plot selected");
 
 			PlantInstance newLocalPlant = new PlantInstance(chosenPlant, plotForPlanting);
 
 			getPlotFrom1BasedID(plotForPlanting).setPlant(newLocalPlant);
-			Log.w(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
+			Log.d(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
 
 			SeedPlanted locSeedPlanted = new SeedPlanted();
 			locSeedPlanted.plotID = plotForPlanting;
 			locSeedPlanted.plantType = chosenPlant.getType();
 			locSeedPlanted.isRemote = false;
 
-			Log.w(Game.class.getName(), "Returning random plant notification to obervers: Local plant=" + locSeedPlanted.plantType);
+			Log.d(Game.class.getName(), "Returning random plant notification to obervers: Local plant=" + locSeedPlanted.plantType);
 
 			PlotDetails plotUpdate = singlePlotDetails(locSeedPlanted.plotID);
 			UpdateObservers(plotUpdate);
 			UpdateObservers(locSeedPlanted);
 		} else {
-			Log.w(Game.class.getName(), "No plot selected! So no planting happening");
+			Log.d(Game.class.getName(), "No plot selected! So no planting happening");
 		}
 	}
 
 	private void plantRandomRemoteSeed() {
-		Log.w(Game.class.getName(), "Random seed being planted...");
+		Log.d(Game.class.getName(), "Random seed being planted...");
 
 		RemoteSeed remoteSeed = plantCatalogue.getRandomRemoteSeed();
 		GroundState gsPlantPrefers = plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()).getPreferredGroundState();
@@ -976,7 +1079,7 @@ public class Game extends Observable {
 		int plotForPlanting = getPlotForPlanting(gsPlantPrefers);
 
 		if (plotForPlanting > -1) {
-			Log.w(Game.class.getName(), "Random plot selected");
+			Log.d(Game.class.getName(), "Random plot selected");
 			PlantInstance newRemotePlant;
 			boolean isSponsored = remoteSeed.isSponsored();
 			if (isSponsored) {
@@ -985,7 +1088,7 @@ public class Game extends Observable {
 				newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting);
 			}
 			getPlotFrom1BasedID(plotForPlanting).setPlant(newRemotePlant);
-			Log.w(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
+			Log.d(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
 
 			SeedPlanted remSeedPlanted = new SeedPlanted();
 			remSeedPlanted.plotID = plotForPlanting;
@@ -994,13 +1097,13 @@ public class Game extends Observable {
 			remSeedPlanted.isRemote = true;
 			remSeedPlanted.plantType = plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()).getType();
 
-			Log.w(Game.class.getName(), "Returning random plant notification to obervers: From=" + remSeedPlanted.username + ", Plant=" + remSeedPlanted.plantType + ", isSponsored=" + remSeedPlanted.isSponsered);
+			Log.d(Game.class.getName(), "Returning random plant notification to obervers: From=" + remSeedPlanted.username + ", Plant=" + remSeedPlanted.plantType + ", isSponsored=" + remSeedPlanted.isSponsered);
 
 			PlotDetails plotUpdate = singlePlotDetails(remSeedPlanted.plotID);
 			UpdateObservers(plotUpdate);
 			UpdateObservers(remSeedPlanted);
 		} else {
-			Log.w(Game.class.getName(), "No plot selected! So no planting happening");
+			Log.d(Game.class.getName(), "No plot selected! So no planting happening");
 		}
 	}
 
@@ -1031,6 +1134,16 @@ public class Game extends Observable {
 		}
 
 		return plotForPlanting;
+	}
+
+	private void localSeedDistribution(Neighbourhood neighbourhood) {
+		for (int loopCounter = 0; loopCounter<neighbourhood.getNeighbourCounter(); loopCounter++) {
+			Random rand = new Random();
+			if (neighbourhood.getNeighbour(loopCounter).getPlotId() != -1 && neighbourhood.getNeighbour(loopCounter).getPlant() == null && rand.nextInt(Constants.default_PLANT_MAX_COMMONESS_FACTOR)+1<neighbourhood.getCentralPlot().getPlant().getCommonnessFactor()) {
+				neighbourhood.getNeighbour(loopCounter).setPlant(new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(neighbourhood.getCentralPlot().getPlant().getId()), neighbourhood.getNeighbour(loopCounter).getPlotId()));
+				Log.d(SetupGame.class.getName(), "Flowering/Fruiting plant self-seeded. Plant=" + neighbourhood.getCentralPlot().getPlant().getType() + ", From Plot ID=" + neighbourhood.getCentralPlot().getPlotId() + ", Seeded into Plot ID=" + neighbourhood.getNeighbour(loopCounter).getPlotId());
+			}
+		}
 	}
 
 	public void uprootPlant(int plotId) {
@@ -1075,7 +1188,7 @@ public class Game extends Observable {
 		} else {
 			plotText = plotText + "\n" + localCopy.getPlant().getType() + "\nAge=" + localCopy.getPlant().getAge() + "\n" + localCopy.getPlant().getPlantState() + "\nDays in state=" + localCopy.getPlant().getDaysInCurrentState();
 		}
-		Log.w(Game.class.getName(), "Plot Text: " + plotText);
+		Log.d(Game.class.getName(), "Plot Text: " + plotText);
 		return(plotText);
 	}
 
@@ -1085,7 +1198,25 @@ public class Game extends Observable {
 	}
 
 	public Objective[] getObjectiveList() {
-		return objectives.getObjectiveList();
+		if (objectives == null || objectives.getObjectiveList() ==null) {
+			localDataRetriever.open();
+			Objective[] allObjectives = localDataRetriever.getObjectives();
+			Objective[] objectiveList = new Objective[allObjectives.length-1];
+			for (int loopCounter = 1; loopCounter<allObjectives.length; loopCounter++) {
+				objectiveList[loopCounter-1] = allObjectives[loopCounter];
+			}
+			localDataRetriever.close();			
+			return objectiveList;
+		} else {
+			return objectives.getObjectiveList();
+		}
+	}
+
+	public String[][] getUnlockedSeedsList() {
+		localDataRetriever.open();
+		String[][] unlockedSeeds = localDataRetriever.getUnlockedSeeds();
+		localDataRetriever.close();	
+		return unlockedSeeds;
 	}
 
 	private void sendObjectiveUpdate() {
@@ -1131,11 +1262,11 @@ public class Game extends Observable {
 			/// NEED TO MAKE THIS WORK IF NO INTERNET CONNECTION - SHOULD BE EASY AS ALL DATA STORED LOCALLY!!!
 
 			// for testing purposes - change to false for production! Forces all tables to update.
-			boolean forceUpdate = true;
+			boolean forceUpdate = false;
 
 			// TODO loads existing game - need way to update plant catalogue, etc. mid game??
 			boolean isNewGame = params[0];
-			Log.w(SetupGame.class.getName(), "Is this a new game? " + isNewGame);
+			Log.d(SetupGame.class.getName(), "Is this a new game? " + isNewGame);
 			if (!isNewGame) {
 				gameStartMode = GameStartMode.LOAD_GAME;
 				publishProgress("Loading saved game state...");
@@ -1148,8 +1279,8 @@ public class Game extends Observable {
 			publishProgress("Checking for updates to local data");
 			localDataRetriever = new ConfigDataSource(context);
 			localDataRetriever.open();
-			Log.w(SetupGame.class.getName(), "Opened Data source!");
-			Log.w(SetupGame.class.getName(), "Get local globals");
+			Log.d(SetupGame.class.getName(), "Opened Data source!");
+			Log.d(SetupGame.class.getName(), "Get local globals");
 			Globals globalsLocal = localDataRetriever.getGlobals();
 
 			// save URL, etc. to preferences
@@ -1162,36 +1293,36 @@ public class Game extends Observable {
 			Globals globalsRemote = remoteDataRetriever.getGlobals();
 			downloader = new FileDownloader();
 
-			//Log.w(SetupGame.class.getName(), "globalsRemote last updated: " + globalsRemote.getLast_updated());
-			//Log.w(SetupGame.class.getName(), "globalsLocal last updated: " + globalsLocal.getLast_updated())
+			//Log.d(SetupGame.class.getName(), "globalsRemote last updated: " + globalsRemote.getLast_updated());
+			//Log.d(SetupGame.class.getName(), "globalsLocal last updated: " + globalsLocal.getLast_updated())
 
 			if (forceUpdate || globalsRemote.getLast_updated().after(globalsLocal.getLast_updated())) {
 				publishProgress("Updating local data with updated values!");
-				Log.w(SetupGame.class.getName(), "NEED TO UPDATE SOME LOCAL DATA!");
+				Log.d(SetupGame.class.getName(), "NEED TO UPDATE SOME LOCAL DATA!");
 
 				// if update of local data is successful, then check for further updates...
 				if (localDataRetriever.writeGlobals(globalsRemote)) {
-					Log.w(SetupGame.class.getName(), "Get local table update values");
+					Log.d(SetupGame.class.getName(), "Get local table update values");
 
 					TableLastUpdateDates tablesUpdatedLocal = localDataRetriever.getTableUpdateDates();
-					Log.w(SetupGame.class.getName(), "ConfigValues date (local): " + tablesUpdatedLocal.getConfig().toString());
+					Log.d(SetupGame.class.getName(), "ConfigValues date (local): " + tablesUpdatedLocal.getConfig().toString());
 					TableLastUpdateDates tablesUpdatedRemote = remoteDataRetriever.getTableListing();
-					Log.w(SetupGame.class.getName(), "ConfigValues date (remote): " + tablesUpdatedRemote.getConfig().toString());
+					Log.d(SetupGame.class.getName(), "ConfigValues date (remote): " + tablesUpdatedRemote.getConfig().toString());
 
 
 					// CONFIG
 					if (isNewGame && (forceUpdate || tablesUpdatedRemote.getConfig().after(tablesUpdatedLocal.getConfig()))) {
 						///WE ARE REMOTE!!!
-						Log.w(SetupGame.class.getName(), "NEED TO UPDATE CONFIG TABLE!");
+						Log.d(SetupGame.class.getName(), "NEED TO UPDATE CONFIG TABLE!");
 						publishProgress("Updating Configuration data with updated values!");
 						ConfigValues remoteConfigValues = remoteDataRetriever.getConfig();
 						//TODO ARARARA
 						if (localDataRetriever.writeConfig(remoteConfigValues) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_CONFIG, tablesUpdatedRemote.getConfig())) {
-							Log.w(SetupGame.class.getName(), "Updated Config date in Tables table!");
-							Log.w(SetupGame.class.getName(), "Updated Config data!");
+							Log.d(SetupGame.class.getName(), "Updated Config date in Tables table!");
+							Log.d(SetupGame.class.getName(), "Updated Config data!");
 							publishProgress("Local Config table data updated");
 
-							Log.w(SetupGame.class.getName(), "Creating Plot matrix from remote data...");
+							Log.d(SetupGame.class.getName(), "Creating Plot matrix from remote data...");
 							Constants.GroundState[] gsGroundStates = remoteConfigValues.getGroundStates();
 
 							int num_rows = remoteConfigValues.getPlot_matrix_rows();
@@ -1211,7 +1342,7 @@ public class Game extends Observable {
 							coreSettings.addSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY, remoteConfigValues.getIteration_time_delay());
 
 							if (MatrixOfPlots.createMatrix(plotArray)) {
-								Log.w(SetupGame.class.getName(), "Created plot matrix from remote data!");
+								Log.d(SetupGame.class.getName(), "Created plot matrix from remote data!");
 							} else {
 								Log.e(SetupGame.class.getName(), "Could not create plot matrix from remote data!");
 							}
@@ -1223,10 +1354,10 @@ public class Game extends Observable {
 
 					// PLANT TYPES
 					if (forceUpdate || tablesUpdatedRemote.getPlants().after(tablesUpdatedLocal.getPlants())) {
-						Log.w(SetupGame.class.getName(), "NEED TO UPDATE PLANTTYPES TABLE!");
+						Log.d(SetupGame.class.getName(), "NEED TO UPDATE PLANTTYPES TABLE!");
 						publishProgress("Updating Plant Types data with updated values!");
 						PlantType[] remotePlantTypes = remoteDataRetriever.getPlantTypes();
-						
+
 						if (localDataRetriever.writePlantTypes(remotePlantTypes)) {
 							String[] downloadFrom = localDataRetriever.getPlantImagePaths();
 							String[] saveTo = new String[downloadFrom.length];
@@ -1236,11 +1367,11 @@ public class Game extends Observable {
 							}
 
 							if (downloader.download(downloadFrom, saveTo) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_PLANTTYPES, tablesUpdatedRemote.getPlants())) {
-								Log.w(SetupGame.class.getName(), "Updated Plant Types data!");
+								Log.d(SetupGame.class.getName(), "Updated Plant Types data!");
 								publishProgress("Local Plant Types table data updated");
 
 								if (PlantCatalogue.createPlantCatalogue(remoteDataRetriever.getPlantTypes())) {
-									Log.w(SetupGame.class.getName(), "Created plant catalogue!");
+									Log.d(SetupGame.class.getName(), "Created plant catalogue!");
 								} else {
 									Log.e(SetupGame.class.getName(), "Could not create plant catalogue!");
 								}
@@ -1256,16 +1387,16 @@ public class Game extends Observable {
 
 					// OBJECTIVES
 					if (forceUpdate || tablesUpdatedRemote.getObjectives().after(tablesUpdatedLocal.getObjectives())) {
-						Log.w(SetupGame.class.getName(), "NEED TO UPDATE OBJECTIVES TABLE + RULES FILE!");
+						Log.d(SetupGame.class.getName(), "NEED TO UPDATE OBJECTIVES TABLE + RULES FILE!");
 						publishProgress("Updating Objectives data with updated values!");
 						Objective[] remoteObjectives = remoteDataRetriever.getObjectives();
 
 						if (localDataRetriever.writeObjectives(remoteObjectives) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_OBJECTIVES, tablesUpdatedRemote.getObjectives())) {
-							Log.w(SetupGame.class.getName(), "Updated Objectives data!");
+							Log.d(SetupGame.class.getName(), "Updated Objectives data!");
 							publishProgress("Local Objectives table data updated");
 
 							if (Objectives.createObjectives(localDataRetriever.getObjectives())) {
-								Log.w(SetupGame.class.getName(), "Created local objectives list!");
+								Log.d(SetupGame.class.getName(), "Created local objectives list!");
 							} else {
 								Log.e(SetupGame.class.getName(), "Could not create objectives list!");
 							}
@@ -1276,7 +1407,7 @@ public class Game extends Observable {
 
 						String[] downloadFrom = { coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.FILENAME_REMOTE_OBJECTIVES };
 						String[] saveTo = { context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_OBJECTIVES };
-						Log.w(SetupGame.class.getName(), "Downloading updated objectives rules file from server. From: " + downloadFrom + ", To: " + saveTo);
+						Log.d(SetupGame.class.getName(), "Downloading updated objectives rules file from server. From: " + downloadFrom + ", To: " + saveTo);
 						publishProgress("Downloading updated objectives rules file...");
 						if (downloader.download(downloadFrom, saveTo)) {
 							publishProgress("...Successful!");
@@ -1288,11 +1419,11 @@ public class Game extends Observable {
 
 					// ITERATION RULES FILES
 					if (forceUpdate || tablesUpdatedRemote.getIterationRules().after(tablesUpdatedLocal.getIterationRules())) {
-						Log.w(SetupGame.class.getName(), "NEED TO UPDATE ITERATION RULES FILE!");
+						Log.d(SetupGame.class.getName(), "NEED TO UPDATE ITERATION RULES FILE!");
 
 						String[] downloadFrom = { coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.FILENAME_REMOTE_ITERATION_RULES };
 						String[] saveTo = { context.getFilesDir() + "/" + Constants.FILENAME_LOCAL_ITERATION_RULES };
-						Log.w(SetupGame.class.getName(), "Downloading updated iteration rules file from server. From: " + downloadFrom + ", To: " + saveTo);
+						Log.d(SetupGame.class.getName(), "Downloading updated iteration rules file from server. From: " + downloadFrom + ", To: " + saveTo);
 						publishProgress("Downloading updated iteration rules file...");
 						if (downloader.download(downloadFrom, saveTo)) {
 							publishProgress("...Successful!");
@@ -1304,12 +1435,12 @@ public class Game extends Observable {
 
 					// HELP AND INFO DATA
 					if (forceUpdate || tablesUpdatedRemote.getHelpAndInfo().after(tablesUpdatedLocal.getHelpAndInfo())) {
-						Log.w(SetupGame.class.getName(), "NEED TO UPDATE HELP AND INFO TABLE!");
+						Log.d(SetupGame.class.getName(), "NEED TO UPDATE HELP AND INFO TABLE!");
 						publishProgress("Updating Help and Info data with updated values!");
 						String[][] remoteHelpAndInfoData= remoteDataRetriever.getHelpAndInfoData();
 
 						if (localDataRetriever.writeHelpAndInfoData(remoteHelpAndInfoData) && localDataRetriever.writeTableUpdateDate(Constants.TABLES_VALUES_HELPANDINFO, tablesUpdatedRemote.getHelpAndInfo())) {
-							Log.w(SetupGame.class.getName(), "Updated Help and Info data!");
+							Log.d(SetupGame.class.getName(), "Updated Help and Info data!");
 							publishProgress("Local Help and Info data updated");
 						} else {
 							Log.e(SetupGame.class.getName(), "Could not update Help and Info date and/or data...");
@@ -1334,7 +1465,7 @@ public class Game extends Observable {
 			// PLOT MATRIX - only build if empty and not loading existing game
 			if (isNewGame) { //MatrixOfPlots.getMatrix() == null) {
 				publishProgress("Setting up game from local details!");
-				Log.w(SetupGame.class.getName(), "Creating Plot matrix from local data...");
+				Log.d(SetupGame.class.getName(), "Creating Plot matrix from local data...");
 				//TODO ARARARA
 				ConfigValues localConfigValues = localDataRetriever.getConfigValues();
 				Constants.GroundState[] gsGroundStates = localConfigValues.getGroundStates();
@@ -1354,7 +1485,7 @@ public class Game extends Observable {
 				coreSettings.addSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY, localConfigValues.getIteration_time_delay());
 
 				if (MatrixOfPlots.createMatrix(plotArray)) {
-					Log.w(SetupGame.class.getName(), "Created plot matrix from local data!");
+					Log.d(SetupGame.class.getName(), "Created plot matrix from local data!");
 				} else {
 					Log.e(SetupGame.class.getName(), "Could not create plot matrix from local data!");
 				}
@@ -1379,10 +1510,10 @@ public class Game extends Observable {
 			// PLANT CATALOGUE - only build if empty
 			if (PlantCatalogue.getPlantCatalogue() == null) {
 				publishProgress("Building plant catalogue!");
-				Log.w(SetupGame.class.getName(), "Building plant catalogue from local data...");
+				Log.d(SetupGame.class.getName(), "Building plant catalogue from local data...");
 
 				if (PlantCatalogue.createPlantCatalogue(localDataRetriever.getPlantTypes())) {
-					Log.w(SetupGame.class.getName(), "Created plant catalogue!");
+					Log.d(SetupGame.class.getName(), "Created plant catalogue!");
 				} else {
 					Log.e(SetupGame.class.getName(), "Could not create plant catalogue!");
 				}
@@ -1391,10 +1522,10 @@ public class Game extends Observable {
 			// OBJECTIVES - only build if empty
 			if (Objectives.getObjectives() == null) {
 				publishProgress("Building Objectives list!");
-				Log.w(SetupGame.class.getName(), "Building Objectives list from local data...");
+				Log.d(SetupGame.class.getName(), "Building Objectives list from local data...");
 
 				if (Objectives.createObjectives(localDataRetriever.getObjectives())) {
-					Log.w(SetupGame.class.getName(), "Created local objectives list!");
+					Log.d(SetupGame.class.getName(), "Created local objectives list!");
 				} else {
 					Log.e(SetupGame.class.getName(), "Could not create objectives list!");
 				}
@@ -1419,7 +1550,7 @@ public class Game extends Observable {
 						int xPosCentral = localPlot.getXPosInMatrix();
 						int yPosCentral = localPlot.getYPosInMatrix();
 
-						Log.w(SetupGame.class.getName(), "Building " +  Constants.NEIGHBOURHOOD_STRUCTURE.length + " plot neighbourhood for plot: " + localPlot.getPlotId() + ", at X=" + xPosCentral + ",Y=" + yPosCentral + ". Plot marked as 'neighbourhood created'?: " + localPlot.isNeighbourhoodCreated());
+						Log.d(SetupGame.class.getName(), "Building " +  Constants.NEIGHBOURHOOD_STRUCTURE.length + " plot neighbourhood for plot: " + localPlot.getPlotId() + ", at X=" + xPosCentral + ",Y=" + yPosCentral + ". Plot marked as 'neighbourhood created'?: " + localPlot.isNeighbourhoodCreated());
 
 						for (int[] neighbourRelPos : Constants.NEIGHBOURHOOD_STRUCTURE) {
 							neigbourhoodToInsert.addNeighbour(mxPlots.getNeigbouringPlot(xPosCentral, yPosCentral, neighbourRelPos[0], neighbourRelPos[1]));
@@ -1427,15 +1558,15 @@ public class Game extends Observable {
 
 						localPlot.setNeighbourhoodCreated(true);
 						neighbourhoodArray[localPlot.getPlotId()-1] = neigbourhoodToInsert;
-						Log.w(SetupGame.class.getName(), "Built neighbourhood of: " + neigbourhoodToInsert.getNeighbourCounter() + " plots with central plot id " + localPlot.getPlotId());
+						Log.d(SetupGame.class.getName(), "Built neighbourhood of: " + neigbourhoodToInsert.getNeighbourCounter() + " plots with central plot id " + localPlot.getPlotId());
 
 						// DROOLS LINE - PUT INTO GAME???S ksession.insert(localPlot);
-						//Log.w(SetupGame.class.getName(), "Inserted plot with ID: " + localPlot.getPlotId());
+						//Log.d(SetupGame.class.getName(), "Inserted plot with ID: " + localPlot.getPlotId());
 					}
 				}
 				mxPlots.setNeighbourhoodMatrix(neighbourhoodArray);
 
-				Log.w(SetupGame.class.getName(), "Created neighbourhood matrix from plot matrix data!");
+				Log.d(SetupGame.class.getName(), "Created neighbourhood matrix from plot matrix data!");
 			}
 
 			publishProgress("Starting game...");
@@ -1459,7 +1590,7 @@ public class Game extends Observable {
 			//what do do with core setting when not a new game???
 
 			if (isNewGame) {
-				Log.w(SetupGame.class.getName(), "Set remaining key values for new game");
+				Log.d(SetupGame.class.getName(), "Set remaining key values for new game");
 				plantCatalogue = PlantCatalogue.getPlantCatalogue();
 				objectives = Objectives.getObjectives();
 				gameDateInPlay = Calendar.getInstance();
@@ -1467,7 +1598,7 @@ public class Game extends Observable {
 				numOfDaysPlayed = -1;
 				waterAllowance = Constants.default_UserWaterAvailability_Initial;
 			} else {
-				Log.w(SetupGame.class.getName(), "Remaining key values already set - loading existing game");
+				Log.d(SetupGame.class.getName(), "Remaining key values already set - loading existing game");
 			}
 			iteration_time_delay = checkIntSetting(Constants.COLUMN_CONFIG_ITERATION_DELAY);
 			sendObjectiveUpdate();
@@ -1483,7 +1614,7 @@ public class Game extends Observable {
 		plotBeingWatered.changeWaterLevel(amountToWater);
 		PlotWatered sw = new PlotWatered();
 		sw.plotID = plotID;
-		Log.w(Game.class.getName(), "Player watered plot with ID: " + plotID + ". Water level changed from " + oldWaterLevel + " to " + getPlotFrom1BasedID(plotID).getWaterLevel());
+		Log.d(Game.class.getName(), "Player watered plot with ID: " + plotID + ". Water level changed from " + oldWaterLevel + " to " + getPlotFrom1BasedID(plotID).getWaterLevel());
 		UpdateObservers(sw);
 		updateGameDetailsText();
 		updateWaterAllowanceInfo();
@@ -1494,7 +1625,7 @@ public class Game extends Observable {
 		int waterAllPercent = waterAllowance * 100;
 		waterAllPercent = waterAllPercent / Constants.default_UserWaterAvailability_Max;
 		wal.waterAllowance = waterAllPercent;
-		Log.w(Game.class.getName(), "Sending water allowance update. Level is " + waterAllowance);
+		Log.d(Game.class.getName(), "Sending water allowance update. Level is " + waterAllowance);
 		UpdateObservers(wal);
 	}
 

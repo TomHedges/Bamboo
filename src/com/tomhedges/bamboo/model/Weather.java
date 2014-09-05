@@ -198,8 +198,14 @@ public class Weather {
 			previousTemperatureValues[previousWeatherValuesPointer] = currentTemp;
 			if (currentTempChangeIncreasing) { //weather improving
 				currentTemp = currentTemp + changeFactor;
+				if (currentTemp > Constants.default_WEATHER_MAX_TEMP) {
+					currentTemp = Constants.default_WEATHER_MAX_TEMP;
+				}
 			} else {
 				currentTemp = currentTemp - changeFactor;
+				if (currentTemp < Constants.default_WEATHER_MIN_TEMP) {
+					currentTemp = Constants.default_WEATHER_MIN_TEMP;
+				}
 			}
 			Log.w(Weather.class.getName(), "New " + type + " value is: " + currentTemp);
 			break;
@@ -207,8 +213,14 @@ public class Weather {
 			previousRainValues[previousWeatherValuesPointer] = currentRain;
 			if (currentRainChangeIncreasing) { //weather improving
 				currentRain = currentRain + changeFactor;
+				if (currentRain > Constants.default_WEATHER_MAX_RAINFALL) {
+					currentTemp = Constants.default_WEATHER_MAX_RAINFALL;
+				}
 			} else {
 				currentRain = currentRain - changeFactor;
+				if (currentRain < Constants.default_WEATHER_MIN_RAINFALL) {
+					currentTemp = Constants.default_WEATHER_MIN_RAINFALL;
+				}
 			}
 			Log.w(Weather.class.getName(), "New " + type + " value is: " + currentRain);
 			break;

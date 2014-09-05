@@ -1,9 +1,8 @@
 //based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
 
-package com.tomhedges.bamboo.util.dao;
+package com.tomhedges.bamboo.util;
 
 import com.tomhedges.bamboo.R;
-import com.tomhedges.bamboo.model.Objective;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,17 +10,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 // here's our beautiful adapter
-public class ArrayAdapterObjectives extends ArrayAdapter<Objective> {
+public class ArrayAdapterUnlockedSeeds extends ArrayAdapter<String[]> {
 
     Context mContext;
     int layoutResourceId;
-    Objective[] data = null;
+    String[][] data = null;
 
-    public ArrayAdapterObjectives(Context mContext, int layoutResourceId, Objective[] data) {
+    public ArrayAdapterUnlockedSeeds(Context mContext, int layoutResourceId, String[][] data) {
 
         super(mContext, layoutResourceId, data);
 
@@ -46,28 +44,20 @@ public class ArrayAdapterObjectives extends ArrayAdapter<Objective> {
         }
 
         // object item based on the position
-        Objective objective = data[position];
+        String[] unlockedSeed = data[position];
 
-        // get the TextView and then set the text (item name) and tag (item ID) values
-        ImageView completionImage = (ImageView) convertView.findViewById(R.id.objective_image);
-        if (objective.isCompleted()) {
-        	completionImage.setImageResource(R.drawable.completed);
-        } else {
-        	completionImage.setImageResource(R.drawable.not_completed);
-        }
+        // get the TextView and then set the text (item name) and tag (item ID) values     
+        TextView date = (TextView) convertView.findViewById(R.id.unlocked_list_date);
+        date.setText("Revealed: " + unlockedSeed[0]);
         
-        TextView heading = (TextView) convertView.findViewById(R.id.firstLine);
-        String completionText = null;
-        if (objective.isCompleted()) {
-        	completionText = "COMPLETED!";
-        } else {
-        	completionText = "Not yet completed...";
-        }
+        TextView username = (TextView) convertView.findViewById(R.id.unlocked_list_sponsor_name);
+        username.setText("From: " + unlockedSeed[1]);
         
-        heading.setText("Objective " + objective.getID() + ": " + completionText);
+        TextView message = (TextView) convertView.findViewById(R.id.unlocked_list_sponsor_message);
+        message.setText(unlockedSeed[2]);
         
-        TextView description = (TextView) convertView.findViewById(R.id.secondLine);
-        description.setText(objective.getDescription());
+        TextView successMessage = (TextView) convertView.findViewById(R.id.unlocked_list_success_message);
+        successMessage.setText("Revealed message: " + unlockedSeed[3]);
 
         return convertView;
 

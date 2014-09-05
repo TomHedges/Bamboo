@@ -38,6 +38,7 @@ public interface Constants {
 	public static final String TABLE_OBJECTIVES = "Objectives";
 	public static final String TABLE_ITERATION_RULES = "IterationRules";
 	public static final String TABLE_HELPANDINFO = "HelpAndInfo";
+	public static final String TABLE_SPONSORED_PLANTS_UNLOCKED = "SponsoredPlantsUnlocked";
 
 	public static final String COLUMN_PLANTTYPES_TYPE = "type";
 	public static final String COLUMN_PLANTTYPES_PREFTEMP = "preferredTemp";
@@ -52,6 +53,15 @@ public interface Constants {
 	public static final String COLUMN_PLANTTYPES_FRUITTARGET = "fruitingTarget";
 	public static final String COLUMN_PLANTTYPES_FRUITFOR = "fruitsFor";
 	public static final String COLUMN_PLANTTYPES_PHOTO = "photo";
+	public static final String COLUMN_PLANTTYPES_IMAGE_GROWING = "image_growing";
+	public static final String COLUMN_PLANTTYPES_IMAGE_WILTING = "image_wilting";
+	public static final String COLUMN_PLANTTYPES_IMAGE_FLOWERING = "image_flowering";
+	public static final String COLUMN_PLANTTYPES_IMAGE_FRUITING = "image_fruiting";
+	public static final String COLUMN_PLANTTYPES_IMAGE_CHILLY = "image_chilly";
+	public static final String COLUMN_PLANTTYPES_IMAGE_DEAD = "image_dead";
+	public static final String COLUMN_PLANTTYPES_SIZE_MAX = "size_max";
+	public static final String COLUMN_PLANTTYPES_SIZE_GROWTH_RATE = "size_growth_rate";
+	public static final String COLUMN_PLANTTYPES_SIZE_SHRINK_RATE = "size_shrink_rate";
 
 	public static final String COLUMN_HELPANDINFO_DATATYPE = "data_type";
 	public static final String COLUMN_HELPANDINFO_REFERENCE = "reference";
@@ -86,6 +96,7 @@ public interface Constants {
 	public static final String COLUMN_SPONSORED = "sponsored";
 	public static final String COLUMN_MESSAGE = "message";
 	public static final String COLUMN_SUCCESS_COPY = "success_copy";
+	public static final String COLUMN_TIMESTAMP = "time_stamp";
 
 	public static final String TABLES_VALUES_CONFIG = "Config";
 	public static final String TABLES_VALUES_PLANTTYPES = "PlantTypes";
@@ -95,6 +106,8 @@ public interface Constants {
 
 	public static final String HELPANDINFO_PLOT_TYPE_SHORT = "plot_type_short";
 	public static final String HELPANDINFO_PLOT_TYPE_LONG = "plot_type_long";
+	public static final String HELPANDINFO_PLANT_DESCRIPTION = "plant_description";
+	public static final String HELPANDINFO_PLANT_STATE = "plant_state";
 
 	public static enum RetrievalType {
 		COLUMNS,
@@ -218,18 +231,26 @@ public interface Constants {
 	public static final int default_WEATHER_CHANGE_DIRECTION_BIAS_MULTIPLIER = 4;
 	public static final int default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER = 10;
 	public static final int default_WEATHER_GROUND_WATER = 2;
-	public static final int default_WEATHER_MAX_STANDING_WATER = 15;
+	public static final int default_WEATHER_MAX_STANDING_WATER = 20;
 	public static final int default_WEATHER_WATER_LEVEL_REDUCTION_EACH_DAY = 2;
-	public static final int default_PLANT_EXCESS_WATER_TOLERANCE = 4;
+	public static final int default_WEATHER_MESSAGE_MAXIMUM_FREQUENCY = 30;
+	public static final int default_WEATHER_MESSAGE_TEMP_RANGE = 5;
+	public static final int default_PLANT_MAX_COMMONESS_FACTOR = 100;
+	public static final int default_PLANT_EXCESS_WATER_TOLERANCE = 4; //Could be plant by plant level...
 	public static final int default_EDGE_PLOT_RESOURCE_DIVIDER = 2;
+	public static final int default_MAX_FREQUENCY_FOR_RANDOM_PLANTING = 25;
 
-	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE = 8;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE = 3;
+	public static final float default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE_WATER_MULTIPLIER_PER_DEGREE = 0.5f;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_HIGH = 9;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_BELOW = 5;
+	public static final int default_PLANT_STATE_HEALTH_MAX = 100;
 	public static final int default_PLANT_STATE_CHANGE_HEALTH_MOVEMENT = 1;
 	public static final int default_PLANT_HEALTH_AT_PLANTING = 60;
 	public static final int default_PLANT_HEALTH_FOR_FLOWERING = 50;
 	public static final int default_PLANT_HEALTH_FOR_FRUITING = 70;
-	public static final int default_PLANT_HEALTH_MINIMUM_FOR_STAYING_ALIVE = 35;
-	public static final int default_PLANT_WILTING_LIMIT_BEFORE_DYING = 3;
+	public static final int default_PLANT_HEALTH_MINIMUM_FOR_STAYING_ALIVE = 40;
+	public static final int default_PLANT_WILTING_LIMIT_BEFORE_DYING = 15;
 	public static final int default_PLANT_DISAPPEARS_AFTER = 3;
 	
 	public static final double default_DISTANCE_USER = 0.05;

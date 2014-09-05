@@ -60,13 +60,14 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import com.tomhedges.bamboo.config.Constants;
+import com.tomhedges.bamboo.config.Constants.GroundState;
 import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
 import com.tomhedges.bamboo.config.Constants.PlantState;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.PlotWatered;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
 import com.tomhedges.bamboo.model.Game.WaterAllowanceLevel;
-import com.tomhedges.bamboo.util.dao.ArrayAdapterObjectives;
+import com.tomhedges.bamboo.util.ArrayAdapterObjectives;
 
 
 public class GameUI3D extends Activity implements OnTouchListener, Observer {
@@ -133,6 +134,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	private FrameBuffer fb = null;
 	private World world = null;
 	private RGBColor back = new RGBColor(150, 175, 255);
+	private TextureManager texMan;
 
 	private boolean touchMoved = false;
 
@@ -226,15 +228,16 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 		game = Game.getGameDetails(this);
 		game.addObserver(this);
+		texMan = TextureManager.getInstance();
 
 		if (!game.isGameStarted()) {
 			pDialog = new ProgressDialog(this);
 			pDialog.setMessage("Setting up game...");
 			pDialog.setIndeterminate(false);
 			pDialog.setCancelable(false);
-			Log.w(GameUI3D.class.getName(), "TEST show - MADE IT HERE... p1");
+			Log.d(GameUI3D.class.getName(), "TEST show - MADE IT HERE... p1");
 			pDialog.show();
-			Log.w(GameUI3D.class.getName(), "TEST show - MADE IT HERE... p1");
+			Log.d(GameUI3D.class.getName(), "TEST show - MADE IT HERE... p1");
 		}
 
 		if (game.isNewGame()) {
@@ -269,18 +272,18 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		registerForContextMenu(mGLView);
 		setContentView(mGLView);
 
-		Log.w(GameUI3D.class.getName(), "Retrieving Matrix of plots and building local variables...");
+		Log.d(GameUI3D.class.getName(), "Retrieving Matrix of plots and building local variables...");
 	}
 
 	@Override
 	public void onStart() {
-		Log.w(GameUI3D.class.getName(), "Starting 3D UI...");
+		Log.d(GameUI3D.class.getName(), "Starting 3D UI...");
 		super.onStart();
 	}
 
 	@Override
 	protected void onResume() {
-		Log.w(GameUI3D.class.getName(), "Resuming 3D UI...");
+		Log.d(GameUI3D.class.getName(), "Resuming 3D UI...");
 		super.onResume();
 		mGLView.onResume();
 		game.resumeGame();
@@ -288,7 +291,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 	@Override
 	protected void onPause() {
-		Log.w(GameUI3D.class.getName(), "Pausing 3D UI...");
+		Log.d(GameUI3D.class.getName(), "Pausing 3D UI...");
 		super.onPause();
 		isZoomAdjusted = false;
 
@@ -305,23 +308,23 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 	@Override
 	protected void onStop() {
-		Log.w(GameUI3D.class.getName(), "Stopping 3D UI...");
+		Log.d(GameUI3D.class.getName(), "Stopping 3D UI...");
 		super.onStop();
 	}
 
 	@Override
 	protected void onDestroy() {
-		Log.w(GameUI3D.class.getName(), "Destroying 3D UI...");
+		Log.d(GameUI3D.class.getName(), "Destroying 3D UI...");
 		//gardenDisplayed = false;
 		super.onDestroy();
 		mGLView.onPause();
 	}
 
 	private String getTimeStamp() {
-		Calendar test = Calendar.getInstance();
-		return test.getTime().toString();
+		//Calendar test = Calendar.getInstance();
+		//return test.getTime().toString(); //added in to check for repeat sending of toasts
+		return ""; //removed test
 	}
-
 
 	@Override
 	public void update(Observable observable, Object data) {
@@ -333,6 +336,15 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				GameUI3D.this.runOnUiThread(new Runnable() {
 					public void run() {
 						Toast.makeText(GameUI3D.this, errMsg.returnErrorMessage() + getTimeStamp(), Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+
+			if (data instanceof Game.WeatherMessage) {
+				final Game.WeatherMessage weatherMsg = (Game.WeatherMessage) data;
+				GameUI3D.this.runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(GameUI3D.this, weatherMsg.returnWeatherMessage() + getTimeStamp(), Toast.LENGTH_LONG).show();
 					}
 				});
 			}
@@ -351,12 +363,12 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 			if (data instanceof Game.PlotDetails) {
 				Game.PlotDetails plotDetails = (Game.PlotDetails) data;
-				Log.w(GameUI3D.class.getName(), "Updating Plot: " + plotDetails.returnPlotID());
+				Log.d(GameUI3D.class.getName(), "Updating Plot: " + plotDetails.returnPlotID());
 				updatePlantDisplay(plotDetails.returnPlotID());
 			}
 
 			if (data instanceof Game.GameStartup) {
-				Log.w(GameUI3D.class.getName(), "Received update to game startup...");
+				Log.d(GameUI3D.class.getName(), "Received update to game startup...");
 				final Game.GameStartup gameStartupDetails = (Game.GameStartup) data;
 				if (pDialog != null && pDialog.isShowing()) {
 					//Has to be run on UI thread, as altering dialog produced there...
@@ -364,9 +376,9 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 						public void run() {
 							pDialog.setMessage(gameStartupDetails.returnMessage());
 							if (gameStartupDetails.returnReadyToPlay()) {
-								Log.w(GameUI3D.class.getName(), "TEST dismiss - MADE IT HERE... p1");
+								Log.d(GameUI3D.class.getName(), "TEST dismiss - MADE IT HERE... p1");
 								pDialog.dismiss();
-								Log.w(GameUI3D.class.getName(), "TEST dismiss - MADE IT HERE... p2");
+								Log.d(GameUI3D.class.getName(), "TEST dismiss - MADE IT HERE... p2");
 							}
 						}
 					});
@@ -374,7 +386,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			}
 
 			if (data instanceof Game.ObjectiveUpdate) {
-				Log.w(GameUI3D.class.getName(), "Received update on objectives...");
+				Log.d(GameUI3D.class.getName(), "Received update on objectives...");
 				Game.ObjectiveUpdate ou = (Game.ObjectiveUpdate) data;
 				uiObjectives = "Objectives (" + ou.returnNumCompleted() + " of " + ou.returnTotalNum() + " completed)";
 			}
@@ -385,7 +397,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				boolean isRemote = seedPlanted.returnIsRemote();
 
 				if (isRemote) {
-					Log.w(GameUI3D.class.getName(), "Remote plant added: Plot=" + seedPlanted.returnPlotID() + ", From=" + seedPlanted.returnUsername() + ", Plant=" + seedPlanted.returnPlantType() + ", isSponsored=" + seedPlanted.returnIsSponsored());
+					Log.d(GameUI3D.class.getName(), "Remote plant added: Plot=" + seedPlanted.returnPlotID() + ", From=" + seedPlanted.returnUsername() + ", Plant=" + seedPlanted.returnPlantType() + ", isSponsored=" + seedPlanted.returnIsSponsored());
 
 					if (seedPlanted.returnIsSponsored()) {
 						alertToUser = "A present has blown in from " + seedPlanted.returnUsername() + "! Open your new " + seedPlanted.returnPlantType() + " to find out their news...";
@@ -393,7 +405,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 						alertToUser = "A " + seedPlanted.returnPlantType() + " from nearby player " + seedPlanted.returnUsername() + " has taken root in your garden...";
 					}
 				} else {
-					Log.w(GameUI3D.class.getName(), "Local plant added: Plot=" + seedPlanted.returnPlotID() + ", Plant=" + seedPlanted.returnPlantType());
+					Log.d(GameUI3D.class.getName(), "Local plant added: Plot=" + seedPlanted.returnPlotID() + ", Plant=" + seedPlanted.returnPlantType());
 
 					alertToUser = seedPlanted.returnPlantType() + " has self-seeded in your garden";
 				}
@@ -417,7 +429,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 			if (data instanceof Game.WeatherValues) {
 				Game.WeatherValues weatherVals = (Game.WeatherValues) data;
-				Log.w(GameUI3D.class.getName(), "Weather updated: Temperature=" + weatherVals.returnTemperature() + " degrees C");
+				Log.d(GameUI3D.class.getName(), "Weather updated: Temperature=" + weatherVals.returnTemperature() + " degrees C");
 				uiTemperature = uiTemperatureBase + weatherVals.returnTemperature() + "\u00B0C";
 				uiRainfall = uiRainfallBase + weatherVals.returnRainfall() + "mm";
 				uiSeason = uiSeasonBase + weatherVals.returnSeason().toString();
@@ -425,7 +437,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 			if (data instanceof Game.SeedUploaded) {
 				final Game.SeedUploaded seedUploaded = (Game.SeedUploaded) data;
-				Log.w(GameUI3D.class.getName(), "Seed uploaded. Message to player: " + seedUploaded.returnMessage());
+				Log.d(GameUI3D.class.getName(), "Seed uploaded. Message to player: " + seedUploaded.returnMessage());
 
 				//Has to be run on UI thread, as crashes otherwise??...
 				GameUI3D.this.runOnUiThread(new Runnable() {
@@ -435,10 +447,22 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				});
 			}
 
+			if (data instanceof Game.SponsoredSeedUnlocked) {
+				final Game.SponsoredSeedUnlocked ssu = (Game.SponsoredSeedUnlocked) data;
+				Log.d(GameUI3D.class.getName(), "Sponsored seed unlocked, from: " + ssu.returnOriginUsername() + ", sponsor message:" + ssu.returnSponsoredMessage() + ", success text:" + ssu.returnSuccessCopy());
+
+				//Has to be run on UI thread, as crashes otherwise??...
+				GameUI3D.this.runOnUiThread(new Runnable() {
+					public void run() {
+						Toast.makeText(GameUI3D.this, "Congratulations, you've unlocked a gift from: " + ssu.returnOriginUsername() + ". Original message was: " + ssu.returnSponsoredMessage() + ". Unlocked meesage is: " + ssu.returnSuccessCopy(), Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+
 			if (data instanceof Game.CompletedObjective) {
 				final Game.CompletedObjective completedObjective = (Game.CompletedObjective) data;
 				final String messageToDisplay = "Objective " + completedObjective.returnID() + " completed! " + completedObjective.returnMessage();
-				Log.w(GameUI3D.class.getName(), "Display completed objective message to player: " + messageToDisplay);
+				Log.d(GameUI3D.class.getName(), "Display completed objective message to player: " + messageToDisplay);
 				uiObjectives = "Objectives (" + completedObjective.returnNumCompleted() + " of " + completedObjective.returnTotalNum() + " completed)";
 
 				//Has to be run on UI thread, as crashes otherwise??...
@@ -451,8 +475,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 			if (data instanceof Game.GardenDimensions) {
 				final Game.GardenDimensions gardenDimensions = (Game.GardenDimensions) data;
-				Log.w(GameUI3D.class.getName(), "Dimensions revealed: rows=" + gardenDimensions.returnRows() + ", cols=" + gardenDimensions.returnCols());
-				Log.w(GameUI3D.class.getName(), "Able to build 3D view with " + gardenDimensions.returnRows() + " rows and " + gardenDimensions.returnCols() + " columns!");
+				Log.d(GameUI3D.class.getName(), "Dimensions revealed: rows=" + gardenDimensions.returnRows() + ", cols=" + gardenDimensions.returnCols());
+				Log.d(GameUI3D.class.getName(), "Able to build 3D view with " + gardenDimensions.returnRows() + " rows and " + gardenDimensions.returnCols() + " columns!");
 
 				//TODO how will this work with the actual loading???
 				dimensionsAvailable = true;
@@ -1051,79 +1075,80 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 			if (!texturesCreated) {
 				// Create a texture out of the icon...:-)
+
 				Texture plotSoil = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_soil)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_soil", plotSoil);
+				texMan.addTexture("plot_soil", plotSoil);
 
 				Texture plotWater = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_water)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_water", plotWater);
+				texMan.addTexture("plot_water", plotWater);
 
 				Texture plotMud = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_mud)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_mud", plotMud);
+				texMan.addTexture("plot_mud", plotMud);
 
 				Texture plotSand = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_sand)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_sand", plotSand);
+				texMan.addTexture("plot_sand", plotSand);
 
 				Texture plotGravel = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_gravel)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_gravel", plotGravel);
+				texMan.addTexture("plot_gravel", plotGravel);
 
 				Texture plotHighlight = new Texture(BitmapHelper.rescale(BitmapHelper.convert(getResources().getDrawable(R.drawable.plot_highlight)), 64, 64));
-				TextureManager.getInstance().addTexture("plot_highlight", plotHighlight);
+				texMan.addTexture("plot_highlight", plotHighlight);
 
 				InputStream isRawTexture = getResources().openRawResource(R.raw.test_plant_flowering);
 				Texture plantFlowering = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_flowering", plantFlowering);
+				texMan.addTexture("plant_flowering", plantFlowering);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_growing);
 				Texture plantGrowing = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_growing", plantGrowing);
+				texMan.addTexture("plant_growing", plantGrowing);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_chilly);
 				Texture plantChilly = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_chilly", plantChilly);
+				texMan.addTexture("plant_chilly", plantChilly);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_dead);
 				Texture plantDead = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_dead", plantDead);
+				texMan.addTexture("plant_dead", plantDead);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_fruiting);
 				Texture plantFruiting = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_fruiting", plantFruiting);
+				texMan.addTexture("plant_fruiting", plantFruiting);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_wilting);
 				Texture plantWilting = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("plant_wilting", plantWilting);
+				texMan.addTexture("plant_wilting", plantWilting);
 
 				isRawTexture = getResources().openRawResource(R.raw.test_plant2);
 				Texture tpTwo = new Texture(isRawTexture);  // with alpha
-				TextureManager.getInstance().addTexture("test_plant_2", tpTwo);
+				texMan.addTexture("test_plant_2", tpTwo);
 
 				isRawTexture = getResources().openRawResource(R.raw.year_clock_base);
 				Texture yearClockBase = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("year_clock_base", yearClockBase);
+				texMan.addTexture("year_clock_base", yearClockBase);
 
 				isRawTexture = getResources().openRawResource(R.raw.clock_marker);
 				Texture clockMarkerTexture = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("clock_marker", clockMarkerTexture);
+				texMan.addTexture("clock_marker", clockMarkerTexture);
 
 				isRawTexture = getResources().openRawResource(R.raw.button_background);
 				Texture buttonBack = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("button_back", buttonBack);
+				texMan.addTexture("button_back", buttonBack);
 
 				isRawTexture = getResources().openRawResource(R.raw.button_border);
 				Texture buttonBorder = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("button_border", buttonBorder);
+				texMan.addTexture("button_border", buttonBorder);
 
 				isRawTexture = getResources().openRawResource(R.raw.toggle_water_on);
 				Texture waterOn = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("water_on", waterOn);
+				texMan.addTexture("water_on", waterOn);
 
 				isRawTexture = getResources().openRawResource(R.raw.toggle_water_off);
 				Texture waterOff = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("water_off", waterOff);
+				texMan.addTexture("water_off", waterOff);
 
 				isRawTexture = getResources().openRawResource(R.raw.toggle_water_disabled);
 				Texture waterDisabled = new Texture(isRawTexture);
-				TextureManager.getInstance().addTexture("water_disabled", waterDisabled);
+				texMan.addTexture("water_disabled", waterDisabled);
 
 				try {
 					isRawTexture.close();
@@ -1281,7 +1306,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			if (item.getGroupId() == Constants.MENU_GROUP_PLANT_TYPES) {
 				//Toast.makeText(GameUI3D.this, "Touched menu item with id: " + item.getItemId(), Toast.LENGTH_SHORT).show();
 
-				Log.w(GameUI3D.class.getName(), "Building " + plotSelectedForMenu);
+				Log.d(GameUI3D.class.getName(), "Building " + plotSelectedForMenu);
 				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, plotSelectedForMenu, PLANT_DIALOG_TYPE.PLANT_TYPE);
 				//now that the dialog is set up, it's time to show it  
 				dialogPlant.show();
@@ -1316,7 +1341,9 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		String fullText = game.getTextElement(Constants.HELPANDINFO_PLOT_TYPE_LONG, game.getPlotFrom1BasedID(plotID).getGroundState().toString());
 		//fullText = fullText +"\n\nTouched cell - details:\n" + game.getPlotBasicFullPlotDetails(plotID);
 		//textPlot.setText("Touched cell - details:\n" + game.getPlotBasicFullPlotDetails(plotID));
-		fullText = fullText + "<p>Currently holds " + game.getPlotFrom1BasedID(plotID).getWaterLevel() + "mm of moisture.</p>";
+		if (game.getPlotFrom1BasedID(plotID).getGroundState() != GroundState.WATER) {
+			fullText = fullText + "<p>Currently holds " + game.getPlotFrom1BasedID(plotID).getWaterLevel() + "mm of moisture.</p>";
+		}
 		switch (plantStyle) {
 		case PLANT_INSTANCE:
 			fullText = fullText + "<p>There is a " + game.getPlotFrom1BasedID(plotID).getPlant().getType() + " planted here.</p>";
@@ -1402,24 +1429,50 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		textPlantName.setText(game.getPlantTypeByPlantTypeID(plantTypeID).getType());
 
 		TextView textPlantDesc = (TextView) dialog.findViewById(R.id.dia_plant_secondLine);
-		
+
 		//set up text
 		TextView textPlant = (TextView) dialog.findViewById(R.id.dia_plant_text);
+		String fullText = game.getTextElement(Constants.HELPANDINFO_PLANT_DESCRIPTION, game.getPlantTypeByPlantTypeID(plantTypeID).getType());
+
 		switch (plantStyle) {
 		case PLANT_INSTANCE:
-			textPlantDesc.setText(game.getPlotFrom1BasedID(plotID).getPlant().getPlantState().toString());
-			textPlant.setText(game.getPlotFrom1BasedID(plotID).getPlant().toString());
+			textPlantDesc.setText(game.getTextElement(Constants.HELPANDINFO_PLANT_STATE, game.getPlotFrom1BasedID(plotID).getPlant().getPlantState().toString()));
+			String watered = "";
+			if (game.getPlotFrom1BasedID(plotID).getPlant().isWateredThisIteration()) {
+				watered = "True";
+			} else {
+				watered = "False";
+			}
+			fullText = fullText + "<h4>Current plant info:<h4><p>"
+			+ "<b>Plant age</b>: " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()/365) + " years, " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()%365) + " days."
+			+ "<br><b>Currently watered?</b>: " + watered
+			+ "<br><b>Plant health</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getHealth() + " out of " + Constants.default_PLANT_STATE_HEALTH_MAX;
+			if (game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername().isEmpty()) {
+				fullText = fullText + "<br><b>Seed came from user</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername();
+			}
+			if (game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage().isEmpty()) {
+				fullText = fullText + "<br><b>Message from Sponsor</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage();
+
+			}
+			if (game.getPlotFrom1BasedID(plotID).getPlant().getTimesFlowered() > 0 && game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy().isEmpty()) {
+				fullText = fullText + "<br><b>Unlocked message</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy();
+			}
+			fullText = fullText + "</p>";
 			break;
 
 		case PLANT_TYPE:
 			textPlantDesc.setText("Not yet planted!");
-			textPlant.setText(game.getPlantTypeByPlantTypeID(plantTypeID).toString());
 			break;
 		}
+		textPlant.setText(Html.fromHtml(fullText, null, null));
+
 
 		//set up image view
 		ImageView imgPlant = (ImageView) dialog.findViewById(R.id.dia_plant_img);
-		imgPlant.setImageResource(R.drawable.ic_launcher);
+		imgPlant.setAdjustViewBounds(true);
+		imgPlant.setMaxHeight(200);
+		imgPlant.setMaxHeight(200);
+		//imgPlant.setImageResource(R.drawable.ic_launcher);
 		Bitmap plantImage = BitmapFactory.decodeFile(this.getFilesDir() + "/" + game.getPlantTypeByPlantTypeID(plantToLinkTo).getPhoto());
 		imgPlant.setImageBitmap(plantImage);
 
@@ -1459,6 +1512,19 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		return dialog;
 	}
 
+	private void setClockMarkerPosition(int dayInYear, int startDayInYearOfSpring) {
+		// 360/365 = 0.98630136986 ... converting degrees to days in year
+		// 0.98630136986 degrees in radians = 0.0172142063 ... convert to unit needed by jPCT
+
+		int multiplier = 0;
+		if (dayInYear >= startDayInYearOfSpring) {
+			multiplier = dayInYear - startDayInYearOfSpring;
+		} else {
+			multiplier = (365-startDayInYearOfSpring) + dayInYear;
+		}
+		if (overlayClockMarker != null) { overlayClockMarker.setRotation(-ONE_DAY_DEGREE * multiplier);	}
+	}
+
 	private String getTextureFromGroundState(int plotID) {
 		String textureName = "";
 		switch (game.getPlotFrom1BasedID(plotID).getGroundState()) {
@@ -1481,48 +1547,69 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		return textureName;
 	}
 
-	private String getTextureFromPlantState(PlantState plantState) {
-		String textureName = "";
-		switch (plantState) {
-		case FLOWERING:
-			textureName = "plant_flowering";
-			break;
-		case GROWING:
-			textureName = "plant_growing";
-			break;
-		case CHILLY:
-			textureName = "plant_chilly";
-			break;
-		case DEAD:
-			textureName = "plant_dead";
-			break;
-		case FRUITING:
-			textureName = "plant_fruiting";
-			break;
-		case NEW_SEED:
-			textureName = "plant_growing";
-			break;
-		case WILTING:
-			textureName = "plant_wilting";
-			break;
-		default:
-			textureName = "plant_growing";
-			break;
+	private boolean checkTextureExists(String textureName, String textureFileName) {
+		if (texMan.containsTexture(textureName)) {
+			return true;
+		} else {
+			//TEST
+			if (!textureFileName.isEmpty()) {
+				String filepath = master.getFilesDir() + "/" + textureFileName;
+				//File file = new File(filepath);
+				//if (file.exists()) {
+				Bitmap plantImage = BitmapFactory.decodeFile(filepath);
+				Texture newTexture = new Texture(BitmapHelper.rescale(plantImage, 128, 128));
+				texMan.addTexture(textureName, newTexture);
+				return true;
+				//}
+			}
+			return false;
 		}
-		return textureName;
 	}
 
-	private void setClockMarkerPosition(int dayInYear, int startDayInYearOfSpring) {
-		// 360/365 = 0.98630136986 ... converting degrees to days in year
-		// 0.98630136986 degrees in radians = 0.0172142063 ... convert to unit needed by jPCT
-
-		int multiplier = 0;
-		if (dayInYear >= startDayInYearOfSpring) {
-			multiplier = dayInYear - startDayInYearOfSpring;
-		} else {
-			multiplier = (365-startDayInYearOfSpring) + dayInYear;
+	private String getTextureFromDetails(int plantTypeID, PlantState plantState) {
+		String fallBackTexture = "";
+		String textureFileName = "";
+		switch (plantState) {
+		case FLOWERING:
+			fallBackTexture = "plant_flowering";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageFlowering();
+			break;
+		case GROWING:
+			fallBackTexture = "plant_growing";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageGrowing();
+			break;
+		case CHILLY:
+			fallBackTexture = "plant_chilly";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageChilly();
+			break;
+		case DEAD:
+			fallBackTexture = "plant_dead";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageDead();
+			break;
+		case FRUITING:
+			fallBackTexture = "plant_fruiting";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageFruiting();
+			break;
+		case NEW_SEED:
+			fallBackTexture = "plant_growing";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageGrowing();
+			break;
+		case WILTING:
+			fallBackTexture = "plant_wilting";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageWilting();
+			break;
+		default:
+			fallBackTexture = "plant_growing";
+			textureFileName = game.getPlantTypeByPlantTypeID(plantTypeID).getImageGrowing();
+			break;
 		}
-		if (overlayClockMarker != null) { overlayClockMarker.setRotation(-ONE_DAY_DEGREE * multiplier);	}
+
+		String textureName = "plant_" + plantTypeID + "_" + plantState.toString();
+		if (checkTextureExists(textureName, textureFileName)) {
+			return textureName;
+		} else {
+			return fallBackTexture;
+		}
 	}
 
 	private void updatePlantDisplay(int plotID) {
@@ -1536,7 +1623,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 					plantToUpdate.setName("Plant in plot: " + plotID);
 					// need to work out to make all plants face same direction...
 					//plantToUpdate.rotateY(-0.7f);
-					plantToUpdate.rotateY(-0.4f);
+					plantToUpdate.rotateY(-0.4f); //seems to suit planting from all directions - but doesn't look quite right!
 					plantToUpdate.setTexture("plant_growing");
 					//plantToUpdate.setScale(0.1f * game.getPlotFrom1BasedID(plotID).getPlant().getSize()); - moved to below for all plants...
 					plantToUpdate.setTransparency(50);
@@ -1551,12 +1638,12 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 					world.addObject(plantToUpdate);
 				}
 
-				plotAndPlantCollection[plotID-1].plantGraphics.setTexture(getTextureFromPlantState(game.getPlotFrom1BasedID(plotID).getPlant().getPlantState()));
+				plotAndPlantCollection[plotID-1].plantGraphics.setTexture(getTextureFromDetails(game.getPlotFrom1BasedID(plotID).getPlant().getId(), game.getPlotFrom1BasedID(plotID).getPlant().getPlantState()));
 
-				plotAndPlantCollection[plotID-1].plantGraphics.setScale(0.05f * game.getPlotFrom1BasedID(plotID).getPlant().getSize());
-				plotAndPlantCollection[plotID-1].plantGraphics.setScale(0.05f * game.getPlotFrom1BasedID(plotID).getPlant().getSize());
+				plotAndPlantCollection[plotID-1].plantGraphics.setScale(0.01f * game.getPlotFrom1BasedID(plotID).getPlant().getSize());
+				plotAndPlantCollection[plotID-1].plantGraphics.setScale(0.01f * game.getPlotFrom1BasedID(plotID).getPlant().getSize());
 				SimpleVector newPosition = plotAndPlantCollection[plotID-1].plantGraphics.getOrigin();
-				plotAndPlantCollection[plotID-1].plantGraphics.setOrigin(new SimpleVector(newPosition.x, plotAndPlantCollection[plotID-1].originalPlantLocation.y - (game.getPlotFrom1BasedID(plotID).getPlant().getSize() * 0.3), newPosition.z));
+				plotAndPlantCollection[plotID-1].plantGraphics.setOrigin(new SimpleVector(newPosition.x, plotAndPlantCollection[plotID-1].originalPlantLocation.y - (game.getPlotFrom1BasedID(plotID).getPlant().getSize() * 0.09), newPosition.z));
 
 				if (game.getPlotFrom1BasedID(plotID).getPlant().getPlantState() == PlantState.GROWING) {
 					//plotAndPlantCollection[plotID-1].plantGraphics.scale(1.2f);

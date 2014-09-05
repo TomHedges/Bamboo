@@ -1,81 +1,79 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Based on original form http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application -->
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:padding="10sp" >
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dia_plot_sv"
+    android:layout_width="match_parent"
+    android:layout_height="fill_parent" >
 
-    <RelativeLayout
+    <LinearLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/dia_plot_headline_holder"
         android:layout_width="fill_parent"
-        android:layout_height="50dip" >
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="10sp" >
 
-        <ImageView
-            android:id="@+id/dia_plot_img"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/ic_launcher" />
-
-        <TextView
-            android:id="@+id/dia_plot_firstLine"
+        <RelativeLayout
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/dia_plot_headline_holder"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentRight="true"
-            android:layout_alignTop="@+id/dia_plot_img"
-            android:layout_toRightOf="@+id/dia_plot_img"
-            android:gravity="center_vertical"
-            android:paddingLeft="10sp"
-            android:text="Plot: xx"
-            android:textSize="16sp" />
+            android:layout_height="50dip" >
 
-        <TextView
-            android:id="@+id/dia_plot_secondLine"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:layout_below="@+id/dia_plot_firstLine"
-            android:layout_toRightOf="@+id/dia_plot_img"
-            android:ellipsize="marquee"
-            android:paddingLeft="10sp"
-            android:singleLine="true"
-            android:text="(Ground type)"
-            android:textSize="12sp" />
-    </RelativeLayout>
+            <ImageView
+                android:id="@+id/dia_plot_img"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_launcher" />
 
-    <ScrollView
-        android:id="@+id/dia_plot_sv"
-        android:layout_width="fill_parent"
-        android:layout_height="150dp"
-        android:layout_below="@+id/dia_plot_headline_holder"
-        android:paddingTop="5sp" >
+            <TextView
+                android:id="@+id/dia_plot_firstLine"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignTop="@+id/dia_plot_img"
+                android:layout_toRightOf="@+id/dia_plot_img"
+                android:gravity="center_vertical"
+                android:text="Plot: xx"
+                android:layout_marginLeft="10dip"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/dia_plot_secondLine"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentRight="true"
+                android:layout_below="@+id/dia_plot_firstLine"
+                android:layout_toRightOf="@+id/dia_plot_img"
+                android:text="(Ground type)"
+                android:layout_marginLeft="10dip"
+                android:textSize="12sp" />
+        </RelativeLayout>
 
         <TextView
             android:id="@+id/dia_plot_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Plot details..." />
-    </ScrollView>
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/dia_plot_sv"
-        android:layout_centerHorizontal="true" >
-
-        <Button
-            android:id="@+id/dia_plot_plant_details"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Plant details" />
+            android:layout_gravity="center"
+            android:orientation="horizontal" >
 
-        <Button
-            android:id="@+id/dia_plot_close"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Close" />
-        <!-- android:layout_toRightOf="@+id/dia_plot_plant_details" -->
+            <Button
+                android:id="@+id/dia_plot_plant_details"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Plant details" />
+
+            <Button
+                android:id="@+id/dia_plot_close"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Close" />
+            <!-- android:layout_toRightOf="@+id/dia_plot_plant_details" -->
+        </LinearLayout>
     </LinearLayout>
 
-</RelativeLayout>
+</ScrollView>

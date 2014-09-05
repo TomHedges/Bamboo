@@ -19,7 +19,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	//private String[] allColumns = { COLUMN_ID_LOCAL, COLUMN_GLOBAL_VERSION, COLUMN_GLOBAL_ROOT_URL, COLUMN_LAST_UPDATED };
 
 	private static final String DATABASE_NAME = "bamboo.db";
-	private static final int DATABASE_VERSION = 22;
+	private static final int DATABASE_VERSION = 24;
 
 	private DateConverter dateConverter;
 	private boolean[] objectiveCompletionStates = null;
@@ -65,7 +65,16 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_FRUITTARGET
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_FRUITFOR
 		+ " integer not null, " + Constants.COLUMN_PLANTTYPES_PHOTO
-		+ " TEXT);";
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_GROWING
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_WILTING
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_FLOWERING
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_FRUITING
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_CHILLY
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_IMAGE_DEAD
+		+ " TEXT, " + Constants.COLUMN_PLANTTYPES_SIZE_MAX
+		+ " INTEGER, " + Constants.COLUMN_PLANTTYPES_SIZE_GROWTH_RATE
+		+ " INTEGER, " + Constants.COLUMN_PLANTTYPES_SIZE_SHRINK_RATE
+		+ " INTEGER);";
 
 	// OBJECTIVES table creation sql statement
 	private static final String TABLE_CREATE_OBJECTIVES = "create table "
@@ -82,6 +91,15 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " integer primary key, " + Constants.COLUMN_HELPANDINFO_DATATYPE
 		+ " text not null, " + Constants.COLUMN_HELPANDINFO_REFERENCE
 		+ " text not null, " + Constants.COLUMN_HELPANDINFO_TEXT
+		+ " text not null);";
+
+	// SPONSORED_PLANTS_UNLOCKED table creation sql statement
+	private static final String TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED = "create table "
+		+ Constants.TABLE_SPONSORED_PLANTS_UNLOCKED + "(" + Constants.COLUMN_ID_LOCAL
+		+ " integer primary key autoincrement, " + Constants.COLUMN_TIMESTAMP
+		+ " DATETIME not null, " + Constants.TAG_USERNAME
+		+ " text not null, " + Constants.COLUMN_MESSAGE
+		+ " text not null, " + Constants.COLUMN_SUCCESS_COPY
 		+ " text not null);";
 
 	public ConfigSQLiteHelper(Context context) {
@@ -103,7 +121,9 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		database.execSQL(TABLE_CREATE_OBJECTIVES);
 		Log.w(ConfigSQLiteHelper.class.getName(),"Creating HELPANDINFO table: " + TABLE_CREATE_HELPANDINFO);
 		database.execSQL(TABLE_CREATE_HELPANDINFO);
-
+		Log.w(ConfigSQLiteHelper.class.getName(),"Creating SPONSORED_PLANTS_UNLOCKED table: " + TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED);
+		database.execSQL(TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED);
+		
 		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES, OBJECTIVES and HELPANDINFO tables!");
 
 		dateConverter = new DateConverter();
@@ -204,6 +224,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		objectiveCompletionStates = retrieveObjectiveStates(db);
 		dropTable(db, Constants.TABLE_OBJECTIVES);
 		dropTable(db, Constants.TABLE_HELPANDINFO);
+		dropTable(db, Constants.TABLE_SPONSORED_PLANTS_UNLOCKED); //should add a way to preserve these on update...
 		onCreate(db);
 	}
 

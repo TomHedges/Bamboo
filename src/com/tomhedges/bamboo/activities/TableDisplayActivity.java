@@ -37,7 +37,7 @@ import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.PlotWatered;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
 import com.tomhedges.bamboo.model.Game.WaterAllowanceLevel;
-import com.tomhedges.bamboo.util.dao.ArrayAdapterObjectives;
+import com.tomhedges.bamboo.util.ArrayAdapterObjectives;
 
 public class TableDisplayActivity extends Activity implements OnClickListener, Observer {
 

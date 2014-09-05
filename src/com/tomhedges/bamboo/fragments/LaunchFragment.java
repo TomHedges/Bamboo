@@ -22,8 +22,12 @@ import com.tomhedges.bamboo.model.Game;
 //import com.tomhedges.bamboo.model.Plot;
 //import com.tomhedges.bamboo.model.TableLastUpdateDates;
 //import com.tomhedges.bamboo.util.FileDownloader;
+import com.tomhedges.bamboo.util.ArrayAdapterObjectives;
+import com.tomhedges.bamboo.util.ArrayAdapterUnlockedSeeds;
 import com.tomhedges.bamboo.util.dao.ConfigDataSource;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
+
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.AsyncTask;
@@ -36,11 +40,12 @@ import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 
 public class LaunchFragment extends Fragment implements OnClickListener {
 
-	private Button btnRepetitonTest, btnNewGame, btnLoadGame, btnNewGame3D, btnLoadGame3D, btnTestSeedUpload, btnResetObjectives;
+	private Button btnRepetitonTest, btnNewGame, btnLoadGame, btnNewGame3D, btnLoadGame3D, btnViewUnclockedSeeds, btnViewObjectives, btnResetObjectives, btnTestSeedUpload;
 	private EditText etUsername;
 	private Intent i;
 
@@ -66,22 +71,26 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 		etUsername = (EditText)v.findViewById(R.id.username);
 
 		//setup buttons
-		btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
+		//btnRepetitonTest = (Button)v.findViewById(R.id.launchRepeatingActivity);
 		btnNewGame = (Button)v.findViewById(R.id.launchStartNewGame);
 		btnLoadGame = (Button)v.findViewById(R.id.launchContinueCurrentGame);
 		btnNewGame3D = (Button)v.findViewById(R.id.launchStartNewGame3D);
 		btnLoadGame3D = (Button)v.findViewById(R.id.launchContinueCurrentGame3D);
-		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
+		btnViewUnclockedSeeds = (Button)v.findViewById(R.id.view_unlocked_sponsored_seeds);
+		btnViewObjectives = (Button)v.findViewById(R.id.view_objective_completion);
 		btnResetObjectives = (Button)v.findViewById(R.id.reset_objective_completion);
+		btnTestSeedUpload = (Button)v.findViewById(R.id.test_seed_upload);
 
 		//register listeners
-		btnRepetitonTest.setOnClickListener(this);
+		//btnRepetitonTest.setOnClickListener(this);
 		btnNewGame.setOnClickListener(this);
 		btnLoadGame.setOnClickListener(this);
 		btnNewGame3D.setOnClickListener(this);
 		btnLoadGame3D.setOnClickListener(this);
+		btnViewUnclockedSeeds.setOnClickListener(this);
+		btnViewObjectives.setOnClickListener(this);
+		btnResetObjectives.setOnClickListener(this);
 		btnTestSeedUpload.setOnClickListener(this);
-		btnResetObjectives.setOnClickListener(this);      
 
 		game = Game.getGameDetails(getActivity());
 		btnLoadGame.setEnabled(game.savedGameExists());
@@ -93,19 +102,17 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
-		case R.id.launchRepeatingActivity:
-			i = new Intent(this.getActivity(), RepeatingActivity.class);
-			startActivity(i);
-			break;
+//		case R.id.launchRepeatingActivity:
+//			i = new Intent(this.getActivity(), RepeatingActivity.class);
+//			startActivity(i);
+//			break;
 
 		case R.id.launchStartNewGame:
 			//new RetrieveData().execute();
 
 			//i = new Intent(this.getActivity(), TableDisplayActivity.class);
 			//startActivity(i);
-
-
-
+			
 			game.setUsername(etUsername.getText().toString());
 			i = new Intent(this.getActivity(), TableDisplayActivity.class);
 			game.startNewGame();
@@ -133,8 +140,40 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			startActivity(i);
 			break;
 
-		case R.id.test_seed_upload:
-			new UploadTest().execute();
+		case R.id.view_unlocked_sponsored_seeds:
+			//based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
+			// our adapter instance
+			ArrayAdapterUnlockedSeeds adapterUnlockedSeeds = new ArrayAdapterUnlockedSeeds(getActivity(), R.layout.list_element_unlocked_seeds, game.getUnlockedSeedsList());
+
+			// create a new ListView, set the adapter and item click listener
+			ListView listViewItemsUnlockedSeeds = new ListView(getActivity());
+			listViewItemsUnlockedSeeds.setAdapter(adapterUnlockedSeeds);
+			// should make this cancel??
+			//listViewItems.setOnItemClickListener(new OnItemClickListenerListViewItem());
+
+			// put the ListView in the pop up
+			AlertDialog alertDialogStoresUnlockedSeeds = new AlertDialog.Builder(getActivity())
+			.setView(listViewItemsUnlockedSeeds)
+			.setTitle("Objectives")
+			.show();
+			break;
+
+		case R.id.view_objective_completion:
+			//based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
+			// our adapter instance
+			ArrayAdapterObjectives adapterObjectives = new ArrayAdapterObjectives(getActivity(), R.layout.list_element_objectives, game.getObjectiveList());
+
+			// create a new ListView, set the adapter and item click listener
+			ListView listViewItemsObjectives = new ListView(getActivity());
+			listViewItemsObjectives.setAdapter(adapterObjectives);
+			// should make this cancel??
+			//listViewItems.setOnItemClickListener(new OnItemClickListenerListViewItem());
+
+			// put the ListView in the pop up
+			AlertDialog alertDialogStoresObjectives = new AlertDialog.Builder(getActivity())
+			.setView(listViewItemsObjectives)
+			.setTitle("Objectives")
+			.show();
 			break;
 
 		case R.id.reset_objective_completion:
@@ -155,6 +194,10 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 			break;
 
+		case R.id.test_seed_upload:
+			new UploadTest().execute();
+			break;
+			
 		default:
 			break;
 		}
