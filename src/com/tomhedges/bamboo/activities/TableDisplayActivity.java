@@ -32,7 +32,7 @@ import android.widget.ToggleButton;
 
 import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
-import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
+import com.tomhedges.bamboo.config.Constants.PlantDialogType;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.PlotWatered;
 import com.tomhedges.bamboo.model.Game.SeedPlanted;
@@ -443,9 +443,9 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 			int plantID = 0;
 			if (game.getPlotFrom1BasedID(touchedPlot).getPlant() != null) {
 				plantID = game.getPlotFrom1BasedID(touchedPlot).getPlant().getId();
-				dialogPlot = buildPlotDetailsDialog(touchedPlot, plantID, PLANT_DIALOG_TYPE.PLANT_INSTANCE);
+				dialogPlot = buildPlotDetailsDialog(touchedPlot, plantID, PlantDialogType.PLANT_INSTANCE);
 			} else {
-				dialogPlot = buildPlotDetailsDialog(touchedPlot, plantID, PLANT_DIALOG_TYPE.NONE);
+				dialogPlot = buildPlotDetailsDialog(touchedPlot, plantID, PlantDialogType.NONE);
 			}
 
 			//now that the dialog is set up, it's time to show it    
@@ -457,7 +457,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 				//Toast.makeText(TableDisplayActivity.this, "Touched menu item with id: " + item.getItemId(), Toast.LENGTH_SHORT).show();
 
 				Log.w(TableDisplayActivity.class.getName(), "Building " + touchedPlot);
-				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, touchedPlot, PLANT_DIALOG_TYPE.PLANT_TYPE);
+				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, touchedPlot, PlantDialogType.PLANT_TYPE);
 				//now that the dialog is set up, it's time to show it  
 				dialogPlant.show();
 
@@ -546,10 +546,10 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		belowTable.setText(forDisplay);
 	}
 
-	private Dialog buildPlantTypeDetailsDialog(int plantTypeID, int plotID, PLANT_DIALOG_TYPE plantStyle) {
+	private Dialog buildPlantTypeDetailsDialog(int plantTypeID, int plotID, PlantDialogType plantStyle) {
 		final int plotToLinkTo = plotID;
 		final int plantToLinkTo = plantTypeID;
-		final PLANT_DIALOG_TYPE plantStyleToLinkTo = plantStyle;
+		final PlantDialogType plantStyleToLinkTo = plantStyle;
 
 		// Based on code from http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application
 		final Dialog dialog = new Dialog(this);
@@ -577,7 +577,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 
 		//set up buttons
 		Button buttonSelectPlant = (Button) dialog.findViewById(R.id.dia_plant_select_plant);
-		if (plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_TYPE)) {
+		if (plantStyle.equals(PlantDialogType.PLANT_TYPE)) {
 			buttonSelectPlant.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -618,10 +618,10 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		return dialog;
 	}
 
-	private Dialog buildPlotDetailsDialog(int plotID, int plantID, PLANT_DIALOG_TYPE plantStyle) {
+	private Dialog buildPlotDetailsDialog(int plotID, int plantID, PlantDialogType plantStyle) {
 		final int plotToLinkTo = plotID;
 		final int plantToLinkTo = plantID;
-		final PLANT_DIALOG_TYPE plantStyleToLinkTo = plantStyle;
+		final PlantDialogType plantStyleToLinkTo = plantStyle;
 
 		// Based on code from http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application
 		final Dialog dialog = new Dialog(this);
@@ -641,7 +641,7 @@ public class TableDisplayActivity extends Activity implements OnClickListener, O
 		//set up buttons
 		Button buttonPlantDets = (Button) dialog.findViewById(R.id.dia_plot_plant_details);
 
-		if (plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_INSTANCE) || plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_TYPE)) {
+		if (plantStyle.equals(PlantDialogType.PLANT_INSTANCE) || plantStyle.equals(PlantDialogType.PLANT_TYPE)) {
 			buttonPlantDets.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {

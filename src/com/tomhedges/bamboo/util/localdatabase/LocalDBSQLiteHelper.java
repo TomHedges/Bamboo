@@ -15,7 +15,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-public class ConfigSQLiteHelper extends SQLiteOpenHelper {
+public class LocalDBSQLiteHelper extends SQLiteOpenHelper {
 	//private String[] allColumns = { COLUMN_ID_LOCAL, COLUMN_GLOBAL_VERSION, COLUMN_GLOBAL_ROOT_URL, COLUMN_LAST_UPDATED };
 
 	private static final String DATABASE_NAME = "bamboo.db";
@@ -102,57 +102,57 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		+ " text not null, " + Constants.COLUMN_SUCCESS_COPY
 		+ " text not null);";
 
-	public ConfigSQLiteHelper(Context context) {
+	public LocalDBSQLiteHelper(Context context) {
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}
 
 	@Override
 	public void onCreate(SQLiteDatabase database) {
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating database: " + DATABASE_NAME);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating GLOBALS table: " + TABLE_CREATE_GLOBALS);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating database: " + DATABASE_NAME);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating GLOBALS table: " + TABLE_CREATE_GLOBALS);
 		database.execSQL(TABLE_CREATE_GLOBALS);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating TABLES table: " + TABLE_CREATE_TABLES);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating TABLES table: " + TABLE_CREATE_TABLES);
 		database.execSQL(TABLE_CREATE_TABLES);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating CONFIG table: " + TABLE_CREATE_CONFIG);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating CONFIG table: " + TABLE_CREATE_CONFIG);
 		database.execSQL(TABLE_CREATE_CONFIG);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating PLANT TYPES table: " + TABLE_CREATE_PLANTTYPES);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating PLANT TYPES table: " + TABLE_CREATE_PLANTTYPES);
 		database.execSQL(TABLE_CREATE_PLANTTYPES);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating OBJECTIVES table: " + TABLE_CREATE_OBJECTIVES);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating OBJECTIVES table: " + TABLE_CREATE_OBJECTIVES);
 		database.execSQL(TABLE_CREATE_OBJECTIVES);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating HELPANDINFO table: " + TABLE_CREATE_HELPANDINFO);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating HELPANDINFO table: " + TABLE_CREATE_HELPANDINFO);
 		database.execSQL(TABLE_CREATE_HELPANDINFO);
-		Log.w(ConfigSQLiteHelper.class.getName(),"Creating SPONSORED_PLANTS_UNLOCKED table: " + TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED);
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Creating SPONSORED_PLANTS_UNLOCKED table: " + TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED);
 		database.execSQL(TABLE_CREATE_SPONSORED_PLANTS_UNLOCKED);
 		
-		Log.w(ConfigSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES, OBJECTIVES and HELPANDINFO tables!");
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Created GLOBALS, TABLES, CONFIG, PLANT TYPES, OBJECTIVES and HELPANDINFO tables!");
 
 		dateConverter = new DateConverter();
 
 		//--------------------------------------------------
 		
-		Log.w(ConfigSQLiteHelper.class.getName(),"Inserting defaults in GLOBALS table!");
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Inserting defaults in GLOBALS table!");
 		ContentValues values = new ContentValues();
 		values.put(Constants.COLUMN_GLOBAL_VERSION, 1);
 		values.put(Constants.COLUMN_GLOBAL_ROOT_URL, Constants.ROOT_URL);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		long insertId = database.insert(Constants.TABLE_GLOBAL_SETTINGS, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting default in GLOBALS");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting default in GLOBALS");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default in GLOBALS table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default in GLOBALS table OK!");
 		}
 
 		//--------------------------------------------------
 
-		Log.w(ConfigSQLiteHelper.class.getName(),"Inserting defaults in TABLES table!");
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Inserting defaults in TABLES table!");
 		values = new ContentValues();
 		values.put(Constants.COLUMN_TABLES_TABLENAME, Constants.TABLE_CONFIG);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		insertId = database.insert(Constants.TABLE_TABLES, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_CONFIG + " default in TABLES");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_CONFIG + " default in TABLES");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_CONFIG + " in TABLES table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_CONFIG + " in TABLES table OK!");
 		}
 
 		values = new ContentValues();
@@ -160,9 +160,9 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		insertId = database.insert(Constants.TABLE_TABLES, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_PLANT_TYPES + " default in TABLES");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_PLANT_TYPES + " default in TABLES");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_PLANT_TYPES + " in TABLES table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_PLANT_TYPES + " in TABLES table OK!");
 		}
 
 		values = new ContentValues();
@@ -170,9 +170,9 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		insertId = database.insert(Constants.TABLE_TABLES, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_OBJECTIVES + " default in TABLES");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_OBJECTIVES + " default in TABLES");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_OBJECTIVES + " in TABLES table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_OBJECTIVES + " in TABLES table OK!");
 		}
 
 		values = new ContentValues();
@@ -180,9 +180,9 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		insertId = database.insert(Constants.TABLE_TABLES, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_ITERATION_RULES + " default in TABLES");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_ITERATION_RULES + " default in TABLES");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_ITERATION_RULES + " in TABLES table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_ITERATION_RULES + " in TABLES table OK!");
 		}
 
 		values = new ContentValues();
@@ -190,14 +190,14 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		insertId = database.insert(Constants.TABLE_TABLES, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_HELPANDINFO + " default in TABLES");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting " + Constants.TABLE_HELPANDINFO + " default in TABLES");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_HELPANDINFO + " in TABLES table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default " + Constants.TABLE_HELPANDINFO + " in TABLES table OK!");
 		}
 
 		//--------------------------------------------------
 
-		Log.w(ConfigSQLiteHelper.class.getName(),"Inserting defaults in CONFIG table!");
+		Log.w(LocalDBSQLiteHelper.class.getName(),"Inserting defaults in CONFIG table!");
 		values = new ContentValues();
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(new Date(0)));
 		values.put(Constants.COLUMN_CONFIG_ITERATION_DELAY, 1000);
@@ -206,15 +206,15 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 		values.put(Constants.COLUMN_CONFIG_PLOT_PATTERN, "{\"" + Constants.COLUMN_CONFIG_PLOT_PATTERN + "\":[\"" + Constants.GroundState.SOIL.toString() + "\"]}");
 		insertId = database.insert(Constants.TABLE_CONFIG, null, values);
 		if (insertId == -1) {
-			Log.e(ConfigSQLiteHelper.class.getName(), "ERROR inserting default in CONFIG");
+			Log.e(LocalDBSQLiteHelper.class.getName(), "ERROR inserting default in CONFIG");
 		} else {
-			Log.w(ConfigSQLiteHelper.class.getName(), "Entered default in CONFIG table OK!");
+			Log.w(LocalDBSQLiteHelper.class.getName(), "Entered default in CONFIG table OK!");
 		}
 	}
 
 	@Override
 	public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-		Log.w(ConfigSQLiteHelper.class.getName(),
+		Log.w(LocalDBSQLiteHelper.class.getName(),
 				"Upgrading database from version " + oldVersion + " to "
 				+ newVersion + ", which will destroy all old data in selected tables");
 		dropTable(db, Constants.TABLE_GLOBAL_SETTINGS);
@@ -229,7 +229,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	}
 
 	private boolean[] retrieveObjectiveStates(SQLiteDatabase db) {
-		Log.w(ConfigSQLiteHelper.class.getName(), "Retrieveing and storing current objective completion statuses...");		
+		Log.w(LocalDBSQLiteHelper.class.getName(), "Retrieveing and storing current objective completion statuses...");		
 		Cursor cursor = db.query(Constants.TABLE_OBJECTIVES, null, null, null, null, null, null);
 		boolean[] objCompStates = new boolean[cursor.getCount()];
 		cursor.moveToFirst();
@@ -247,7 +247,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	}
 
 	private void dropTable(SQLiteDatabase db, String tableName) {
-		Log.w(ConfigSQLiteHelper.class.getName(), "Dropping");
+		Log.w(LocalDBSQLiteHelper.class.getName(), "Dropping");
 		db.execSQL("DROP TABLE IF EXISTS " + tableName);
 	}
 
@@ -260,7 +260,7 @@ public class ConfigSQLiteHelper extends SQLiteOpenHelper {
 	}
 
 //	private void createTable(SQLiteDatabase db, String tableName) {
-//		Log.w(ConfigSQLiteHelper.class.getName(), "Dropping");
+//		Log.w(LocalDBSQLiteHelper.class.getName(), "Dropping");
 //		db.execSQL("DROP TABLE IF EXISTS " + tableName);
 //	}
 }

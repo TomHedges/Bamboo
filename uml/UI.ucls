@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<class-diagram version="1.1.6" icons="true" automaticImage="PNG" always-add-relationships="false" generalizations="true" 
+  realizations="true" associations="true" dependencies="true" nesting-relationships="true">  
+  <class id="1" language="java" name="com.tomhedges.bamboo.model.Game.WeatherMessage" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="781" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="2" language="java" name="com.tomhedges.bamboo.model.Game.ErrorMessage" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="272" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="3" language="java" name="com.tomhedges.bamboo.model.Game.WeatherValues" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="364" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="4" language="java" name="com.tomhedges.bamboo.model.Game" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="555" y="135" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="5" language="java" name="com.tomhedges.bamboo.model.Game.SponsoredSeedUnlocked" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="338" y="664" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="6" language="java" name="com.tomhedges.bamboo.model.Game.GardenDimensions" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="226" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="7" language="java" name="com.tomhedges.bamboo.model.Game.SeedUploaded" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="551" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="8" language="java" name="com.tomhedges.bamboo.model.Game.PlotWatered" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="458" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="9" language="java" name="com.tomhedges.bamboo.model.Game.GameStartup" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="180" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="10" language="java" name="com.tomhedges.bamboo.model.Game.WaterAllowanceLevel" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="504" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="11" language="java" name="com.tomhedges.bamboo.model.Game.GameDate" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="318" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="12" language="java" name="com.tomhedges.bamboo.model.Game.PlotDetails" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="411" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="13" language="java" name="com.tomhedges.bamboo.model.Game.ObjectiveUpdate" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="689" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="14" language="java" name="com.tomhedges.bamboo.model.Game.GameDetailsText" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="826" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="15" language="java" name="com.tomhedges.bamboo.model.Game.SeedPlanted" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="597" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="16" language="java" name="com.tomhedges.bamboo.model.Game.CompletedObjective" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/model/Game.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="235" y="735" width="206" height="42"/>    
+    <display autosize="false" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="17" language="java" name="com.tomhedges.bamboo.activities.GameUI3D" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/activities/GameUI3D.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="105" y="135" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="18" language="java" name="com.tomhedges.bamboo.activities.GameUI3D.MyRenderer" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/activities/GameUI3D.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="105" y="28" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <class id="19" language="java" name="com.tomhedges.bamboo.activities.GameUI3D.PlotAndPlantDetails" project="Bamboo" 
+    file="/Bamboo/src/com/tomhedges/bamboo/activities/GameUI3D.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position x="561" y="28" width="-1" height="-1"/>    
+    <display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" accessors="true" 
+      visibility="true">      
+      <attributes public="false" package="false" protected="false" private="false" static="false"/>      
+      <operations public="false" package="false" protected="false" private="false" static="false"/>    
+    </display>  
+  </class>  
+  <association id="20">    
+    <end type="SOURCE" refId="17" navigable="false">      
+      <attribute id="21" name="renderer"/>      
+      <multiplicity id="22" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="18" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="23">    
+    <end type="SOURCE" refId="17" navigable="false">      
+      <attribute id="24" name="plotAndPlantCollection">        
+        <position x="438" y="61" width="139" height="20"/>      
+      </attribute>      
+      <multiplicity id="25" minimum="0" maximum="2147483647">        
+        <position x="405" y="42" width="25" height="18"/>      
+      </multiplicity>    
+    </end>    
+    <end type="TARGET" refId="19" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="26">    
+    <bendpoint x="105" y="802"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="1"/>  
+  </dependency>  
+  <dependency id="27">    
+    <bendpoint x="105" y="339"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="11"/>  
+  </dependency>  
+  <dependency id="28">    
+    <bendpoint x="105" y="572"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="7"/>  
+  </dependency>  
+  <nesting id="29">    
+    <bendpoint x="555" y="525"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="10"/>  
+  </nesting>  
+  <nesting id="30">    
+    <bendpoint x="555" y="802"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="1"/>  
+  </nesting>  
+  <nesting id="31">    
+    <bendpoint x="555" y="247"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="6"/>  
+  </nesting>  
+  <dependency id="32">    
+    <bendpoint x="105" y="385"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="3"/>  
+  </dependency>  
+  <dependency id="33">    
+    <bendpoint x="105" y="618"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="15"/>  
+  </dependency>  
+  <nesting id="34">    
+    <bendpoint x="555" y="432"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="12"/>  
+  </nesting>  
+  <nesting id="35">    
+    <bendpoint x="555" y="572"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="7"/>  
+  </nesting>  
+  <dependency id="36">    
+    <bendpoint x="105" y="664"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="5"/>  
+  </dependency>  
+  <nesting id="37">    
+    <bendpoint x="555" y="201"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="9"/>  
+  </nesting>  
+  <association id="38">    
+    <end type="SOURCE" refId="4" navigable="false">      
+      <attribute id="39" name="game"/>      
+      <multiplicity id="40" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <dependency id="41">    
+    <bendpoint x="105" y="201"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="9"/>  
+  </dependency>  
+  <nesting id="42">    
+    <bendpoint x="555" y="293"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="2"/>  
+  </nesting>  
+  <nesting id="43">    
+    <bendpoint x="555" y="847"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="14"/>  
+  </nesting>  
+  <dependency id="44">    
+    <bendpoint x="105" y="293"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="2"/>  
+  </dependency>  
+  <nesting id="45">    
+    <bendpoint x="555" y="479"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="8"/>  
+  </nesting>  
+  <nesting id="46">    
+    <bendpoint x="555" y="385"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="3"/>  
+  </nesting>  
+  <association id="47">    
+    <end type="SOURCE" refId="17" navigable="false">      
+      <attribute id="48" name="game"/>      
+      <multiplicity id="49" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="4" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <association id="50">    
+    <end type="SOURCE" refId="17" navigable="false">      
+      <attribute id="51" name="master">        
+        <position x="227" y="114" width="48" height="20"/>      
+      </attribute>      
+      <multiplicity id="52" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="17" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <nesting id="53">    
+    <bendpoint x="555" y="339"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="11"/>  
+  </nesting>  
+  <dependency id="54">    
+    <bendpoint x="105" y="847"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="14"/>  
+  </dependency>  
+  <dependency id="55">    
+    <bendpoint x="105" y="247"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="6"/>  
+  </dependency>  
+  <dependency id="56">    
+    <bendpoint x="105" y="756"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="16"/>  
+  </dependency>  
+  <dependency id="57">    
+    <end type="SOURCE" refId="18"/>    
+    <end type="TARGET" refId="19"/>  
+  </dependency>  
+  <dependency id="58">    
+    <bendpoint x="105" y="525"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="10"/>  
+  </dependency>  
+  <nesting id="59">    
+    <bendpoint x="555" y="710"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="13"/>  
+  </nesting>  
+  <dependency id="60">    
+    <bendpoint x="105" y="479"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="8"/>  
+  </dependency>  
+  <dependency id="61">    
+    <bendpoint x="105" y="710"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="13"/>  
+  </dependency>  
+  <nesting id="62">    
+    <bendpoint x="555" y="664"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="5"/>  
+  </nesting>  
+  <dependency id="63">    
+    <bendpoint x="105" y="432"/>    
+    <end type="SOURCE" refId="17"/>    
+    <end type="TARGET" refId="12"/>  
+  </dependency>  
+  <nesting id="64">    
+    <bendpoint x="555" y="618"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="15"/>  
+  </nesting>  
+  <nesting id="65">    
+    <bendpoint x="555" y="756"/>    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="16"/>  
+  </nesting>  
+  <classifier-display autosize="true" stereotype="false" package="true" initial-value="false" signature="true" 
+    accessors="true" visibility="true">    
+    <attributes public="false" package="false" protected="false" private="false" static="false"/>    
+    <operations public="false" package="false" protected="false" private="false" static="false"/>  
+  </classifier-display>  
+  <association-display labels="true" multiplicity="true"/>
+</class-diagram>

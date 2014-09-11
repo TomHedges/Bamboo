@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class PlantType implements Comparable<PlantType>, Serializable {
+public class PlantType implements Serializable { //Comparable<PlantType>, Serializable {
 
 	/**
 	 * 
@@ -176,15 +176,15 @@ public class PlantType implements Comparable<PlantType>, Serializable {
 		return "PlantType:\nplantTypeId=" + plantTypeId + "\nplantType=" + type;
 	}
 
-	@Override
-	public int compareTo(PlantType another) {
-		final int BEFORE = -1;
-		final int AFTER = 1;
-
-		if (this.type.compareToIgnoreCase(another.type) == BEFORE) {
-			return BEFORE;
-		} else {
-			return AFTER;
-		}
-	}
+//	@Override
+//	public int compareTo(PlantType another) {
+//		final int BEFORE = -1;
+//		final int AFTER = 1;
+//
+//		if (this.type.compareToIgnoreCase(another.type) == BEFORE) {
+//			return BEFORE;
+//		} else {
+//			return AFTER;
+//		}
+//	}
 }

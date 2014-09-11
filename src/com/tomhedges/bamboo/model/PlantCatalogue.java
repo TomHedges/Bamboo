@@ -23,19 +23,19 @@ public class PlantCatalogue implements Serializable {
 	private static PlantCatalogue plantCatalogue = null;
 
 	private PlantType[] plantArray;
-	private HashMap<Integer, PlantType>  hmPlantType;
-	private Map<Integer, PlantType>  test;
+	//private HashMap<Integer, PlantType>  hmPlantType;
+	//private Map<Integer, PlantType>  test;
 	private RemoteSeed[] remoteSeedArray;
 
 	// Private constructor
 	private PlantCatalogue(PlantType[] plantTypes) {
 		if (plantTypes != null) {
 			this.plantArray = plantTypes;
-			hmPlantType = new LinkedHashMap<Integer, PlantType> ();
-			for (PlantType plant : plantTypes) {
-				hmPlantType.put(plant.getPlantTypeId(), plant);
-			}
-			test = sortByPlantType(hmPlantType);
+//			hmPlantType = new LinkedHashMap<Integer, PlantType> ();
+//			for (PlantType plant : plantTypes) {
+//				hmPlantType.put(plant.getPlantTypeId(), plant);
+//			}
+//			test = sortByPlantType(hmPlantType);
 			remoteSeedArray = new RemoteSeed[0];
 		}
 	}
@@ -93,31 +93,31 @@ public class PlantCatalogue implements Serializable {
 		return remoteSeedArray.length;
 	}
 
-	// uses code from http://javarevisited.blogspot.co.uk/2012/12/how-to-sort-hashmap-java-by-key-and-value.html
-	public static <Integer extends Comparable,PlantType extends Comparable> Map<Integer,PlantType> sortByPlantType(Map<Integer,PlantType> map){
-		List<Map.Entry<Integer,PlantType>> entries = new LinkedList<Map.Entry<Integer,PlantType>>(map.entrySet());
-
-		Collections.sort(entries, new Comparator<Map.Entry<Integer,PlantType>>() {
-			@Override
-			public int compare(Entry<Integer, PlantType> plantTypeA, Entry<Integer, PlantType> plantTypeB) {
-				return plantTypeA.getValue().compareTo(plantTypeB.getValue());
-			}
-		});
-
-		//LinkedHashMap will keep the keys in the order they are inserted
-		//which is currently sorted on natural ordering
-		Map<Integer,PlantType> sortedMap = new LinkedHashMap<Integer,PlantType>();
-
-		for(Map.Entry<Integer,PlantType> entry: entries){
-			sortedMap.put(entry.getKey(), entry.getValue());
-		}
-
-		return sortedMap;
-	}
-
-	public Map<java.lang.Integer, com.tomhedges.bamboo.model.PlantType> getPlants() {
-		return test;
-	}
+//	// uses code from http://javarevisited.blogspot.co.uk/2012/12/how-to-sort-hashmap-java-by-key-and-value.html
+//	public static <Integer extends Comparable,PlantType extends Comparable> Map<Integer,PlantType> sortByPlantType(Map<Integer,PlantType> map){
+//		List<Map.Entry<Integer,PlantType>> entries = new LinkedList<Map.Entry<Integer,PlantType>>(map.entrySet());
+//
+//		Collections.sort(entries, new Comparator<Map.Entry<Integer,PlantType>>() {
+//			@Override
+//			public int compare(Entry<Integer, PlantType> plantTypeA, Entry<Integer, PlantType> plantTypeB) {
+//				return plantTypeA.getValue().compareTo(plantTypeB.getValue());
+//			}
+//		});
+//
+//		//LinkedHashMap will keep the keys in the order they are inserted
+//		//which is currently sorted on natural ordering
+//		Map<Integer,PlantType> sortedMap = new LinkedHashMap<Integer,PlantType>();
+//
+//		for(Map.Entry<Integer,PlantType> entry: entries){
+//			sortedMap.put(entry.getKey(), entry.getValue());
+//		}
+//
+//		return sortedMap;
+//	}
+//
+//	public Map<java.lang.Integer, com.tomhedges.bamboo.model.PlantType> getPlants() {
+//		return test;
+//	}
 
 	public PlantType[] getPlantsSimple() {
 		return plantArray;

@@ -41,9 +41,7 @@ import com.threed.jpct.World;
 import com.threed.jpct.util.BitmapHelper;
 import com.threed.jpct.util.MemoryHelper;
 import com.threed.jpct.util.Overlay;
-import com.tomhedges.bamboo.R;
 
-import java.util.Calendar;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -59,9 +57,11 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+
+import com.tomhedges.bamboo.R;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
-import com.tomhedges.bamboo.config.Constants.PLANT_DIALOG_TYPE;
+import com.tomhedges.bamboo.config.Constants.PlantDialogType;
 import com.tomhedges.bamboo.config.Constants.PlantState;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.Game.PlotWatered;
@@ -298,8 +298,11 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.PORTRAIT) {
 			Logger.log("Camera Portrait FOV=" + camera.getFOV() + ". Move OUT 50 - in pause");
 			camera.moveCamera(Camera.CAMERA_MOVEOUT, 50);
-			Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move IN 50 - in pause");
-			camera.moveCamera(Camera.CAMERA_MOVEIN, 50);
+		}
+
+		if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.LANDSCAPE) {
+			Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move IN 15 - in pause");
+			camera.moveCamera(Camera.CAMERA_MOVEIN, 15);
 		}
 
 		mGLView.onPause();
@@ -839,13 +842,13 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			}
 
 			if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.PORTRAIT) {
-				Logger.log("Camera Portrait FOV=" + camera.getFOV() + ". Move IN 50");
+				Logger.log("Camera Portrait FOV=" + camera.getFOV() + ". Move IN 50 - surface changed");
 				camera.moveCamera(Camera.CAMERA_MOVEIN, 50);
 				isZoomAdjusted = true;
 			}
 			if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.LANDSCAPE) {
-				Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move OUT 50");
-				camera.moveCamera(Camera.CAMERA_MOVEOUT, 50);
+				Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move OUT 15 - surface changed");
+				camera.moveCamera(Camera.CAMERA_MOVEOUT, 15);
 				isZoomAdjusted = true;
 			}
 
@@ -1034,6 +1037,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 					Logger.log("test=" + (plotAndPlantCollection[plotBeingCreatedID-1] == null));
 					plotAndPlantCollection[plotBeingCreatedID-1].setPlotGraphics(newPlot);
+					//plotAndPlantCollection[plotBeingCreatedID-1].plantGraphics = newPlot;
 					Logger.log("newPlot ID=" + newPlot.getID() + ", newPlot name=" + newPlot.getName());
 				}
 			}
@@ -1293,9 +1297,9 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			int plantID = 0;
 			if (game.getPlotFrom1BasedID(plotSelectedForMenu).getPlant() != null) {
 				plantID = game.getPlotFrom1BasedID(plotSelectedForMenu).getPlant().getId();
-				dialogPlot = buildPlotDetailsDialog(plotSelectedForMenu, plantID, PLANT_DIALOG_TYPE.PLANT_INSTANCE);
+				dialogPlot = buildPlotDetailsDialog(plotSelectedForMenu, plantID, PlantDialogType.PLANT_INSTANCE);
 			} else {
-				dialogPlot = buildPlotDetailsDialog(plotSelectedForMenu, plantID, PLANT_DIALOG_TYPE.NONE);
+				dialogPlot = buildPlotDetailsDialog(plotSelectedForMenu, plantID, PlantDialogType.NONE);
 			}
 
 			//now that the dialog is set up, it's time to show it
@@ -1307,7 +1311,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				//Toast.makeText(GameUI3D.this, "Touched menu item with id: " + item.getItemId(), Toast.LENGTH_SHORT).show();
 
 				Log.d(GameUI3D.class.getName(), "Building " + plotSelectedForMenu);
-				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, plotSelectedForMenu, PLANT_DIALOG_TYPE.PLANT_TYPE);
+				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, plotSelectedForMenu, PlantDialogType.PLANT_TYPE);
 				//now that the dialog is set up, it's time to show it  
 				dialogPlant.show();
 
@@ -1318,10 +1322,10 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		}
 	}
 
-	private Dialog buildPlotDetailsDialog(int plotID, int plantID, PLANT_DIALOG_TYPE plantStyle) {
+	private Dialog buildPlotDetailsDialog(int plotID, int plantID, PlantDialogType plantStyle) {
 		final int plotToLinkTo = plotID;
 		final int plantToLinkTo = plantID;
-		final PLANT_DIALOG_TYPE plantStyleToLinkTo = plantStyle;
+		final PlantDialogType plantStyleToLinkTo = plantStyle;
 
 		// Based on code from http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application
 		final Dialog dialog = new Dialog(this);
@@ -1386,7 +1390,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		//set up buttons
 		Button buttonPlantDets = (Button) dialog.findViewById(R.id.dia_plot_plant_details);
 
-		if (plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_INSTANCE) || plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_TYPE)) {
+		if (plantStyle.equals(PlantDialogType.PLANT_INSTANCE) || plantStyle.equals(PlantDialogType.PLANT_TYPE)) {
 			buttonPlantDets.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -1412,10 +1416,10 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		return dialog;
 	}
 
-	private Dialog buildPlantTypeDetailsDialog(int plantTypeID, int plotID, PLANT_DIALOG_TYPE plantStyle) {
+	private Dialog buildPlantTypeDetailsDialog(int plantTypeID, int plotID, PlantDialogType plantStyle) {
 		final int plotToLinkTo = plotID;
 		final int plantToLinkTo = plantTypeID;
-		final PLANT_DIALOG_TYPE plantStyleToLinkTo = plantStyle;
+		final PlantDialogType plantStyleToLinkTo = plantStyle;
 
 		// Based on code from http://www.helloandroid.com/tutorials/how-display-custom-dialog-your-android-application
 		final Dialog dialog = new Dialog(this);
@@ -1439,9 +1443,9 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			textPlantDesc.setText(game.getTextElement(Constants.HELPANDINFO_PLANT_STATE, game.getPlotFrom1BasedID(plotID).getPlant().getPlantState().toString()));
 			String watered = "";
 			if (game.getPlotFrom1BasedID(plotID).getPlant().isWateredThisIteration()) {
-				watered = "True";
+				watered = "Yes";
 			} else {
-				watered = "False";
+				watered = "No";
 			}
 			fullText = fullText + "<h4>Current plant info:<h4><p>"
 			+ "<b>Plant age</b>: " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()/365) + " years, " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()%365) + " days."
@@ -1478,7 +1482,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 		//set up buttons
 		Button buttonSelectPlant = (Button) dialog.findViewById(R.id.dia_plant_select_plant);
-		if (plantStyle.equals(PLANT_DIALOG_TYPE.PLANT_TYPE)) {
+		if (plantStyle.equals(PlantDialogType.PLANT_TYPE)) {
 			buttonSelectPlant.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -1613,8 +1617,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	}
 
 	private void updatePlantDisplay(int plotID) {
-		// TODO design the display of plants...
-
 		if (game.getPlotFrom1BasedID(plotID).getPlant() != null) {
 			if (plotAndPlantCollection != null && plotAndPlantCollection[plotID-1] != null) {
 				if (plotAndPlantCollection != null && plotAndPlantCollection[plotID-1].plantGraphics == null) {

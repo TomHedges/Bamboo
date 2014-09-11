@@ -45,6 +45,7 @@ public class Objectives implements Serializable {
 	}
 
 	public Objective[] getObjectiveList() {
+		//Return list of objectives, minus the test objective which ehads the list.
 		Objective[] objectiveList = new Objective[allObjectives.size()-1];
 		for (int loopCounter = 1; loopCounter<allObjectives.size(); loopCounter++) {
 			objectiveList[loopCounter-1] = allObjectives.get(loopCounter);

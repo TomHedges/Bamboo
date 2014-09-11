@@ -24,7 +24,7 @@ import com.tomhedges.bamboo.model.Game;
 //import com.tomhedges.bamboo.util.FileDownloader;
 import com.tomhedges.bamboo.util.ArrayAdapterObjectives;
 import com.tomhedges.bamboo.util.ArrayAdapterUnlockedSeeds;
-import com.tomhedges.bamboo.util.dao.ConfigDataSource;
+import com.tomhedges.bamboo.util.dao.LocalDBDataRetrieval;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 import android.app.AlertDialog;
@@ -54,7 +54,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 	// to build local settings
 	private RemoteDBTableRetrieval remoteDataRetriever;
-	private ConfigDataSource localDataRetriever;
+	private LocalDBDataRetrieval localDataRetriever;
 	//private FileDownloader downloader;
 
 	// Storage for user preferences
@@ -178,7 +178,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 
 		case R.id.reset_objective_completion:
 
-			localDataRetriever = new ConfigDataSource(getActivity());
+			localDataRetriever = new LocalDBDataRetrieval(getActivity());
 			localDataRetriever.open();
 
 			String message = null;
@@ -305,7 +305,7 @@ public class LaunchFragment extends Fragment implements OnClickListener {
 			coreSettings = CoreSettings.accessCoreSettings();
 
 			publishProgress("Checking for updates to local data");
-			localDataRetriever = new ConfigDataSource(getActivity());
+			localDataRetriever = new LocalDBDataRetrieval(getActivity());
 			localDataRetriever.open();
 			Log.w(LaunchFragment.class.getName(), "Opened Data source!");
 			Log.w(LaunchFragment.class.getName(), "Get local globals");

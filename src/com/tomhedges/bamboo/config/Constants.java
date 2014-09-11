@@ -133,13 +133,13 @@ public interface Constants {
 	public static final int PLANT_TYPE_MENU_ID_START_RANGE = 1000;
 	public static final int MENU_GROUP_PLANT_TYPES = 2;
 
-	public static enum REMOTE_DATA_EXCHANGE_DATA_TYPE {
+	public static enum RemoteDataExchangeDataType {
 		DOWNLOAD_SEEDS,
 		WEATHER,
 		UPLOAD_SEED
 	}
 
-	public static enum PLANT_DIALOG_TYPE {
+	public static enum PlantDialogType {
 		PLANT_TYPE,
 		PLANT_INSTANCE,
 		NONE

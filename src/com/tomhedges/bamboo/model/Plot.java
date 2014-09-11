@@ -1,11 +1,23 @@
 package com.tomhedges.bamboo.model;
 
 import java.io.Serializable;
-
 import android.util.Log;
-
 import com.tomhedges.bamboo.config.Constants;
-import com.tomhedges.bamboo.util.localdatabase.ConfigSQLiteHelper;
+import com.tomhedges.bamboo.util.localdatabase.LocalDBSQLiteHelper;
+
+/**
+ * Chat about the PLOT object...
+ * <p>
+ * Some bullets:
+ * <ul>
+ * <li>number 1
+ * <li>here's the third (see <a href="#Game">Game</a>)
+ * </ul>
+ * <p>
+ * blah bhhh
+ * 
+ * @author      Tom Hedges
+ */
 
 public class Plot implements Serializable {
 
@@ -14,25 +26,29 @@ public class Plot implements Serializable {
 	 */
 	private static final long serialVersionUID = 123L;
 	
+
+	/**
+	 * PLOT's PlantInstance field......
+	 * <p>
+	 * blah bhhh
+	 * 
+	 * @author      Tom Hedges
+	 */
 	private PlantInstance plantInstance;
 	private int plotId;
 	private int xPosInMatrix;
 	private int yPosInMatrix;
 	private Constants.GroundState groundState;
 	private int waterLevel;
-	private int temperature;
-	private int pHlevel;
 	private boolean neighbourhoodCreated;
 
-	public Plot (int plotId, int xPosInMatrix, int yPosInMatrix, Constants.GroundState groundState, int waterLevel, int temperature, int pHlevel) {
+	public Plot (int plotId, int xPosInMatrix, int yPosInMatrix, Constants.GroundState groundState, int waterLevel) { //, int temperature, int pHlevel) {
 		this.plotId = plotId;
 		this.plantInstance = null;
 		this.xPosInMatrix = xPosInMatrix;
 		this.yPosInMatrix = yPosInMatrix;
 		this.groundState = groundState;
 		this.waterLevel = waterLevel;
-		this.temperature = temperature;
-		this.pHlevel = pHlevel;
 		neighbourhoodCreated = false;
 	}
 

@@ -2,8 +2,6 @@
 
 package com.tomhedges.bamboo.util;
 
-import java.util.Date;
-
 import com.tomhedges.bamboo.model.LocationObject;
 
 import android.content.Context;
@@ -87,7 +85,7 @@ public class LocationRetrieve implements LocationListener {
 		
 		//objLocation.setLatitude(lastKnownLoc.getLatitude());
 		//objLocation.setLongitude(lastKnownLoc.getLongitude());
-		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1 * 60 * 1000, 10, this);
+		locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5 * 60 * 1000, 10, this);
 		locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1 * 60 * 1000, 10, this);
 		//locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 10, this);
 		//locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, 1000, 10, this);

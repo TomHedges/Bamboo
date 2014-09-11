@@ -72,7 +72,7 @@ public class MatrixOfPlots implements Serializable {
 			//Log.d("Plot Matrix", "Result: " + plotArray[yPos-1][xPos-1].toString());
 			return plotArray[yPos-1][xPos-1];
 		} else {
-			return new Plot(0, 0, 0, null, 0, 0, 0);
+			return new Plot(0, 0, 0, null, 0);
 		}
 	}
 
@@ -88,7 +88,7 @@ public class MatrixOfPlots implements Serializable {
 		} else {
 			Log.d(MatrixOfPlots.class.getName(), "Request for off-edge plot: " + ((xPosCentral+xShift)-1) + "," + ((yPosCentral+yShift)-1) + " (0-based array)");
 			int waterLevel = getPlot(xPosCentral, yPosCentral).getWaterLevel()/Constants.default_EDGE_PLOT_RESOURCE_DIVIDER;
-			return new Plot(-1, -1, -1, null, waterLevel, -1, -1);
+			return new Plot(-1, -1, -1, null, waterLevel);
 		}
 	}
 

@@ -11,7 +11,7 @@ import java.util.Random;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 import com.tomhedges.bamboo.config.Constants.PlantState;
-import com.tomhedges.bamboo.config.Constants.REMOTE_DATA_EXCHANGE_DATA_TYPE;
+import com.tomhedges.bamboo.config.Constants.RemoteDataExchangeDataType;
 import com.tomhedges.bamboo.config.Constants.Season;
 import com.tomhedges.bamboo.config.CoreSettings;
 import com.tomhedges.bamboo.rulesengine.RulesEngineController;
@@ -19,7 +19,7 @@ import com.tomhedges.bamboo.util.FileDownloader;
 import com.tomhedges.bamboo.util.FileReaderAndWriter;
 import com.tomhedges.bamboo.util.LocationRetrieve;
 import com.tomhedges.bamboo.util.WeatherRetriever;
-import com.tomhedges.bamboo.util.dao.ConfigDataSource;
+import com.tomhedges.bamboo.util.dao.LocalDBDataRetrieval;
 import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
 
 import android.content.Context;
@@ -29,6 +29,23 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
+
+/**
+ * Talkign about the game object...
+ * <p>
+ * Some bullets:
+ * <ul>
+ * <li>number 1
+ * <li>here's the third {@link com.tomhedges.bamboo.model.Plot#plantInstance the label} (see <a href="#Plot">Plot</a>)
+ * </ul>
+ * <p>
+ * blah bhhh
+ * 
+ * @see			Plot
+ * @author      Tom Hedges
+ * @version     %I%, %G%
+ * @since       1.0
+ */
 
 public class Game extends Observable {
 
@@ -40,7 +57,7 @@ public class Game extends Observable {
 	private MatrixOfPlots mxPlots;
 	private RulesEngineController rulesEngineController;
 	private RemoteDBTableRetrieval remoteDataRetriever;
-	private ConfigDataSource localDataRetriever;
+	private LocalDBDataRetrieval localDataRetriever;
 	private PlantCatalogue plantCatalogue;
 	private Objectives objectives;
 	private WeatherRetriever weatherRetriever;
@@ -296,7 +313,7 @@ public class Game extends Observable {
 		weatherRetriever = new WeatherRetriever();
 		weatherRetriever.checkWeather(locator.getLocation().getLongitude(),locator.getLocation().getLatitude());
 		remoteDataRetriever = new RemoteDBTableRetrieval();
-		localDataRetriever = new ConfigDataSource(context);
+		localDataRetriever = new LocalDBDataRetrieval(context);
 		daysUntilNextRandomSeeding = getDaysUntilNextRandomSeeding();
 
 		weatherRetrieved = false;
@@ -313,6 +330,7 @@ public class Game extends Observable {
 	public boolean startNewGame() {
 		try {
 			Log.d(SetupGame.class.getName(), "Game - STARTING NEW");
+			gameStarted = false;
 			boolean isNewGame = true;
 			new SetupGame().execute(isNewGame);
 
@@ -424,7 +442,7 @@ public class Game extends Observable {
 		updateWeather();
 		checkForWeatherMatching();
 	}
-	
+
 	private void increaseResourceAllowance() {
 		if (waterAllowance + Constants.default_UserWaterAvailability_DailyChange < Constants.default_UserWaterAvailability_Max) {
 			waterAllowance = waterAllowance + Constants.default_UserWaterAvailability_DailyChange; 
@@ -569,7 +587,7 @@ public class Game extends Observable {
 			//Log.d(Game.class.getName(), "TEST 2");
 			//int loopCounter = 0;
 			for (Neighbourhood neighbourhood : mxPlots.getNeighbourhoodMatrix()) {
-				//neighbourhood = rainAndSimplePlantWatering(neighbourhood, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
+				//neighbourhood = rainAndSimplePlantWatering(, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
 				rainAndSimplePlantWatering(neighbourhood, gameWeather.getCurrentRain(), gameWeather.getCurrentTemp());
 
 				if (neighbourhood.getCentralPlot().getPlant() != null && neighbourhood.getCentralPlot().isPlantWatered() == false) {
@@ -627,7 +645,7 @@ public class Game extends Observable {
 					unwateredListLoopCounter++;
 				}
 			}
-			
+
 			for (Neighbourhood neighbourhood : mxPlots.getNeighbourhoodMatrix()) {
 				rulesEngineController.insertFact(neighbourhood.getCentralPlot());
 				Log.d(Game.class.getName(), "Inserted Plot with ID: " + neighbourhood.getCentralPlot().getPlotId());
@@ -708,7 +726,7 @@ public class Game extends Observable {
 		//do the necessary if there is water available locally	
 		int centralPlotWaterLevel = neighbourhood.getCentralPlot().getWaterLevel();
 		int importedWater = neighbourhood.getImportedWater();
-		
+
 		int plantReqWater = neighbourhood.getCentralPlot().getPlant().getRequiredWater();
 		int degreesOutsideComfortableRange = temperature - (neighbourhood.getCentralPlot().getPlant().getPreferredTemp() + Constants.default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE);
 		if (degreesOutsideComfortableRange > 0) {
@@ -769,7 +787,7 @@ public class Game extends Observable {
 
 	private void uploadSeed(PlantInstance seedToUpload) {
 		//plantToUploadMaster = seedToUpload;
-		new RemoteDataExchange().execute( REMOTE_DATA_EXCHANGE_DATA_TYPE.UPLOAD_SEED, seedToUpload );
+		new RemoteDataExchange().execute( RemoteDataExchangeDataType.UPLOAD_SEED, seedToUpload );
 	}
 
 	public void advanceDate(){
@@ -788,12 +806,12 @@ public class Game extends Observable {
 
 		if (!gameStarted || numOfDaysPlayed % Constants.default_GAME_WEATHER_RETRIEVE_FREQ == Constants.default_GAME_WEATHER_RETRIEVE_OFFSET) {
 			Log.d(Game.class.getName(), "Requesting update to local weather state..." + gameStarted);
-			new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.WEATHER);
+			new RemoteDataExchange().execute(RemoteDataExchangeDataType.WEATHER);
 		}
 
 		if (!gameStarted || numOfDaysPlayed % Constants.default_GAME_REMOTE_SEEDS_RETRIEVE_FREQ == Constants.default_GAME_REMOTE_SEEDS_RETRIEVE_OFFSET) {
 			Log.d(Game.class.getName(), "Requesting update to remote seed list..." + gameStarted);
-			new RemoteDataExchange().execute(REMOTE_DATA_EXCHANGE_DATA_TYPE.DOWNLOAD_SEEDS);
+			new RemoteDataExchange().execute(RemoteDataExchangeDataType.DOWNLOAD_SEEDS);
 		}
 
 		if (daysUntilNextRandomSeeding == 0) {
@@ -860,6 +878,16 @@ public class Game extends Observable {
 		initialPlotUpdateSent = true;
 	}
 
+
+
+	/**
+	 * Testing some documenataion...
+	 *
+	 * @param  plotID  ID of the plot we're interested in...
+	 * @return      details of that plot..
+	 * @see         Plot
+	 */
+
 	private PlotDetails singlePlotDetails(int plotID) {
 		PlotDetails plotUpdate = new PlotDetails();
 		plotUpdate.plotID = plotID;
@@ -889,7 +917,7 @@ public class Game extends Observable {
 			if (gameWeather.getCurrentTemp()>=weatherRetriever.getTemperature()-Constants.default_WEATHER_MESSAGE_TEMP_RANGE || gameWeather.getCurrentTemp()<=weatherRetriever.getTemperature()+Constants.default_WEATHER_MESSAGE_TEMP_RANGE) {
 				WeatherMessage wm = new WeatherMessage();
 				String message = "";
-				
+
 				if (gameWeather.getCurrentTemp() == weatherRetriever.getTemperature()) {
 					message = "Your garden is the same temperature as your current location, ";
 				} else if (gameWeather.getCurrentTemp() < weatherRetriever.getTemperature()) {
@@ -897,7 +925,7 @@ public class Game extends Observable {
 				} else {
 					message = "Your garden is " + (gameWeather.getCurrentTemp() - weatherRetriever.getTemperature()) + "\u00B0C warmer than your current location, ";
 				}
-				
+
 				if (gameWeather.getCurrentRain() == weatherRetriever.getRainfall()) {
 					message = message + "and is experiencing the same level of rainfall (" + gameWeather.getCurrentRain() + "mm)";
 				} else if (gameWeather.getCurrentRain() < weatherRetriever.getRainfall()) {
@@ -905,10 +933,10 @@ public class Game extends Observable {
 				} else {
 					message = message + "and is experiencing " + (gameWeather.getCurrentRain() - weatherRetriever.getRainfall()) + "mm more rain";
 				}
-				
+
 				wm.weatherMessage = message;
 				UpdateObservers(wm);
-				
+
 				daysSinceLastWeatherMessage = 0;
 			}
 		}
@@ -938,7 +966,7 @@ public class Game extends Observable {
 		@Override
 		protected Void doInBackground(Object... params) {
 			String message = "";
-			switch ((REMOTE_DATA_EXCHANGE_DATA_TYPE) params[0]) {
+			switch ((RemoteDataExchangeDataType) params[0]) {
 			case DOWNLOAD_SEEDS:
 				Log.d(RemoteDataExchange.class.getName(), "Attempting retrieval of remote seed data...");
 				plantCatalogue.setRemoteSeedArray(remoteDataRetriever.getSeedingPlants(coreSettings.checkStringSetting(Constants.TAG_USERNAME), locator.getLocation().getLatitude(), locator.getLocation().getLongitude(), Constants.default_DISTANCE_USER, Constants.default_DISTANCE_SPONSOR, new Date()));
@@ -1277,7 +1305,7 @@ public class Game extends Observable {
 			}
 
 			publishProgress("Checking for updates to local data");
-			localDataRetriever = new ConfigDataSource(context);
+			localDataRetriever = new LocalDBDataRetrieval(context);
 			localDataRetriever.open();
 			Log.d(SetupGame.class.getName(), "Opened Data source!");
 			Log.d(SetupGame.class.getName(), "Get local globals");
@@ -1299,11 +1327,16 @@ public class Game extends Observable {
 			if (forceUpdate || globalsRemote.getLast_updated().after(globalsLocal.getLast_updated())) {
 				publishProgress("Updating local data with updated values!");
 				Log.d(SetupGame.class.getName(), "NEED TO UPDATE SOME LOCAL DATA!");
-
+				
 				// if update of local data is successful, then check for further updates...
 				if (localDataRetriever.writeGlobals(globalsRemote)) {
 					Log.d(SetupGame.class.getName(), "Get local table update values");
-
+					
+					//update dynamic copy of local settings
+					globalsLocal = localDataRetriever.getGlobals();
+					// save URL, etc. to preferences
+					coreSettings.addSetting(Constants.ROOT_URL_FIELD_NAME, globalsLocal.getRootURL());
+					
 					TableLastUpdateDates tablesUpdatedLocal = localDataRetriever.getTableUpdateDates();
 					Log.d(SetupGame.class.getName(), "ConfigValues date (local): " + tablesUpdatedLocal.getConfig().toString());
 					TableLastUpdateDates tablesUpdatedRemote = remoteDataRetriever.getTableListing();
@@ -1334,7 +1367,7 @@ public class Game extends Observable {
 								for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
 									//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
 
-									Plot newPlot = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+									Plot newPlot = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel);
 									plotArray[rowCounter][columnCounter] = newPlot;
 								}
 							}
@@ -1478,7 +1511,7 @@ public class Game extends Observable {
 				for (int rowCounter = 0; rowCounter<num_rows; rowCounter++) {
 					for (int columnCounter = 0; columnCounter<num_cols; columnCounter++) {
 						//plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, rowCounter + 1, columnCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
-						plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel, Constants.default_Temperature, Constants.default_pHLevel);
+						plotArray[rowCounter][columnCounter] = new Plot((rowCounter * num_cols) + columnCounter + 1, columnCounter + 1, rowCounter + 1, gsGroundStates[(rowCounter * num_cols) + columnCounter], Constants.default_WaterLevel);
 					}
 				}
 
