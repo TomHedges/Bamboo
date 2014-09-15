@@ -1060,7 +1060,7 @@ public class Game extends Observable {
 			if (isSponsored) {
 				newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting, remoteSeed.getUsername(), remoteSeed.getMessage(), remoteSeed.getSuccess_copy());
 			} else {
-				newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting);
+				newRemotePlant = new PlantInstance(plantCatalogue.getPlantTypeByPlantTypeID(remoteSeed.getPlantTypeId()), plotForPlanting, remoteSeed.getUsername());
 			}
 			getPlotFrom1BasedID(plotForPlanting).setPlant(newRemotePlant);
 			Log.d(Game.class.getName(), "Random seed planted in plot: " + plotForPlanting);
@@ -1236,7 +1236,7 @@ public class Game extends Observable {
 
 			// TODO Provide graceful failure if no internet connection - run game purey from local data
 
-			boolean forceUpdate = true;
+			boolean forceUpdate = false;
 
 			// TODO This loads existing game - provide way to update plant catalogue, etc. mid game.
 			boolean isNewGame = params[0];

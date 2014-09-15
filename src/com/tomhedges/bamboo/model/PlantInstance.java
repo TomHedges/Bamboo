@@ -56,6 +56,14 @@ public class PlantInstance implements Serializable {
 		this.wateredThisIteration = false;
 	}
 
+	public PlantInstance(PlantType plantType, int plantInstanceId, String originUsername) {
+		this(plantType, plantInstanceId);
+
+		remoteSeededPlant = true;
+		this.originUsername = originUsername;
+		this.wateredThisIteration = false;
+	}
+
 	public int getId() {
 		return plantType.getPlantTypeId();
 	}

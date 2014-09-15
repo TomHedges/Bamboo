@@ -1272,7 +1272,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			}
 			if (game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage().isEmpty()) {
 				fullText = fullText + "<br><b>Message from Sponsor</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getSponsoredMessage();
-
 			}
 			if (game.getPlotFrom1BasedID(plotID).getPlant().getTimesFlowered() > 0 && game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy().isEmpty()) {
 				fullText = fullText + "<br><b>Unlocked message</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getSuccessCopy();
