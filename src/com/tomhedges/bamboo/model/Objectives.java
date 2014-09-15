@@ -6,11 +6,15 @@ import java.util.List;
 
 import android.util.Log;
 
-public class Objectives implements Serializable {
+/**
+ * Holds the collection of all objectives
+ * 
+ * @see			Game
+ * @see			Objective
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class Objectives implements Serializable {
 	private static final long serialVersionUID = 123L;
 
 	private static Objectives objectives = null;
@@ -45,7 +49,7 @@ public class Objectives implements Serializable {
 	}
 
 	public Objective[] getObjectiveList() {
-		//Return list of objectives, minus the test objective which ehads the list.
+		//Return list of objectives, minus the test objective which heads the list.
 		Objective[] objectiveList = new Objective[allObjectives.size()-1];
 		for (int loopCounter = 1; loopCounter<allObjectives.size(); loopCounter++) {
 			objectiveList[loopCounter-1] = allObjectives.get(loopCounter);

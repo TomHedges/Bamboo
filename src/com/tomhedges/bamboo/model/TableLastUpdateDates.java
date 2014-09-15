@@ -4,6 +4,13 @@ package com.tomhedges.bamboo.model;
 
 import java.util.Date;
 
+/**
+ * Last update timestamps for all key resources
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
+
 public class TableLastUpdateDates {
 	private Date config;
 	private Date plants;

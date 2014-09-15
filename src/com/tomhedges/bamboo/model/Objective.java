@@ -2,11 +2,15 @@ package com.tomhedges.bamboo.model;
 
 import java.io.Serializable;
 
-public class Objective implements Serializable {
+/**
+ * Holds the details of a single objective - including description, competion message and completion flag
+ * 
+ * @see			Game
+ * @see			Objectives
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class Objective implements Serializable {
 	private static final long serialVersionUID = 123L;
 	
 	private int objectiveID;

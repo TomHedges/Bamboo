@@ -10,9 +10,17 @@ import android.util.Log;
 
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
-import com.tomhedges.bamboo.util.dao.RemoteDBTableRetrieval;
+
+/**
+ * Holds dimensions and ground states for the matrix of plots
+ * (the basis for the cellular automata model).
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
 
 public class ConfigValues {
+	
 	private Date last_updated;
 	private int iteration_time_delay;
 	private int plot_matrix_columns;

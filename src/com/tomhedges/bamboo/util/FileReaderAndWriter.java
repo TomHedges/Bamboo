@@ -3,27 +3,29 @@ package com.tomhedges.bamboo.util;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
-import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.model.Game;
 import com.tomhedges.bamboo.model.SaveGame;
 
-import android.content.Context;
 import android.util.Log;
 
-public class FileReaderAndWriter {
-	//private Context context;
+/**
+ * Helper class to serialize and save the key objects, then retrieve and deserialize them, and cast and return to the Game.
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
 
-	public FileReaderAndWriter() {//Context context) {
-		//this.context = context;
+public class FileReaderAndWriter {
+
+	public FileReaderAndWriter() {
+		
 	}
 
 	public boolean saveObject(Object objectToSave, String filename) {
-		Log.w(FileReaderAndWriter.class.getName(), "Saving object of type: " + objectToSave.getClass());
-		//Must be serialised object???
+		Log.d(FileReaderAndWriter.class.getName(), "Saving object of type: " + objectToSave.getClass());
 		FileOutputStream fos = null;
 		ObjectOutputStream out = null;
 		try
@@ -32,7 +34,7 @@ public class FileReaderAndWriter {
 			out = new ObjectOutputStream(fos);
 			out.writeObject(objectToSave);
 			out.close();
-			Log.w(FileReaderAndWriter.class.getName(), "Object saved!");
+			Log.d(FileReaderAndWriter.class.getName(), "Object saved!");
 			return true;
 		}
 		catch(Exception ex)
@@ -43,7 +45,6 @@ public class FileReaderAndWriter {
 	}
 
 	public SaveGame loadSavedGame(String filename) {
-		//Must be serialised object???
 		SaveGame savedGame = null;
 		FileInputStream fis = null;
 		ObjectInputStream in = null;
@@ -53,7 +54,7 @@ public class FileReaderAndWriter {
 			in = new ObjectInputStream(fis);
 			savedGame = (SaveGame) in.readObject();
 			in.close();
-			Log.w(FileReaderAndWriter.class.getName(), "Successfully loaded saved game!");
+			Log.d(FileReaderAndWriter.class.getName(), "Successfully loaded saved game!");
 		}
 		catch(Exception ex)
 		{

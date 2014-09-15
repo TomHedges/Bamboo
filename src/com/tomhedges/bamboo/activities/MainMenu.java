@@ -1,12 +1,7 @@
-package com.tomhedges.bamboo;
+package com.tomhedges.bamboo.activities;
 
 import com.tomhedges.bamboo.R;
-import com.tomhedges.bamboo.fragments.DummySectionFragment;
 import com.tomhedges.bamboo.fragments.LaunchFragment;
-import com.tomhedges.bamboo.fragments.LoginFragment;
-import com.tomhedges.bamboo.fragments.RetrieveOnlineFileFragment;
-import com.tomhedges.bamboo.fragments.TestDatabaseFragment;
-import com.tomhedges.bamboo.fragments.WeatherFragment;
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -14,7 +9,10 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.view.Menu;
+
+/**
+ * This class created automatically by Eclipse IDE 
+ */
 
 public class MainMenu extends FragmentActivity {
 
@@ -45,14 +43,7 @@ public class MainMenu extends FragmentActivity {
 		mViewPager.setAdapter(mSectionsPagerAdapter);
 
 	}
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		getMenuInflater().inflate(R.menu.activity_main_menu, menu);
-		return true;
-	}
-
-
+	
 	/**
 	 * A {@link FragmentPagerAdapter} that returns a fragment corresponding to one of the primary
 	 * sections of the app.
@@ -69,45 +60,21 @@ public class MainMenu extends FragmentActivity {
 			Bundle args = new Bundle();
 			switch (i) {
 			case 0:
-				fragment = new DummySectionFragment();
-				args.putString(DummySectionFragment.ARG_SECTION_NUMBER, "hello");
-				fragment.setArguments(args);
-				break;
-			case 1:
 				fragment = new LaunchFragment();
 				break;
-			case 2:
-				fragment = new RetrieveOnlineFileFragment();
-				break;
-			case 3:
-				fragment = new WeatherFragment();
-				break;
-			case 4:
-				fragment = new TestDatabaseFragment();
-				break;
-			case 5:
-				fragment = new LoginFragment();
-				break;
 			}
-			//REPLACED
-			//args.putInt(DummySectionFragment.ARG_SECTION_NUMBER, i + 1);
 			return fragment;
 		}
 
 		@Override
 		public int getCount() {
-			return 6;
+			return 1;
 		}
 
 		@Override
 		public CharSequence getPageTitle(int position) {
 			switch (position) {
 			case 0: return getString(R.string.title_section1).toUpperCase();
-			case 1: return getString(R.string.title_section2).toUpperCase();
-			case 2: return getString(R.string.title_section3).toUpperCase();
-			case 3: return getString(R.string.title_section4).toUpperCase();
-			case 4: return getString(R.string.title_section5).toUpperCase();
-			case 5: return getString(R.string.title_section6).toUpperCase();
 			}
 			return null;
 		}

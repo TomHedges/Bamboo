@@ -22,45 +22,21 @@
             android:id="@+id/username"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:singleLine="true"
-            android:text="TomHedges" >
+            android:singleLine="true" >
         </EditText>
-
-        <!--
-         <Button
-        android:id="@+id/launchRepeatingActivity"
-        android:layout_width="250dp"
-        android:layout_height="wrap_content"
-        android:text="Launch Repetition test!" />
-        -->
-
-        <Button
-            android:id="@+id/launchStartNewGame"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:text="Start New Game in 2D!" />
-
-        <Button
-            android:id="@+id/launchContinueCurrentGame"
-            android:layout_width="250dp"
-            android:layout_height="wrap_content"
-            android:enabled="false"
-            android:text="Reload existing game in 2D!" />
 
         <Button
             android:id="@+id/launchStartNewGame3D"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="Start New Game in 3D!" >
-            <requestFocus />
-        </Button>
+            android:text="Start New Game in 3D" />
 
         <Button
             android:id="@+id/launchContinueCurrentGame3D"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:enabled="false"
-            android:text="Reload existing game in 3D!" />
+            android:text="Reload existing game in 3D" />
 
         <Button
             android:id="@+id/view_unlocked_sponsored_seeds"
@@ -81,10 +57,29 @@
             android:text="Reset objective completion" />
 
         <Button
+            android:id="@+id/read_help"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="Read help and information" />
+
+        <Button
+            android:id="@+id/launchStartNewGame2D"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:text="DEV: Start New Game in 2D" />
+
+        <Button
+            android:id="@+id/launchContinueCurrentGame2D"
+            android:layout_width="250dp"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="DEV: Reload game in 2D" />
+        
+        <Button
             android:id="@+id/test_seed_upload"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
-            android:text="Test - upload a seed!" />
+            android:text="DEV: Upload a seed" />
     </LinearLayout>
 
 </ScrollView>

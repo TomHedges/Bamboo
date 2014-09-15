@@ -16,8 +16,9 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainMenu"
-            android:label="@string/title_activity_main_menu" >
+            android:name=".activities.MainMenu"
+            android:label="@string/title_activity_main_menu"
+            android:windowSoftInputMode="stateUnchanged" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,23 +26,7 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.tomhedges.bamboo.activities.ReadCommentsActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.tomhedges.bamboo.activities.RegisterActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name="com.tomhedges.bamboo.activities.AddCommentActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name=".activities.RepeatingActivity"
-            android:label="@string/app_name" >
-        </activity>
-        <activity
-            android:name=".activities.TableDisplayActivity"
+            android:name=".activities.GameUI2DTextOriginal"
             android:label="@string/app_name" >
         </activity>
         <activity

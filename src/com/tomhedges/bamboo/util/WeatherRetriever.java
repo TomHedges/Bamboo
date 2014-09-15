@@ -14,6 +14,13 @@ import android.util.Log;
 
 import com.tomhedges.bamboo.config.Constants;
 
+/**
+ * Retrieves weather data from a remote 3rd party, and stores for retrieval by the Game.
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
+
 public class WeatherRetriever {
 	private double longitude;
 	private double latitude;
@@ -37,19 +44,6 @@ public class WeatherRetriever {
 
 		final RetrieveWeather retrieveWeather = new RetrieveWeather();
 		retrieveWeather.execute();
-		//		Handler handler = new Handler();
-		//		handler.postDelayed(new Runnable()
-		//		{
-		//			@Override
-		//			public void run() {
-		//				if ( retrieveWeather.getStatus() == AsyncTask.Status.RUNNING ) {
-		//					retrieveWeather.cancel(true);
-		//					Toast.makeText(context.getApplicationContext(), "Local weather request timed out...", Toast.LENGTH_SHORT).show();
-		//				}
-		//			}
-		//		}, 5000 );
-
-		//new RetrieveWeather().execute();
 	}
 
 	private class RetrieveWeather extends AsyncTask<String, String, String> {
@@ -87,19 +81,10 @@ public class WeatherRetriever {
 					Log.e(RetrieveWeather.class.getName(), "JSON response is null - error!");
 					errorMessage = "Local weather request was unsuccessful...";
 				}
-				//weatherRawData = json.toString();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-
 			return null;
-
-		}
-		/**
-		 * After completing background task Dismiss the progress dialog
-		 * **/
-		protected void onPostExecute(String file_url) {
-			// not sure... possibly set to send  notification to Game??
 		}
 	}
 
@@ -108,7 +93,6 @@ public class WeatherRetriever {
 			return temperature;
 		} else {
 			return temperature;
-			//return Constants.ERROR_INT;
 		}
 	}
 
@@ -117,7 +101,6 @@ public class WeatherRetriever {
 			return rainfall;
 		} else {
 			return rainfall;
-			//return Constants.ERROR_INT;
 		}
 	}
 

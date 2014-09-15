@@ -2,17 +2,23 @@ package com.tomhedges.bamboo.config;
 
 import java.io.Serializable;
 
+import com.tomhedges.bamboo.model.Game;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-public class CoreSettings implements Serializable {
+/**
+ * Stores and retrieves key settings for use across the system. Uses the Android PreferenceManager
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class CoreSettings implements Serializable {
+	
 	private static final long serialVersionUID = 123L;
 
 	private static CoreSettings coreSettings;

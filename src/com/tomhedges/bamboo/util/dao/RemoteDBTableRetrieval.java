@@ -2,6 +2,7 @@ package com.tomhedges.bamboo.util.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.http.NameValuePair;
@@ -22,7 +23,17 @@ import com.tomhedges.bamboo.model.PlantType;
 import com.tomhedges.bamboo.model.RemoteSeed;
 import com.tomhedges.bamboo.model.TableLastUpdateDates;
 import com.tomhedges.bamboo.util.DateConverter;
+import com.tomhedges.bamboo.util.FileDownloader;
 import com.tomhedges.bamboo.util.JSONParser;
+
+/**
+ * Uses the JSONParser class to retrieve data form the remote database, and then construct objects for return to the Game.
+ * 
+ * Incorporates code sourced from:  http://www.mybringback.com/tutorial-series/12924/android-tutorial-using-remote-databases-php-and-mysql-part-1/
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
 
 public class RemoteDBTableRetrieval {
 
@@ -39,53 +50,6 @@ public class RemoteDBTableRetrieval {
 	public RemoteDBTableRetrieval() {
 		coreSettings = CoreSettings.accessCoreSettings();
 	}
-
-	//	public String[][] getTableStructure(RetrievalType dataType, String tableName) {
-	//		// Check for success tag
-	//		int success;
-	//
-	//		jsonParser = new JSONParser();
-	//
-	//
-	//		try {
-	//			// Building Parameters
-	//			List<NameValuePair> params = new ArrayList<NameValuePair>();
-	//			params.add(new BasicNameValuePair(Constants.TABLE_NAME_VARIABLE, tableName));
-	//
-	//			Log.d("getTableStructure", "Starting");
-	//			// getting product details by making HTTP request
-	//			JSONObject json = jsonParser.makeHttpRequest(coreSettings.checkSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.COLUMN_DETAILS_URL, Constants.HTML_VERB_POST, params);
-	//
-	//			// check your log for json response
-	//			Log.d("getTableStructure", "Request attempt for: " + tableName);
-	//
-	//			// json success tag
-	//			success = json.getInt(Constants.TAG_SUCCESS);
-	//			if (success == 1) {
-	//				Log.d("getTableStructure", "Request Successful! For: " + tableName);
-	//
-	//				jaData = json.getJSONArray(Constants.TAG_MESSAGE);
-	//				results = new String[2][jaData.length()];
-	//				for (int arrayLooper = 0; arrayLooper < jaData.length(); arrayLooper++) {
-	//					JSONObject tableField = jaData.getJSONObject(arrayLooper);
-	//
-	//					//gets the interesting content of each element
-	//					results[0][arrayLooper] = tableField.getString(Constants.TAG_FIELD);
-	//					results[1][arrayLooper] = tableField.getString(Constants.TAG_TYPE);
-	//				}
-	//				Log.d("getTableStructure", "Partial results: " + results[0][0] + ", " + results[1][0]);
-	//
-	//				return results;
-	//			} else {
-	//				Log.d("getTableStructure", "ERROR: " + json.getString(Constants.TAG_MESSAGE));
-	//				return null;
-	//			}
-	//		} catch (JSONException e) {
-	//			e.printStackTrace();
-	//		}
-	//
-	//		return null;
-	//	}
 
 	public Globals getGlobals() {
 		// Check for success tag
@@ -490,18 +454,41 @@ public class RemoteDBTableRetrieval {
 
 	private String[][] getHelpAndInfoFromJSON(JSONArray jaData) {
 		String[][] helpAndInfoData = new String[jaData.length()][4];
-
+		List<String> images = new LinkedList<String>();
+		
 		try {
 			for (int loopCounter = 0; loopCounter<jaData.length(); loopCounter++) {
 				JSONObject jaFields = jaData.getJSONObject(loopCounter);
-
+				
 				helpAndInfoData[loopCounter][0] = jaFields.getString(Constants.COLUMN_ID_REMOTE);
 				helpAndInfoData[loopCounter][1] = jaFields.getString(Constants.COLUMN_HELPANDINFO_DATATYPE);
 				helpAndInfoData[loopCounter][2] = jaFields.getString(Constants.COLUMN_HELPANDINFO_REFERENCE);
 				helpAndInfoData[loopCounter][3] = jaFields.getString(Constants.COLUMN_HELPANDINFO_TEXT);
+				
+				if (jaFields.getString(Constants.COLUMN_HELPANDINFO_REFERENCE).equals(Constants.HELPANDINFO_HELP_REF_IMAGE)) {
+					images.add(helpAndInfoData[loopCounter][3]);
+				}
 			}
-			Log.d(RemoteDBTableRetrieval.class.getName(), "Handled " + jaData.length() + " Help and Info entries.");
+			Log.d(RemoteDBTableRetrieval.class.getName(), "Handled " + jaData.length() + " Help and Info entries, including " + images.size() + " images!");
 
+			if (images.size() > 0 ){
+				String[] downloadFrom = new String[images.size()];
+				String[] saveTo = new String[images.size()];
+				String remoteRoot = coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.ROOT_URL_IMAGE_EXT;
+				String localRoot = coreSettings.checkStringSetting(Constants.CORESETTING_LOCAL_FILEPATH);
+				
+				int loopCounter = 0;
+				for (String imageName : images) {
+					downloadFrom[loopCounter] = remoteRoot + imageName;
+					saveTo[loopCounter] = localRoot + imageName;
+					loopCounter++;
+				}
+				
+				FileDownloader imageDownloader = new FileDownloader();
+				imageDownloader.download(downloadFrom, saveTo);
+				imageDownloader.closedown();
+			}
+			
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -552,6 +539,9 @@ public class RemoteDBTableRetrieval {
 			params.add(new BasicNameValuePair(Constants.COLUMN_PLANT_TYPE_ID, "" + plantTypeID));
 
 			Log.d(RemoteDBTableRetrieval.class.getName(), "Attempting to upload a seed: plant_type_id=" + plantTypeID);
+			if (coreSettings == null) {
+				coreSettings = CoreSettings.accessCoreSettings();
+			}
 			// getting product details by making HTTP request
 			JSONObject json = jsonParser.makeHttpRequest(coreSettings.checkStringSetting(Constants.ROOT_URL_FIELD_NAME) + Constants.UPLOAD_SEED, Constants.HTML_VERB_POST, params);
 

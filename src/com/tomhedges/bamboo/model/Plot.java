@@ -3,37 +3,18 @@ package com.tomhedges.bamboo.model;
 import java.io.Serializable;
 import android.util.Log;
 import com.tomhedges.bamboo.config.Constants;
-import com.tomhedges.bamboo.util.localdatabase.LocalDBSQLiteHelper;
 
 /**
- * Chat about the PLOT object...
- * <p>
- * Some bullets:
- * <ul>
- * <li>number 1
- * <li>here's the third (see <a href="#Game">Game</a>)
- * </ul>
- * <p>
- * blah bhhh
+ * The details of a plot, which is a "cell" within the cellular automata model.
+ * It holds water, a resource which is move around as needed by the plants the Plots contain.
  * 
+ * @see			PlantInstance
  * @author      Tom Hedges
  */
 
 public class Plot implements Serializable {
-
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 123L;
-	
 
-	/**
-	 * PLOT's PlantInstance field......
-	 * <p>
-	 * blah bhhh
-	 * 
-	 * @author      Tom Hedges
-	 */
 	private PlantInstance plantInstance;
 	private int plotId;
 	private int xPosInMatrix;

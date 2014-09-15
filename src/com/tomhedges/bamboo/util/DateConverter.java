@@ -4,6 +4,15 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * Helper class which converts between String and Date formats, which allows
+ * for data to be transferred between remote and local sources and model objects.
+ * 
+ * @see			Game
+ * @see			LocalDBDataRetrieval
+ * @author      Tom Hedges
+ */
+
 public class DateConverter {
 
 	public Date convertStringToDate(String stringDate) {
@@ -14,7 +23,6 @@ public class DateConverter {
 			convertedDate = dateFormat.parse(stringDate);
 			return convertedDate;
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}

@@ -5,11 +5,15 @@ import java.util.Random;
 
 import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class Neighbourhood implements Serializable {
+/**
+ * Holds a central plot and the array of neighbouring plots
+ * 
+ * @see			MatrixOfPlots
+ * @see			Plot
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class Neighbourhood implements Serializable {
 	private static final long serialVersionUID = 123L;
 	
 	private Plot centralPlot;

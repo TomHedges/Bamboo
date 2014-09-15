@@ -27,6 +27,7 @@ import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
 import com.threed.jpct.Camera;
+import com.threed.jpct.Config;
 import com.threed.jpct.FrameBuffer;
 import com.threed.jpct.Interact2D;
 import com.threed.jpct.Light;
@@ -69,10 +70,18 @@ import com.tomhedges.bamboo.model.Game.SeedPlanted;
 import com.tomhedges.bamboo.model.Game.WaterAllowanceLevel;
 import com.tomhedges.bamboo.util.ArrayAdapterObjectives;
 
+/**
+ * This class is the 3D graphical UI, using the jPCT-AE library, and GLFont helper class 
+ * 
+ * @see			Game
+ * @see			GameUI2DTextOriginal
+ * @author      Tom Hedges
+ */
 
 public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
-	// Bamboo testing...
+	// 360/365 = 0.98630136986 ... converting degrees to days in year
+	// 0.98630136986 degrees in radians = 0.0172142063 ... convert to unit needed by jPCT
 	private static float ONE_DAY_DEGREE = 0.0172142063f;
 	private static float FORTY_FIVE_DEGREES = 0.785398163f;
 	private static final int SEPERATION_DISTANCE = 5;
@@ -146,7 +155,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	private float xposMem = NULL_INT;
 	private float yposMem = NULL_INT;
 
-	private Object3D hiddenObj, tube, tube2 = null;
+	private Object3D hiddenObj = null;
 	private Overlay overlayClockMarker, overlayYearClock, overlayButtonObjectives, overlayButtonObjectivesBorder, overlayButtonWaterBorder, overlayButtonWater, overlayInfoBack = null;
 	private int fps = 0;
 
@@ -161,15 +170,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	private int dotCounterLimit = 5; 
 	private GLFont glfTextLabel, glfToggleWater;
 	private boolean isZoomAdjusted;
-	private boolean isZoomOnceOnlySet = false;
 	private boolean inWateringMode = false;
-
-	private float lowerLimit = 0.1f;
-	private float upperLimit = 1f;
-	private static final float ORIG_GROWTH_AMOUNT = 0.03f;
-	private float growthAmount = ORIG_GROWTH_AMOUNT;
-	private boolean growing = true;
-	//private SimpleVector origTubePos;
 
 	private PlotAndPlantDetails[] plotAndPlantCollection;
 
@@ -200,7 +201,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	private ProgressDialog pDialog;
 	private boolean dimensionsAvailable = false;
 	private boolean gardenDisplayed = false;
-	private boolean objectsCreated = false;
 	private boolean texturesCreated = false;
 	private int plotSelectedForMenu = NULL_INT;
 
@@ -321,6 +321,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		//gardenDisplayed = false;
 		super.onDestroy();
 		mGLView.onPause();
+		
+		///CLOVER:FLUSH
 	}
 
 	private String getTimeStamp() {
@@ -359,9 +361,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			}
 
 			if (data instanceof Game.GameDetailsText) {
-				Game.GameDetailsText gameDetailsText = (Game.GameDetailsText) data;
-				// TODO NOT HANDLING IN THE 3D UI FOR THE MOMENT??
-				//updateBelowTableDisplay(gameDetailsText.returnDetails());
+				// NOT HANDLING IN THE 3D UI FOR THE MOMENT
+				//Game.GameDetailsText gameDetailsText = (Game.GameDetailsText) data;
 			}
 
 			if (data instanceof Game.PlotDetails) {
@@ -435,7 +436,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				Log.d(GameUI3D.class.getName(), "Weather updated: Temperature=" + weatherVals.returnTemperature() + " degrees C");
 				uiTemperature = uiTemperatureBase + weatherVals.returnTemperature() + "\u00B0C";
 				uiRainfall = uiRainfallBase + weatherVals.returnRainfall() + "mm";
-				uiSeason = uiSeasonBase + weatherVals.returnSeason().toString();
+				uiSeason = uiSeasonBase + game.getTextElement(Constants.HELPANDINFO_SEASON, weatherVals.returnSeason().toString());
 			}
 
 			if (data instanceof Game.SeedUploaded) {
@@ -481,7 +482,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				Log.d(GameUI3D.class.getName(), "Dimensions revealed: rows=" + gardenDimensions.returnRows() + ", cols=" + gardenDimensions.returnCols());
 				Log.d(GameUI3D.class.getName(), "Able to build 3D view with " + gardenDimensions.returnRows() + " rows and " + gardenDimensions.returnCols() + " columns!");
 
-				//TODO how will this work with the actual loading???
 				dimensionsAvailable = true;
 			}
 
@@ -500,11 +500,11 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				}, 2500);
 
 				//Has to be run on UI thread, as crashes otherwise??...
-				GameUI3D.this.runOnUiThread(new Runnable() {
-					public void run() {
-						Toast.makeText(GameUI3D.this, "Plot " + pw.returnPlotID() + " watered!" + getTimeStamp(), Toast.LENGTH_SHORT).show();
-					}
-				});
+//				GameUI3D.this.runOnUiThread(new Runnable() {
+//					public void run() {
+//						Toast.makeText(GameUI3D.this, "Plot " + pw.returnPlotID() + " watered!" + getTimeStamp(), Toast.LENGTH_SHORT).show();
+//					}
+//				});
 			}
 
 			if (data instanceof WaterAllowanceLevel) {
@@ -708,15 +708,13 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	}
 
 	private void showObjectivesList() {
-		//based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
+		// Based on code from: http://www.javacodegeeks.com/2013/09/android-listview-with-adapter-example.html
 		// our adapter instance
 		ArrayAdapterObjectives adapter = new ArrayAdapterObjectives(this, R.layout.list_element_objectives, game.getObjectiveList());
 
 		// create a new ListView, set the adapter and item click listener
 		ListView listViewItems = new ListView(this);
 		listViewItems.setAdapter(adapter);
-		// should make this cancel??
-		//listViewItems.setOnItemClickListener(new OnItemClickListenerListViewItem());
 
 		// put the ListView in the pop up
 		AlertDialog alertDialogStores = new AlertDialog.Builder(this)
@@ -750,17 +748,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			} else {
 				CurrentOrientation = Orientation.LANDSCAPE;
 			}
-
-			//			if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.PORTRAIT) {
-			//				Logger.log("Camera Portrait FOV=" + camera.getFOV() + ". Move IN 50");
-			//				camera.xmoveCamera(Camera.CAMERA_MOVEIN, 50);
-			//				isZoomAdjusted = true;
-			//			}
-			//			if (!isZoomAdjusted && camera != null && CurrentOrientation == Orientation.LANDSCAPE) {
-			//				Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move OUT 50");
-			//				camera.xmoveCamera(Camera.CAMERA_MOVEOUT, 50);
-			//				isZoomAdjusted = true;
-			//			}
 
 			BTN_OBJ_TOP_LEFT_X = BTN_PADDING;
 			BTN_OBJ_TOP_LEFT_Y = height - BTN_PADDING - BTN_OBJ_HEIGHT;
@@ -815,19 +802,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				Logger.log("Camera FOV=" + camera.getFOV() + ". Move OUT 100 - happen once...");
 				camera.moveCamera(Camera.CAMERA_MOVEOUT, 100);
 
-				//				if (height > width) {
-				//					camera.xmoveCamera(Camera.CAMERA_MOVEOUT, 50);
-				//					Logger.log("orientation: portrait!");
-				//					Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move OUT 50 - in null check");
-				//					isZoomAdjusted = true;
-				//				}
-				//				if (width > height) {
-				//					camera.xmoveCamera(Camera.CAMERA_MOVEOUT, 100);
-				//					Logger.log("orientation: landscape!");
-				//					Logger.log("Camera Landscape FOV=" + camera.getFOV() + ". Move OUT 100 - in null check");
-				//					isZoomAdjusted = true;
-				//				}
-
 				SimpleVector sv = new SimpleVector();
 				sv.set(hiddenObj.getTransformedCenter());
 				sv.y -= 40;
@@ -854,119 +828,9 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 
 			Logger.log("test. dimavail="+dimensionsAvailable+",gardcons="+gardenDisplayed);
-			//test!
+			
 			if (dimensionsAvailable && !gardenDisplayed) {
-
 				DrawGarden(width, height);
-
-				//				Logger.log("Building the 3D view of the garden...");
-				//
-				//				//tube = Primitives.getPlane(3, 5);
-				//				//tube.setName("Plant: 1");
-				//				//tube.rotateY(-0.7f);
-				//				//tube.setTexture("plant1");
-				//				//tube.setTransparency(50);
-				//				//tube.strip();
-				//				//tube.build();
-				//
-				//				int cols = game.getNumPlotCols();
-				//				int rows = game.getNumPlotRows();
-				//
-				//				float colOffset = 0 - ((((float) cols/2)+(float)1.5) * SEPERATION_DISTANCE);
-				//				float rowOffset = 0 - ((((float) rows/2)+(float)1.5) * SEPERATION_DISTANCE);
-				//				Logger.log("colOffset=" + colOffset + ", rowOffset=" + rowOffset);
-				//
-				//				plotAndPlantCollection = new PlotAndPlantDetails[cols * rows];
-				//				//for (PlotAndPlantDetails test : plotAndPlantCollection) {
-				//				//	test = new PlotAndPlantDetails();
-				//				//}
-				//
-				//				int plotBeingCreatedID = 0;
-				//				// outer for loop
-				//				for (int rowCounter = 1; rowCounter <= rows; rowCounter++) {
-				//
-				//					// inner for loop
-				//					for (int colCounter = 1; colCounter <= cols; colCounter++) {
-				//
-				//						plotBeingCreatedID = (((rowCounter-1) * cols) + colCounter);
-				//						plotAndPlantCollection[plotBeingCreatedID-1] = new PlotAndPlantDetails(plotBeingCreatedID);
-				//
-				//						Object3D newPlot;
-				//						newPlot = Primitives.getBox(5,0.2f);
-				//
-				//						newPlot.setOrigin(new SimpleVector(colOffset + (SEPERATION_DISTANCE*2*(colCounter-1)),0,rowOffset + (SEPERATION_DISTANCE*2*(rowCounter-1))));
-				//						newPlot.setName(PLOT_NAME_PREFIX + plotBeingCreatedID);
-				//
-				//						newPlot.calcTextureWrapSpherical();
-				//
-				//						switch (game.getPlotFrom1BasedID(plotBeingCreatedID).getGroundState()) {
-				//						case WATER:
-				//							newPlot.setTexture("plot_water");
-				//							break;
-				//						case MUD:
-				//							newPlot.setTexture("plot_mud");
-				//							break;
-				//						case SAND:
-				//							newPlot.setTexture("plot_sand");
-				//							break;
-				//						case SOIL:
-				//							newPlot.setTexture("plot_soil");
-				//							break;
-				//						case GRAVEL:
-				//							newPlot.setTexture("plot_gravel");
-				//							break;
-				//						}
-				//
-				//						newPlot.strip();
-				//						newPlot.build();
-				//						newPlot.rotateY(FORTY_FIVE_DEGREES);
-				//						newPlot.setCollisionMode(Object3D.COLLISION_CHECK_OTHERS);
-				//						hiddenObj.addChild(newPlot);
-				//						world.addObject(newPlot);
-				//
-				//						Logger.log("test=" + (plotAndPlantCollection[plotBeingCreatedID-1] == null));
-				//						plotAndPlantCollection[plotBeingCreatedID-1].setPlotGraphics(newPlot);
-				//						Logger.log("newPlot ID=" + newPlot.getID() + ", newPlot name=" + newPlot.getName());
-				//					}
-				//				}
-				//
-				//				//int id = 4;
-				//				//plotAndPlantCollection[id].addChild(tube); 
-				//				//tube.setOrigin(new SimpleVector(plotAndPlantCollection[id].getOrigin().x, plotAndPlantCollection[id].getOrigin().y - 8, plotAndPlantCollection[id].getOrigin().z));
-				//				//world.addObject(tube);
-				//
-				//				//tube2 = tube.cloneObject();
-				//				//tube2.setTexture("test plant 2");
-				//				//tube2.setName("Plant: 2");
-				//				//tube2.setScale(0.1f);
-				//				//int id2 = 15;
-				//				//plotAndPlantCollection[id2].addChild(tube2); 
-				//				//origTubePos = new SimpleVector(plotAndPlantCollection[id2].plotGraphics.getOrigin().x, plotAndPlantCollection[id2].plotGraphics.getOrigin().y - 1, plotAndPlantCollection[id2].plotGraphics.getOrigin().z);
-				//				//tube2.setOrigin(origTubePos);
-				//				//world.addObject(tube2);
-				//
-				//				overlayClockMarker = new Overlay(world, width - CLOCK_SIZE - CLOCK_PADDING, CLOCK_PADDING, width - CLOCK_PADDING, CLOCK_PADDING + CLOCK_SIZE, "clock_marker");
-				//				overlayClockMarker.setDepth(1);
-				//				overlayClockMarker.setTransparency(50);
-				//
-				//				overlayYearClock = new Overlay(world, width - CLOCK_SIZE - CLOCK_PADDING, CLOCK_PADDING, width - CLOCK_PADDING, CLOCK_PADDING + CLOCK_SIZE, "year_clock_base");
-				//				overlayYearClock.setDepth(100);
-				//				overlayYearClock.setTransparency(50);
-				//
-				//				overlayButtonObjectivesBorder = new Overlay(world, BTN_OBJ_BORDER_TOP_LEFT_X, BTN_OBJ_BORDER_TOP_LEFT_Y, BTN_OBJ_BORDER_BOTTOM_RIGHT_X, BTN_OBJ_BORDER_BOTTOM_RIGHT_Y, "button_border");
-				//				overlayButtonObjectivesBorder.setDepth(8);
-				//				overlayButtonObjectives = new Overlay(world, BTN_OBJ_TOP_LEFT_X, BTN_OBJ_TOP_LEFT_Y, BTN_OBJ_BOTTOM_RIGHT_X, BTN_OBJ_BOTTOM_RIGHT_Y, "button_back");
-				//				overlayButtonObjectives.setDepth(6);
-				//
-				//				overlayButtonWater = new Overlay(world,BTN_WATER_TOP_LEFT_X, BTN_WATER_TOP_LEFT_Y, BTN_WATER_BOTTOM_RIGHT_X, BTN_WATER_BOTTOM_RIGHT_Y, "water_off");
-				//				overlayButtonWater.setDepth(3);
-				//				overlayButtonWaterBorder = new Overlay(world, BTN_WATER_BORDER_TOP_LEFT_X, BTN_WATER_BORDER_TOP_LEFT_Y, BTN_WATER_BORDER_BOTTOM_RIGHT_X, BTN_WATER_BORDER_BOTTOM_RIGHT_Y, "button_border");
-				//				overlayButtonWaterBorder.setDepth(16);
-				//
-				//				overlayInfoBack = new Overlay(world, INFO_PANEL_TOP_LEFT_X, INFO_PANEL_TOP_LEFT_Y, INFO_PANEL_BOTTOM_RIGHT_X, INFO_PANEL_BOTTOM_RIGHT_Y, "button_border");
-				//				overlayButtonWater.setDepth(14);
-				//
-				//				gardenDisplayed = true; // As we don't want to keep redoing this...
 			}
 
 			Logger.log("mGLView dimensions: height=" + height + ", width=" + width);
@@ -1037,17 +901,16 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 					Logger.log("test=" + (plotAndPlantCollection[plotBeingCreatedID-1] == null));
 					plotAndPlantCollection[plotBeingCreatedID-1].setPlotGraphics(newPlot);
-					//plotAndPlantCollection[plotBeingCreatedID-1].plantGraphics = newPlot;
 					Logger.log("newPlot ID=" + newPlot.getID() + ", newPlot name=" + newPlot.getName());
 				}
 			}
 
 			overlayClockMarker = new Overlay(world, width - CLOCK_SIZE - CLOCK_PADDING, CLOCK_PADDING, width - CLOCK_PADDING, CLOCK_PADDING + CLOCK_SIZE, "clock_marker");
-			overlayClockMarker.setDepth(1);
+			overlayClockMarker.setDepth(Config.nearPlane+1f);
 			overlayClockMarker.setTransparency(50);
 
 			overlayYearClock = new Overlay(world, width - CLOCK_SIZE - CLOCK_PADDING, CLOCK_PADDING, width - CLOCK_PADDING, CLOCK_PADDING + CLOCK_SIZE, "year_clock_base");
-			overlayYearClock.setDepth(100);
+			overlayYearClock.setDepth(Config.nearPlane+500f);
 			overlayYearClock.setTransparency(50);
 
 			overlayButtonObjectivesBorder = new Overlay(world, BTN_OBJ_BORDER_TOP_LEFT_X, BTN_OBJ_BORDER_TOP_LEFT_Y, BTN_OBJ_BORDER_BOTTOM_RIGHT_X, BTN_OBJ_BORDER_BOTTOM_RIGHT_Y, "button_border");
@@ -1064,8 +927,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			overlayButtonWater.setDepth(14);
 
 			gardenDisplayed = true; // As we don't want to keep redoing this...
-
-
 		}
 
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
@@ -1121,10 +982,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				isRawTexture = getResources().openRawResource(R.raw.test_plant_wilting);
 				Texture plantWilting = new Texture(isRawTexture);
 				texMan.addTexture("plant_wilting", plantWilting);
-
-				isRawTexture = getResources().openRawResource(R.raw.test_plant2);
-				Texture tpTwo = new Texture(isRawTexture);  // with alpha
-				texMan.addTexture("test_plant_2", tpTwo);
 
 				isRawTexture = getResources().openRawResource(R.raw.year_clock_base);
 				Texture yearClockBase = new Texture(isRawTexture);
@@ -1226,6 +1083,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			fb.display();
 
 			if (System.currentTimeMillis() - time >= 1000) {
+				//For logging Frames per second, plus other details as needed.
 				//Logger.log(fps + "fps, hO.Y=" + hiddenObj.getYAxis().y + ", hO.X=" + hiddenObj.getXAxis().x + ", hO.Z=" + hiddenObj.getZAxis().z + ", tT=" + tT + " tTU=" + tTU);
 				fps = 0;
 				time = System.currentTimeMillis();
@@ -1233,35 +1091,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			fps++;
 		}
 	}
-
-	//	private void tickTock() {
-	//		dayCounter++;
-	//		if (dayCounter == DAY_LIMIT) { dayCounter = 1; }
-	//
-	//		if (overlayClockMarker != null) { overlayClockMarker.setRotation(-ONE_DEGREE * dayCounter);	}
-	//
-	//		if (tube2 != null) {
-	//			SimpleVector newPos = tube2.getOrigin();
-	//
-	//			if (tube2.getScale() <= lowerLimit) {
-	//				growing = true;
-	//				tube2.setOrigin(origTubePos);
-	//				tube2.setScale(0.1f);
-	//				plotAndPlantCollection[3].setTexture("plot_soil");
-	//			} else if (tube2.getScale() >= upperLimit){
-	//				growing = false;
-	//				plotAndPlantCollection[3].setTexture("plot_water");
-	//			}
-	//
-	//			if (growing) {
-	//				tube2.scale(1.01f);
-	//				tube2.setOrigin(new SimpleVector(newPos.x, newPos.y - growthAmount, newPos.z));
-	//			} else {
-	//				tube2.scale(0.99f);
-	//				tube2.setOrigin(new SimpleVector(newPos.x, newPos.y + growthAmount, newPos.z));
-	//			}
-	//		}
-	//	}
 
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
@@ -1308,8 +1137,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			return true;
 		default:
 			if (item.getGroupId() == Constants.MENU_GROUP_PLANT_TYPES) {
-				//Toast.makeText(GameUI3D.this, "Touched menu item with id: " + item.getItemId(), Toast.LENGTH_SHORT).show();
-
 				Log.d(GameUI3D.class.getName(), "Building " + plotSelectedForMenu);
 				Dialog dialogPlant = buildPlantTypeDetailsDialog(item.getItemId() - Constants.PLANT_TYPE_MENU_ID_START_RANGE, plotSelectedForMenu, PlantDialogType.PLANT_TYPE);
 				//now that the dialog is set up, it's time to show it  
@@ -1332,7 +1159,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		dialog.setContentView(R.layout.dialog_plot_details);
 		dialog.setTitle("Plot details");
 		dialog.setCancelable(true);
-		//there are a lot of settings, for dialog, check them all out!
 
 		//set up text
 		TextView textPlotID = (TextView) dialog.findViewById(R.id.dia_plot_firstLine);
@@ -1343,8 +1169,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 
 		TextView textPlot = (TextView) dialog.findViewById(R.id.dia_plot_text);
 		String fullText = game.getTextElement(Constants.HELPANDINFO_PLOT_TYPE_LONG, game.getPlotFrom1BasedID(plotID).getGroundState().toString());
-		//fullText = fullText +"\n\nTouched cell - details:\n" + game.getPlotBasicFullPlotDetails(plotID);
-		//textPlot.setText("Touched cell - details:\n" + game.getPlotBasicFullPlotDetails(plotID));
+
 		if (game.getPlotFrom1BasedID(plotID).getGroundState() != GroundState.WATER) {
 			fullText = fullText + "<p>Currently holds " + game.getPlotFrom1BasedID(plotID).getWaterLevel() + "mm of moisture.</p>";
 		}
@@ -1353,7 +1178,7 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			fullText = fullText + "<p>There is a " + game.getPlotFrom1BasedID(plotID).getPlant().getType() + " planted here.</p>";
 			break;
 		case PLANT_TYPE:
-			// no action?
+			// no action
 			break;
 		default:
 			fullText = fullText + "<p>There is nothing planted here at present.</p>";
@@ -1394,7 +1219,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 			buttonPlantDets.setOnClickListener(new OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					//Toast.makeText(TableDisplayActivity.this, "Show plant details...", Toast.LENGTH_SHORT).show();
 					dialog.cancel();
 					Dialog plantDialog = buildPlantTypeDetailsDialog(plantToLinkTo, plotToLinkTo, plantStyleToLinkTo);
 					plantDialog.show();
@@ -1426,7 +1250,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		dialog.setContentView(R.layout.dialog_plant_details);
 		dialog.setTitle("Plant details");
 		dialog.setCancelable(true);
-		//there are a lot of settings, for dialog, check them all out!
 
 		//set up text
 		TextView textPlantName = (TextView) dialog.findViewById(R.id.dia_plant_firstLine);
@@ -1441,15 +1264,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		switch (plantStyle) {
 		case PLANT_INSTANCE:
 			textPlantDesc.setText(game.getTextElement(Constants.HELPANDINFO_PLANT_STATE, game.getPlotFrom1BasedID(plotID).getPlant().getPlantState().toString()));
-			String watered = "";
-			if (game.getPlotFrom1BasedID(plotID).getPlant().isWateredThisIteration()) {
-				watered = "Yes";
-			} else {
-				watered = "No";
-			}
 			fullText = fullText + "<h4>Current plant info:<h4><p>"
 			+ "<b>Plant age</b>: " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()/365) + " years, " + (game.getPlotFrom1BasedID(plotID).getPlant().getAge()%365) + " days."
-			+ "<br><b>Currently watered?</b>: " + watered
 			+ "<br><b>Plant health</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getHealth() + " out of " + Constants.default_PLANT_STATE_HEALTH_MAX;
 			if (game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername() != null && !game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername().isEmpty()) {
 				fullText = fullText + "<br><b>Seed came from user</b>: " + game.getPlotFrom1BasedID(plotID).getPlant().getOriginUsername();
@@ -1474,8 +1290,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		//set up image view
 		ImageView imgPlant = (ImageView) dialog.findViewById(R.id.dia_plant_img);
 		imgPlant.setAdjustViewBounds(true);
-		imgPlant.setMaxHeight(200);
-		imgPlant.setMaxHeight(200);
+		imgPlant.setMaxHeight(400);
+		imgPlant.setMaxHeight(400);
 		//imgPlant.setImageResource(R.drawable.ic_launcher);
 		Bitmap plantImage = BitmapFactory.decodeFile(this.getFilesDir() + "/" + game.getPlantTypeByPlantTypeID(plantToLinkTo).getPhoto());
 		imgPlant.setImageBitmap(plantImage);
@@ -1517,9 +1333,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 	}
 
 	private void setClockMarkerPosition(int dayInYear, int startDayInYearOfSpring) {
-		// 360/365 = 0.98630136986 ... converting degrees to days in year
-		// 0.98630136986 degrees in radians = 0.0172142063 ... convert to unit needed by jPCT
-
 		int multiplier = 0;
 		if (dayInYear >= startDayInYearOfSpring) {
 			multiplier = dayInYear - startDayInYearOfSpring;
@@ -1555,11 +1368,8 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 		if (texMan.containsTexture(textureName)) {
 			return true;
 		} else {
-			//TEST
 			if (!textureFileName.isEmpty()) {
 				String filepath = master.getFilesDir() + "/" + textureFileName;
-				//File file = new File(filepath);
-				//if (file.exists()) {
 				Bitmap plantImage = BitmapFactory.decodeFile(filepath);
 				Texture newTexture = new Texture(BitmapHelper.rescale(plantImage, 128, 128));
 				texMan.addTexture(textureName, newTexture);
@@ -1624,15 +1434,12 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 					plantToUpdate = Primitives.getPlane(3, 5);
 					plantToUpdate.setName("Plant in plot: " + plotID);
 					// need to work out to make all plants face same direction...
-					//plantToUpdate.rotateY(-0.7f);
-					plantToUpdate.rotateY(-0.4f); //seems to suit planting from all directions - but doesn't look quite right!
+					plantToUpdate.rotateY(-0.4f); //seems to suit planting from all directions - but is an imperfect solution.
 					plantToUpdate.setTexture("plant_growing");
-					//plantToUpdate.setScale(0.1f * game.getPlotFrom1BasedID(plotID).getPlant().getSize()); - moved to below for all plants...
 					plantToUpdate.setTransparency(50);
 					plantToUpdate.strip();
 					plantToUpdate.build();
 					plotAndPlantCollection[plotID-1].originalPlantLocation = new SimpleVector(plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().x, plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().y - 1, plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().z);
-					//plantToUpdate.setOrigin(new SimpleVector(plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().x, plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().y - 8, plotAndPlantCollection[plotID-1].plotGraphics.getOrigin().z));
 					plantToUpdate.setOrigin(plotAndPlantCollection[plotID-1].originalPlantLocation);
 					plotAndPlantCollection[plotID-1].plotGraphics.addChild(plantToUpdate); 
 					plotAndPlantCollection[plotID-1].plantGraphics = plantToUpdate;
@@ -1646,21 +1453,6 @@ public class GameUI3D extends Activity implements OnTouchListener, Observer {
 				plotAndPlantCollection[plotID-1].plantGraphics.setScale(0.01f * game.getPlotFrom1BasedID(plotID).getPlant().getSize());
 				SimpleVector newPosition = plotAndPlantCollection[plotID-1].plantGraphics.getOrigin();
 				plotAndPlantCollection[plotID-1].plantGraphics.setOrigin(new SimpleVector(newPosition.x, plotAndPlantCollection[plotID-1].originalPlantLocation.y - (game.getPlotFrom1BasedID(plotID).getPlant().getSize() * 0.09), newPosition.z));
-
-				if (game.getPlotFrom1BasedID(plotID).getPlant().getPlantState() == PlantState.GROWING) {
-					//plotAndPlantCollection[plotID-1].plantGraphics.scale(1.2f);
-					//tube2.setOrigin(new SimpleVector(newPos.x, newPos.y - growthAmount, newPos.z));
-				} else {
-					//plotAndPlantCollection[plotID-1].plantGraphics.scale(1f);
-				}
-
-				//		if (plotAndPlantCollection[plotID-1].plantGraphics != null) {
-				//			if (game.getPlotFrom1BasedID(plotID).getPlant().getPlantState() == PlantState.FLOWERING && game.getPlotFrom1BasedID(plotID).getPlant().getDaysInCurrentState() == 1) {
-				//				plotAndPlantCollection[plotID-1].plantGraphics.setTexture("plant_flowering");			
-				//			}
-				//		}
-
-				//game.getPlotFrom1BasedID(returnPlotID).getPlant();
 			}
 		} else {
 			if (plotAndPlantCollection!=null && plotAndPlantCollection[plotID-1]!= null && plotAndPlantCollection[plotID-1].plantGraphics != null) {

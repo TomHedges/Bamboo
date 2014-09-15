@@ -1,14 +1,8 @@
-// Original code from - http://www.vogella.com/tutorials/AndroidSQLite/article.html
-
 package com.tomhedges.bamboo.util.dao;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
-import com.tomhedges.bamboo.model.Comment;
 import com.tomhedges.bamboo.model.ConfigValues;
 import com.tomhedges.bamboo.model.Globals;
 import com.tomhedges.bamboo.model.Objective;
@@ -16,6 +10,7 @@ import com.tomhedges.bamboo.model.PlantType;
 import com.tomhedges.bamboo.model.TableLastUpdateDates;
 import com.tomhedges.bamboo.util.DateConverter;
 import com.tomhedges.bamboo.util.localdatabase.LocalDBSQLiteHelper;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -23,12 +18,21 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
+/**
+ * Retrieves data from the local SQLite database, and constructs into objects for the Game
+ * 
+ * Based on code and concepts sourced from:  http://www.vogella.com/tutorials/AndroidSQLite/article.html
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
+
 public class LocalDBDataRetrieval {
 
 	// Database fields
 	private SQLiteDatabase database;
 	private LocalDBSQLiteHelper dbHelper;
-	private String[] globalsColumns = { Constants.COLUMN_GLOBAL_VERSION, Constants.COLUMN_GLOBAL_ROOT_URL, Constants.COLUMN_LAST_UPDATED };
+	private String[] globalsColumns = { Constants.COLUMN_GLOBAL_VERSION, Constants.COLUMN_GLOBAL_ROOT_URL, Constants.COLUMN_LAST_UPDATED, Constants.COLUMN_GLOBAL_USERNAME };
 	private String[] tableUpdatesColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_TABLES_TABLENAME, Constants.COLUMN_LAST_UPDATED };
 	private String[] configColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_LAST_UPDATED, Constants.COLUMN_CONFIG_ITERATION_DELAY, Constants.COLUMN_CONFIG_PLOT_MATRIX_COLUMNS, Constants.COLUMN_CONFIG_PLOT_MATRIX_ROWS, Constants.COLUMN_CONFIG_PLOT_PATTERN };
 	private String[] plantTypeColumns = { Constants.COLUMN_ID_LOCAL,
@@ -64,19 +68,30 @@ public class LocalDBDataRetrieval {
 	private String[] objectivesColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_OBJECTIVES_ID, Constants.COLUMN_OBJECTIVES_DESC, Constants.COLUMN_OBJECTIVES_MESSAGE, Constants.COLUMN_OBJECTIVES_COMPLETED };
 	private String[] helpAndInfoColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_HELPANDINFO_DATATYPE, Constants.COLUMN_HELPANDINFO_REFERENCE, Constants.COLUMN_HELPANDINFO_TEXT };
 	private String[] seedUnlockedColumns = { Constants.COLUMN_ID_LOCAL, Constants.COLUMN_TIMESTAMP, Constants.TAG_USERNAME, Constants.COLUMN_MESSAGE, Constants.COLUMN_SUCCESS_COPY };
+	private boolean dbIsOpen = false;
+
+	public boolean isDatabaseOpen() {
+		return dbIsOpen;
+	}
 
 	public LocalDBDataRetrieval(Context context) {
 		dbHelper = new LocalDBSQLiteHelper(context);
 	}
 
 	public void open() throws SQLException {
-		Log.d(LocalDBDataRetrieval.class.getName(), "Open writeable database");
-		database = dbHelper.getWritableDatabase();
+		if (dbIsOpen) {
+			Log.d(LocalDBDataRetrieval.class.getName(), "Database already open!");
+		} else {
+			Log.d(LocalDBDataRetrieval.class.getName(), "Open writeable database");
+			database = dbHelper.getWritableDatabase();
+			dbIsOpen = true;
+		}
 	}
 
 	public void close() {
 		Log.d(LocalDBDataRetrieval.class.getName(), "Close database");
 		dbHelper.close();
+		dbIsOpen = false;
 	}
 
 	public Globals getGlobals() {
@@ -161,23 +176,6 @@ public class LocalDBDataRetrieval {
 		return configValues;
 	}
 
-	// not used
-	public Comment createComment(String comment) {
-		ContentValues values = new ContentValues();
-		values.put(Constants.COLUMN_GLOBAL_VERSION, comment);
-		long insertId = database.insert(Constants.TABLE_GLOBAL_SETTINGS, null,
-				values);
-		Cursor cursor = database.query(Constants.TABLE_GLOBAL_SETTINGS,
-				globalsColumns, Constants.COLUMN_ID_LOCAL + " = " + insertId, null,
-				null, null, null);
-		cursor.moveToFirst();
-		Comment newComment = cursorToComment(cursor);
-		cursor.close();
-		Log.d(LocalDBDataRetrieval.class.getName(), "Create comment '" + comment + "' at index: " + insertId);
-		return newComment;
-	}
-
-
 	public boolean writeGlobals(Globals globalsRemote) {
 		Log.d(LocalDBDataRetrieval.class.getName(), "Updating local Globals table with more recent remote data");
 
@@ -200,13 +198,30 @@ public class LocalDBDataRetrieval {
 		}
 	}
 
+	public boolean writeUsername(String username) {
+		Log.d(LocalDBDataRetrieval.class.getName(), "Updating local Globals table with current username");
+
+		ContentValues values = new ContentValues();
+		values.put(Constants.COLUMN_GLOBAL_USERNAME, username);
+
+		long updatedNumRows = database.update(Constants.TABLE_GLOBAL_SETTINGS, values, null, null);
+
+		Log.d(LocalDBDataRetrieval.class.getName(), "Update occured! Changes to " + updatedNumRows + " rows.");
+
+		if (updatedNumRows == 1) {
+			Log.d(LocalDBDataRetrieval.class.getName(), "Updated 1 row as expected!");
+			return true;
+		} else {
+			Log.e(LocalDBDataRetrieval.class.getName(), "Update effected wrong number of rows!");
+			return false;
+		}
+	}
+	
 	public boolean writeTableUpdateDate(String tableName, Date updatedDate) {
 		Log.d(LocalDBDataRetrieval.class.getName(), "Attempting to update Tables to show: " + tableName + " updated at " + updatedDate);
 		ContentValues values = new ContentValues();
 		DateConverter dateConverter = new DateConverter();
 
-		//values.put(Constants.COLUMN_TABLES_TABLENAME, dateConverter.convertDateToString(updatedDate));
-		//values.put(Constants.COLUMN_TABLES_TABLENAME, tableName);
 		values.put(Constants.COLUMN_LAST_UPDATED, dateConverter.convertDateToString(updatedDate));
 
 		long updatedNumRows = database.update(Constants.TABLE_TABLES, values, Constants.COLUMN_TABLES_TABLENAME + " = ?", new String[] {tableName});
@@ -322,7 +337,6 @@ public class LocalDBDataRetrieval {
 	}
 
 	public boolean writeNewSponsoredPlantUnlocked(Date whenUnlocked, String originUsername, String sponsoredMessage, String successCopy) {
-		// TODO Auto-generated method stub
 		Log.d(LocalDBDataRetrieval.class.getName(), "Checking whether newly unlocked seed is already in database. Data to check: username=" + originUsername + ", successCopy=" + successCopy);
 
 		String selection = Constants.TAG_USERNAME + " = ? AND " + Constants.COLUMN_SUCCESS_COPY + " = ?";
@@ -353,7 +367,6 @@ public class LocalDBDataRetrieval {
 	}
 
 	public boolean writeObjectives(Objective[] remoteObjectives) {
-		// TODO - Need to do something about preserving existing values when updating the objectives table
 		Log.d(LocalDBDataRetrieval.class.getName(), "Updating local Objectives table with more recent remote data");
 
 		Objective[] existingObjectives = getObjectives();
@@ -432,7 +445,6 @@ public class LocalDBDataRetrieval {
 	}
 
 	public boolean resetObjectiveCompletionStatuses() {
-		// TODO Auto-generated method stub
 		Log.d(LocalDBDataRetrieval.class.getName(), "Reseting objective completion statuses to FALSE");
 
 		Cursor cursor = database.query(Constants.TABLE_OBJECTIVES, objectivesColumns, null, null, null, null, null);
@@ -454,43 +466,6 @@ public class LocalDBDataRetrieval {
 		}
 	}
 
-	// not used
-	public void deleteComment(Comment comment) {
-		long id = comment.getId();
-		Log.d(LocalDBDataRetrieval.class.getName(), "Delete comment '" + comment + "' at index: " + id);
-		database.delete(Constants.TABLE_GLOBAL_SETTINGS, Constants.COLUMN_ID_LOCAL
-				+ " = " + id, null);
-	}
-
-	// not used
-	public List<Comment> getAllComments() {
-		Log.d(LocalDBDataRetrieval.class.getName(), "Get all comments");
-
-		List<Comment> comments = new ArrayList<Comment>();
-
-		Cursor cursor = database.query(Constants.TABLE_GLOBAL_SETTINGS,
-				globalsColumns, null, null, null, null, null);
-
-		cursor.moveToFirst();
-		while (!cursor.isAfterLast()) {
-			Comment comment = cursorToComment(cursor);
-			comments.add(comment);
-			cursor.moveToNext();
-		}
-		// make sure to close the cursor
-		cursor.close();
-		return comments;
-	}
-
-	// not used
-	private Comment cursorToComment(Cursor cursor) {
-		Log.d(LocalDBDataRetrieval.class.getName(), "Convert Cursor to Comment");
-		Comment comment = new Comment();
-		comment.setId(cursor.getLong(0));
-		comment.setComment(cursor.getString(1));
-		return comment;
-	}
-
 	private Globals cursorToGlobals(Cursor cursor) {
 		Log.d(LocalDBDataRetrieval.class.getName(), "Convert Cursor to Global");
 		Globals globals = new Globals();
@@ -498,6 +473,7 @@ public class LocalDBDataRetrieval {
 		globals.setRootURL(cursor.getString(cursor.getColumnIndex(Constants.COLUMN_GLOBAL_ROOT_URL)));
 		DateConverter dateConverter = new DateConverter();
 		globals.setLast_updated(dateConverter.convertStringToDate(cursor.getString(cursor.getColumnIndex(Constants.COLUMN_LAST_UPDATED))));
+		globals.setUsername(cursor.getString(cursor.getColumnIndex(Constants.COLUMN_GLOBAL_USERNAME)));
 		return globals;
 	}
 
@@ -617,7 +593,7 @@ public class LocalDBDataRetrieval {
 	private Objective[] cursorToObjectiveArray(Cursor cursor) {
 		Objective[] objectiveArray = new Objective[cursor.getCount()];
 		cursor.moveToFirst();
-		// maybe not... start from 1 to remove the test objective...
+		
 		for (int loopCounter = 0; loopCounter < cursor.getCount(); loopCounter++) {
 			int objectiveID = cursor.getInt(cursor.getColumnIndex(Constants.COLUMN_OBJECTIVES_ID));
 			String description = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_OBJECTIVES_DESC));
@@ -630,7 +606,6 @@ public class LocalDBDataRetrieval {
 				completedBoolean = false;
 			}
 
-			//Log.d(LocalDBDataRetrieval.class.getName(), "TEST: " + completed + " or " + completedBoolean);
 			Objective objective = new Objective(objectiveID, description, message, completedBoolean);
 			objectiveArray[loopCounter] = objective;
 
@@ -643,7 +618,6 @@ public class LocalDBDataRetrieval {
 		String[][] objectiveArray = new String[cursor.getCount()][4];
 		cursor.moveToFirst();
 		for (int loopCounter = 0; loopCounter < cursor.getCount(); loopCounter++) {
-			//DateConverter dateConverter = new DateConverter();
 			objectiveArray[loopCounter][0] = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_TIMESTAMP));
 			objectiveArray[loopCounter][1] = cursor.getString(cursor.getColumnIndex(Constants.TAG_USERNAME));
 			objectiveArray[loopCounter][2] = cursor.getString(cursor.getColumnIndex(Constants.COLUMN_MESSAGE));

@@ -1,5 +1,11 @@
 package com.tomhedges.bamboo.model;
 
+/**
+ * Holds latitude and longitude
+ * 
+ * @author      Tom Hedges
+ */
+
 public class LocationObject {
 	private double latitude;
 	private double longitude;

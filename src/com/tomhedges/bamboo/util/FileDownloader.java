@@ -1,7 +1,6 @@
-// partly from: http://stackoverflow.com/questions/3028306/download-a-file-with-android-and-showing-the-progress-in-a-progressdialog
-
 package com.tomhedges.bamboo.util;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +9,16 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import android.util.Log;
+
+/**
+ * Downloads a list of files from remote addresses, and saves to local filepaths 
+ * <br>
+ * partly from: http://stackoverflow.com/questions/3028306/download-a-file-with-android-and-showing-the-progress-in-a-progressdialog
+ * 
+ * @see			Game
+ * @see			RemoteDBTableRetrieval
+ * @author      Tom Hedges
+ */
 
 public class FileDownloader {
 	InputStream input;
@@ -36,6 +45,16 @@ public class FileDownloader {
 				try {
 					Log.d(FileDownloader.class.getName(), "Downloading from: " + downloadFrom[loopCounter] + ", to: " + saveTo[loopCounter]);
 
+					File file = new File(saveTo[loopCounter]);
+					if(file.exists()) {
+						Log.d(FileDownloader.class.getName(), "Deleting old copy of: " + saveTo[loopCounter]);
+						if (file.delete()) {
+							Log.d(FileDownloader.class.getName(), "Deletion successful (" + saveTo[loopCounter] + ")");
+						} else {
+							Log.e(FileDownloader.class.getName(), "Could not delete: " + saveTo[loopCounter]);
+						}
+					}
+
 					URL url = new URL(downloadFrom[loopCounter]);
 					connection = (HttpURLConnection) url.openConnection();
 					connection.connect();
@@ -45,28 +64,27 @@ public class FileDownloader {
 					if (connection.getResponseCode() != HttpURLConnection.HTTP_OK) {
 						Log.e(FileDownloader.class.getName(), "Server returned HTTP " + connection.getResponseCode()
 								+ " " + connection.getResponseMessage());
-						return false;
-					}
+					} else {
+						// this will be useful to display download percentage
+						// might be -1: server did not report the length
+						int fileLength = connection.getContentLength();
 
-					// this will be useful to display download percentage
-					// might be -1: server did not report the length
-					int fileLength = connection.getContentLength();
+						// download the file
+						input = connection.getInputStream();
+						output = new FileOutputStream(saveTo[loopCounter]);
 
-					// download the file
-					input = connection.getInputStream();
-					output = new FileOutputStream(saveTo[loopCounter]);
-
-					byte data[] = new byte[4096];
-					long total = 0;
-					int count;
-					while ((count = input.read(data)) != -1) {
-						total += count;
-						output.write(data, 0, count);
+						byte data[] = new byte[4096];
+						long total = 0;
+						int count;
+						while ((count = input.read(data)) != -1) {
+							total += count;
+							output.write(data, 0, count);
+						}
+						Log.d(FileDownloader.class.getName(), "Success downloading!");
+						successCounter++;
 					}
 
 					closedown();
-					Log.d(FileDownloader.class.getName(), "Success downloading!");
-					successCounter++;
 				} catch (Exception e) {
 					closedown();
 					Log.e(FileDownloader.class.getName(), e.toString());

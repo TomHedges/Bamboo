@@ -6,11 +6,16 @@ import com.tomhedges.bamboo.config.Constants;
 
 import android.util.Log;
 
-public class MatrixOfPlots implements Serializable {
+/**
+ * Key element of the cellular automata model - holds the arrays of Plots and Neighbourhoods
+ * 
+ * @see			Game
+ * @see			Plot
+ * @see			Neighbourhood
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class MatrixOfPlots implements Serializable {
 	private static final long serialVersionUID = 123L;
 	
 	private static MatrixOfPlots matrix;
@@ -23,10 +28,6 @@ public class MatrixOfPlots implements Serializable {
 
 	// Private constructor
 	private MatrixOfPlots(Plot[][] plotArray){
-		// CONVERT STRING TO ENUM value!!!
-		//strTesting = "WATER";
-		//gsTest = GroundState.valueOf(strTesting);
-
 		this.plotArray = plotArray;
 		num_rows = plotArray.length;
 		num_cols = plotArray[0].length;
@@ -49,14 +50,6 @@ public class MatrixOfPlots implements Serializable {
 	public static MatrixOfPlots getMatrix() {
 		return matrix;
 	}
-	
-	public boolean hasPlantArray() {
-		if (plotArray!=null) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 
 	public void setNeighbourhoodMatrix(Neighbourhood[] neighbourhoodArray) {
 		if (this.neighbourhoodArray == null) { this.neighbourhoodArray = neighbourhoodArray; }
@@ -69,7 +62,6 @@ public class MatrixOfPlots implements Serializable {
 	public Plot getPlot(int xPos, int yPos) {
 		if (xPos>=1 && xPos<=num_cols && yPos>=1 && yPos<=num_rows) {
 			Log.d(MatrixOfPlots.class.getName(), "Request for plot @ pos: " + (xPos-1) + "," + (yPos-1) + " (0-based array)");
-			//Log.d("Plot Matrix", "Result: " + plotArray[yPos-1][xPos-1].toString());
 			return plotArray[yPos-1][xPos-1];
 		} else {
 			return new Plot(0, 0, 0, null, 0);
@@ -110,23 +102,8 @@ public class MatrixOfPlots implements Serializable {
 		return numWithPlants;
 	}
 
-	public Plot[] getPlotsWithPlants() {
-		Plot[] plotsWithPlants = new Plot[numberOfPlotsWithPlants()];
-		if (plotsWithPlants.length > 0) {
-			int plotsWithPlantsPointer = 0;
-			for (int loopCounter = 0; loopCounter<=num_rows*num_cols; loopCounter++) {
-				if (getPlot(loopCounter) != null) {
-					plotsWithPlants[plotsWithPlantsPointer] = getPlot(loopCounter);
-					plotsWithPlantsPointer++;
-				}
-			}
-		}
-		return plotsWithPlants;
-	}
-
 	public void destroy() {
 		Log.d(MatrixOfPlots.class.getName(), "Destroying Matrix!");
 		matrix = null;
-		//plotArray = null;
 	}
 }

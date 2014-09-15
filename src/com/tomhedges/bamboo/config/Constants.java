@@ -1,6 +1,12 @@
 package com.tomhedges.bamboo.config;
 
-public interface Constants {
+/**
+ * Constant values for use across the rest of the system.
+ * 
+ * @author      Tom Hedges
+ */
+
+public class Constants {
 	public static final String ROOT_URL = "http://54.229.96.8/bamboo-test/";
 	public static final String ROOT_URL_FIELD_NAME = "root_url";
 	public static final String ROOT_URL_IMAGE_EXT = "images/";
@@ -77,6 +83,7 @@ public interface Constants {
 	public static final String COLUMN_LAST_UPDATED = "last_updated";
 	public static final String COLUMN_GLOBAL_VERSION = "version";
 	public static final String COLUMN_GLOBAL_ROOT_URL = "root_url";
+	public static final String COLUMN_GLOBAL_USERNAME = "username";
 	public static final String COLUMN_TABLES_TABLENAME = "tablename";
 
 	public static final String COLUMN_OBJECTIVES_ID = "objective_id";
@@ -104,10 +111,17 @@ public interface Constants {
 	public static final String TABLES_VALUES_ITERATION_RULES = "IterationRules";
 	public static final String TABLES_VALUES_HELPANDINFO = "HelpAndInfo";
 
+	public static final String CORESETTING_LOCAL_FILEPATH = "local_filepath";
+
+	public static final String HELPANDINFO_HELP_TYPE = "help_text";
+	public static final String HELPANDINFO_HELP_REF_MAIN = "main";
+	public static final String HELPANDINFO_HELP_REF_IMAGE = "image";
+	
 	public static final String HELPANDINFO_PLOT_TYPE_SHORT = "plot_type_short";
 	public static final String HELPANDINFO_PLOT_TYPE_LONG = "plot_type_long";
 	public static final String HELPANDINFO_PLANT_DESCRIPTION = "plant_description";
 	public static final String HELPANDINFO_PLANT_STATE = "plant_state";
+	public static final String HELPANDINFO_SEASON = "season_description";
 
 	public static enum RetrievalType {
 		COLUMNS,
@@ -242,8 +256,8 @@ public interface Constants {
 
 	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE = 3;
 	public static final float default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_ABOVE_WATER_MULTIPLIER_PER_DEGREE = 0.5f;
-	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_HIGH = 9;
-	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_BELOW = 5;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_HIGH = 15;
+	public static final int default_PLANT_STATE_CHANGE_TEMPERATURE_COMFORTABLE_RANGE_BELOW = 10;
 	public static final int default_PLANT_STATE_HEALTH_MAX = 100;
 	public static final int default_PLANT_STATE_CHANGE_HEALTH_MOVEMENT = 1;
 	public static final int default_PLANT_HEALTH_AT_PLANTING = 60;

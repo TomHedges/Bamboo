@@ -5,11 +5,15 @@ import java.io.Serializable;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.GroundState;
 
-public class PlantType implements Serializable { //Comparable<PlantType>, Serializable {
+/**
+ * The details of a plant type, rather than an instance - its name, and preferred growing conditions, etc.
+ * 
+ * @see			PlantInstance
+ * @see			Plot
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class PlantType implements Serializable { //Comparable<PlantType>, Serializable {
 	private static final long serialVersionUID = 123L;
 
 	private int plantTypeId;

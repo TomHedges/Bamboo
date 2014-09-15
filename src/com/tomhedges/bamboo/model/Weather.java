@@ -8,6 +8,13 @@ import android.util.Log;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.Season;
 
+/**
+ * Class which generates and holds weather conditions, intended to track a month-by-month average, but also produce some "unseasonal" weather
+ * 
+ * @see			Game
+ * @author      Tom Hedges
+ */
+
 public class Weather {
 
 	private static Weather weather = null;
@@ -163,7 +170,7 @@ public class Weather {
 				diffFromSeasonalAverage = (aveValue - averageValueForSeason) * Constants.default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER; //so if rolling average is higher than seasonal, this will generate positive number
 			}
 
-			//need better way to do this...
+			// TODO - Improve this probabilistic algorithm
 			boolean currentValueChangeIncreasing = false;
 			int randomRange = (maxValue - minValue) * Constants.default_WEATHER_CHANGE_DIRECTION_SELECTION_SCALE_MULTIPLIER;
 			int randomChangeLikelihood = randomGenerator.nextInt(randomRange) + 1;

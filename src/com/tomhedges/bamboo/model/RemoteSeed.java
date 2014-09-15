@@ -3,11 +3,14 @@ package com.tomhedges.bamboo.model;
 import java.io.Serializable;
 import java.util.Date;
 
-public class RemoteSeed implements Serializable {
+/**
+ * The details of a remote seed, retrieved from the server. Stored as an array in the PlantCatalogue, and periodically retrieved and overwritten.
+ * 
+ * @see			PlantCatalogue
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class RemoteSeed implements Serializable {
 	private static final long serialVersionUID = 123L;
 	
 	private int plantTypeId;

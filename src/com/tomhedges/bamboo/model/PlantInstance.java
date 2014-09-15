@@ -5,11 +5,15 @@ import java.io.Serializable;
 import com.tomhedges.bamboo.config.Constants;
 import com.tomhedges.bamboo.config.Constants.PlantState;
 
-public class PlantInstance implements Serializable {
+/**
+ * The details of an individual instance of a plant within the model (including its type, health, age, etc.)
+ * 
+ * @see			PlantType
+ * @see			Plot
+ * @author      Tom Hedges
+ */
 
-	/**
-	 * 
-	 */
+public class PlantInstance implements Serializable {
 	private static final long serialVersionUID = 123L;
 	
 	private PlantType plantType;
